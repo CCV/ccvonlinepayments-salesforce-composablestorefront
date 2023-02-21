@@ -94,7 +94,7 @@ export const CheckoutProvider = ({children}) => {
                 return
             }
 
-            mergeState({step: CheckoutSteps.Review_Order})
+            mergeState({step: CheckoutSteps.Payment})
         }
     }, [customer, basket])
 
@@ -182,6 +182,10 @@ export const CheckoutProvider = ({children}) => {
 
             setIsGuestCheckout(isGuestCheckout) {
                 mergeState({isGuestCheckout})
+            },
+
+            setGlobalError(msg) {
+                mergeState({globalError: msg})
             },
 
             // Async functions
@@ -305,6 +309,19 @@ export const CheckoutProvider = ({children}) => {
                 if (!state.isGuestCheckout && !selectedPayment.id) {
                     customer.addSavedPaymentInstrument(paymentInstrument)
                 }
+            },
+
+            /**
+             * Applies the given CCV payment instrument to the basket.
+             * @see {@link https://salesforcecommercecloud.github.io/commerce-sdk-isomorphic/modules/shoppercustomers.html#orderpaymentinstrument}
+             * @param {Object} payment
+             */
+            async setPaymentCCV(payment) {
+                const paymentInstrument = {
+                    paymentMethodId: payment.paymentInstrumentId
+                }
+
+                await basket.setPaymentInstrument(paymentInstrument)
             },
 
             /**

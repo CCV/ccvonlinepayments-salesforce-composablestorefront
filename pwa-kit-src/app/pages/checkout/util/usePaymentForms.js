@@ -17,7 +17,7 @@ const usePaymentForms = () => {
         selectedPayment,
         selectedBillingAddress,
         selectedShippingAddress,
-        setPayment,
+        setPaymentCCV,
         setBillingAddress,
         isBillingSameAsShipping,
         goToNextStep
@@ -53,7 +53,7 @@ const usePaymentForms = () => {
         // we ensure that the any applied payment is removed before showing the
         // the payment form.
         if (!selectedPayment) {
-            await setPayment(payment)
+            await setPaymentCCV(payment)
         }
 
         // Once the payment is applied to the basket, we submit the billing address.

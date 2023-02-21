@@ -7,21 +7,21 @@
 import React, {useEffect, useState} from 'react'
 import {FormattedMessage} from 'react-intl'
 import {Alert, AlertIcon, Box, Button, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
-import useNavigation from '../../hooks/use-navigation'
 import {CheckoutProvider, useCheckout} from './util/checkout-context'
 import ContactInfo from './partials/contact-info'
 import ShippingAddress from './partials/shipping-address'
 import ShippingOptions from './partials/shipping-options'
 import useCustomer from '../../commerce-api/hooks/useCustomer'
 import useBasket from '../../commerce-api/hooks/useBasket'
-import Payment from './partials/payment'
+import CCVPayment from './partials/payment-ccv'
 import CheckoutSkeleton from './partials/checkout-skeleton'
 import OrderSummary from '../../components/order-summary'
+import useCCV from '../../commerce-api/hooks/useCCV'
 
 const Checkout = () => {
-    const navigate = useNavigation()
-    const {globalError, step, placeOrder} = useCheckout()
+    const {globalError, step} = useCheckout()
     const [isLoading, setIsLoading] = useState(false)
+    const ccv = useCCV()
 
     // Scroll to the top when we get a global error
     useEffect(() => {
@@ -30,15 +30,18 @@ const Checkout = () => {
         }
     }, [globalError, step])
 
-    const submitOrder = async () => {
-        setIsLoading(true)
-        try {
-            await placeOrder()
-            navigate('/checkout/confirmation')
-        } catch (error) {
-            setIsLoading(false)
-        }
-    }
+    // const submitOrder = async () => {
+    //     return;
+    //     setIsLoading(true)
+    //     try {
+    //         await placeOrder()
+    //         navigate('/checkout/confirmation')
+    //     } catch (error) {
+    //         setIsLoading(false)
+    //     }
+    // }
+
+    const submitOrder = () => ccv.submitOrder(setIsLoading)
 
     return (
         <Box background="gray.50" flex="1">
@@ -61,7 +64,7 @@ const Checkout = () => {
                             <ContactInfo />
                             <ShippingAddress />
                             <ShippingOptions />
-                            <Payment />
+                            <CCVPayment />
 
                             {step === 4 && (
                                 <Box pt={3} display={{base: 'none', lg: 'block'}}>
