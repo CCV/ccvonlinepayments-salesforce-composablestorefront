@@ -1,0 +1,30 @@
+{
+	"step-types":{
+	   "script-module-step":[
+		  {
+			 "@type-id":"custom.CCV.UpdateTransactionStatuses",
+			 "@supports-parallel-execution":"false",
+			 "@supports-site-context":"true",
+			 "@supports-organization-context":"false",
+			 "description":"Checks and updates CCV transaction statuses for orders in status Created",
+			 "module":"int_ccv/cartridge/scripts/jobs/updateTransactionStatuses.js",
+			 "function":"execute",
+			 "transactional":"true",
+			 "timeout-in-seconds":"900",
+			 "parameters":{},
+			 "status-codes":{
+                "status": [
+                    {
+                        "@code": "ERROR",
+                        "description": "Used when an error occurred."
+                    },
+                    {
+                        "@code": "OK",
+                        "description": "Used when execution was successful."
+                    }
+                ]
+			 }
+		  }
+	   ]
+	}
+ }
