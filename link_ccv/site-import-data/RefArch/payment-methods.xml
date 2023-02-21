@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<payment-settings xmlns="http://www.demandware.com/xml/impex/paymentsettings/2009-09-15">
+
+    <payment-method method-id="CCV_CREDIT_CARD">
+        <name xml:lang="x-default">Credit Card</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">card</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_PAYPAL">
+        <name xml:lang="x-default">PayPal</name>
+        <description xml:lang="x-default">PayPal via CCV</description>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">paypal</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+</payment-settings>
