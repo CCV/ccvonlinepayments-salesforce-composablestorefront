@@ -7,7 +7,8 @@ var CCV_CONSTANTS = {
     PATH: {
         METHODS: '/method',
         CREATE_PAYMENT: '/payment',
-        CHECK_TRANSACTION_STATUS: '/transaction'
+        CHECK_TRANSACTION_STATUS: '/transaction',
+        REFUND: '/refund'
     },
     STATUS: {
         PENDING: 'pending',
@@ -120,6 +121,58 @@ function checkCCVTransaction(reference) {
             currency: 'eur',
             method: 'card',
             type: 'sale',
+            description: 'Order 123456',
+            status: 'success'
+        }
+    });
+
+    /**
+ *     var exampleResponse = {
+        "merchantOrderReference" : "123456",
+        "amount" : 9.99,
+        "brand" : "visa",
+        "returnUrl" : "http://shop/return?order=123456",
+        "language" : "eng",
+        "lastUpdate" : 1450871414476,
+        "payUrl" : "https://redirect.jforce.be/card/payment.html?reference=C151223124734945CB87E191.0",
+        "reference" : "C151223124734945CB87E191.0",
+        "created" : 1450871254959,
+        "currency" : "eur",
+        "method" : "card",
+        "type" : "sale",
+        "description" : "Order 123456",
+        "status" : "success"
+      }
+ */
+}
+
+/**
+ * Refunds an existing payment
+ * Refunds are allowed for all existing payment methods, except LandingPage, Terminal, Token and Vault.
+ * @param {string} reference CCV transaction reference
+ * @returns {Object} response from service call
+ */
+function refundCCVPayment({ reference, description }) {
+    return callCCVService({
+        path: CCV_CONSTANTS.PATH.REFUND,
+        requestBody: {
+            reference: reference,
+            description: description
+        },
+
+        mockResponse: {
+            type: 'refund',
+            amount: 9.99,
+            currency: 'eur',
+            paidout: 'no',
+            merchantOrderReference: '123456',
+            brand: 'visa',
+            language: 'eng',
+            lastUpdate: 1450871414476,
+            failureCode: '',
+            reference: 'C151223124734945CB87E191.0',
+            created: 1450871254959,
+            method: 'card',
             description: 'Order 123456',
             status: 'success'
         }
