@@ -11,52 +11,21 @@ import {FormLabel, Radio, RadioGroup, Stack, FormErrorMessage, FormControl} from
 import {useForm, Controller} from 'react-hook-form'
 import {useCheckout} from '../util/checkout-context'
 // import {AmexIcon, DiscoverIcon, MastercardIcon, VisaIcon, InfoIcon} from '../../../components/icons'
-import usePaymentForms from '../util/usePaymentForms'
-import useCCV from '../../../commerce-api/hooks/useCCV'
 
-const CCVPaymentSelection = ({form, setIsLoading}) => {
+const CCVPaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
-    const {paymentMethods, setGlobalError} = useCheckout()
-    const {submitPaymentMethodForm} = usePaymentForms()
-    const ccv = useCCV()
+    const {paymentMethods} = useCheckout()
     const paymentFormRef = useRef()
 
     form = form || useForm()
-    const submitForm = async (payment) => {
-        setIsLoading(true)
-        try {
-            console.log(payment)
-
-            await submitPaymentMethodForm(payment)
-            // create redirect session via ccv api
-            const createRedirectSessionResponse = await ccv.createRedirectSession({
-                paymentType: payment.ccvMethodId,
-                option: ''
-            })
-            console.log(createRedirectSessionResponse)
-            // redirect to hosted payment page
-            window.location.href = createRedirectSessionResponse.payUrl
-        } catch (error) {
-            setIsLoading(false)
-            console.log(error)
-            const message = formatMessage({
-                id: 'checkout.message.generic_error',
-                defaultMessage: 'An unexpected error occurred during checkout.'
-            })
-            setGlobalError(message)
-        }
-    }
 
     const onPaymentIdChange = (value) => {
         form.clearErrors('paymentInstrumentId')
 
         form.setValue('paymentInstrumentId', value)
-        const ccvId = paymentMethods.applicablePaymentMethods.find(
-            (method) => method.id === value
-        ).c_ccvMethodId
 
         // method id used in service call to ccv
-        form.setValue('ccvMethodId', ccvId)
+        form.setValue('ccvOption', '')
     }
 
     useEffect(() => {
@@ -71,12 +40,7 @@ const CCVPaymentSelection = ({form, setIsLoading}) => {
     }, [form.errors])
 
     return (
-        <form
-            id="payment-form"
-            ref={paymentFormRef}
-            onSubmit={form.handleSubmit(submitForm)}
-            style={{scrollMarginTop: '5rem'}}
-        >
+        <form id="payment-form" ref={paymentFormRef} style={{scrollMarginTop: '5rem'}}>
             {/* {JSON.stringify(paymentMethods)} */}
             <FormControl id="paymentInstrumentId" isInvalid={form.errors.paymentInstrumentId}>
                 <FormLabel>Select a payment method</FormLabel>
@@ -111,17 +75,14 @@ const CCVPaymentSelection = ({form, setIsLoading}) => {
                     }}
                 />
             </FormControl>
-            <input type="hidden" {...form.register('ccvMethodId')} defaultValue="" />
+            <input type="hidden" {...form.register('ccvOption')} defaultValue="" />
         </form>
     )
 }
 
 CCVPaymentSelection.propTypes = {
     /** The form object returnd from `useForm` */
-    form: PropTypes.object,
-
-    /** setter for isLoading */
-    setIsLoading: PropTypes.func
+    form: PropTypes.object
 }
 
 export default CCVPaymentSelection

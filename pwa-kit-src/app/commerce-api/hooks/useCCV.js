@@ -1,17 +1,24 @@
 import {useCommerceAPI} from '../contexts'
 import {getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
+import {useCheckout} from '../../pages/checkout/util/checkout-context'
 
 const useCCV = () => {
     const api = useCommerceAPI()
     const {locale} = useIntl()
+    const {selectedPayment, paymentMethods, setGlobalError} = useCheckout()
+    const {formatMessage} = useIntl()
 
     return {
-        async createRedirectSession({paymentType, option}) {
+        async createRedirectSession() {
+            const ccvId = paymentMethods.applicablePaymentMethods.find(
+                (method) => method.id === selectedPayment.paymentMethodId
+            ).c_ccvMethodId
+
             const paymentSession = await api.ccvPayment.createRedirectSession({
                 parameters: {
-                    paymentType: paymentType,
-                    option: option,
+                    paymentType: ccvId,
+                    option: '',
                     returnUrl: `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
                 }
             })
@@ -31,6 +38,22 @@ const useCCV = () => {
             }
 
             return paymentTransaction.transactionStatus
+        },
+        async submitOrder(setIsLoading) {
+            try {
+                setIsLoading(true)
+                // create redirect session via ccv api
+                const createRedirectSessionResponse = await this.createRedirectSession()
+                // redirect to hosted payment page
+                window.location.href = createRedirectSessionResponse.payUrl
+            } catch (error) {
+                setIsLoading(false)
+                const message = formatMessage({
+                    id: 'checkout.message.generic_error',
+                    defaultMessage: 'An unexpected error occurred during checkout.'
+                })
+                setGlobalError(message)
+            }
         }
     }
 }
