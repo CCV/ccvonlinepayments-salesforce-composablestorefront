@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import React, {useEffect} from 'react'
+import React, {useEffect, useMemo} from 'react'
 import PropTypes from 'prop-types'
 import {FormattedMessage, useIntl} from 'react-intl'
 import {Box, Button, Checkbox, Container, Heading, Stack, Text, Divider} from '@chakra-ui/react'
 import {useCheckout} from '../util/checkout-context'
 import usePaymentForms from '../util/usePaymentForms'
-import {getCreditCardIcon} from '../../../utils/cc-utils'
 import {ToggleCard, ToggleCardEdit, ToggleCardSummary} from '../../../components/toggle-card'
 import CCVPaymentSelection from './payment-selection-ccv'
 import ShippingAddressSelection from './shipping-address-selection'
@@ -28,6 +27,7 @@ const Payment = () => {
         selectedBillingAddress,
         selectedPayment,
         getPaymentMethods,
+        paymentMethods,
         removePayment
     } = useCheckout()
 
@@ -45,6 +45,18 @@ const Payment = () => {
         removePayment()
         paymentMethodForm.reset({paymentInstrumentId: ''})
     }
+
+    const paymentMethodsMap = useMemo(() => {
+        console.log(paymentMethods)
+        if (!paymentMethods) return {}
+        return paymentMethods.applicablePaymentMethods.reduce((result, current) => {
+            result[current.id] = current
+            return result
+        }, {})
+    }, [paymentMethods])
+
+    const selectedPaymentName =
+        (selectedPayment && paymentMethodsMap[selectedPayment.paymentMethodId]?.name) || ''
 
     useEffect(() => {
         getPaymentMethods()
@@ -73,10 +85,13 @@ const Payment = () => {
                     ) : (
                         <Stack spacing={3}>
                             <Heading as="h3" fontSize="md">
-                                {selectedPayment.paymentMethodId}
+                                {selectedPaymentName}
                             </Heading>
                             <Stack direction="row" spacing={4}>
-                                <PaymentSummaryCCV payment={selectedPayment} />
+                                <PaymentSummaryCCV
+                                    payment={selectedPayment}
+                                    paymentMethodsMap={paymentMethodsMap}
+                                />
                                 <Button
                                     variant="link"
                                     size="sm"
@@ -148,13 +163,12 @@ const Payment = () => {
                     {selectedPayment && (
                         <Stack spacing={3}>
                             <Heading as="h3" fontSize="md">
-                                {/* <FormattedMessage
-                                    defaultMessage="Credit Card"
-                                    id="checkout_payment.heading.credit_card"
-                                /> */}
-                                {selectedPayment.paymentMethodId}
+                                {selectedPaymentName}
                             </Heading>
-                            <PaymentSummaryCCV payment={selectedPayment} />
+                            <PaymentSummaryCCV
+                                payment={selectedPayment}
+                                paymentMethodsMap={paymentMethodsMap}
+                            />
                         </Stack>
                     )}
 
@@ -177,32 +191,15 @@ const Payment = () => {
     )
 }
 
-const PaymentCardSummary = ({payment}) => {
-    const CardIcon = getCreditCardIcon(payment?.paymentCard?.cardType)
+const PaymentSummaryCCV = ({payment, paymentMethodsMap}) => {
+    const paymentMethodObj = paymentMethodsMap[payment.paymentMethodId]
+
     return (
         <Stack direction="row" alignItems="center" spacing={3}>
-            {CardIcon && <CardIcon layerStyle="ccIcon" />}
-
-            <Stack direction="row">
-                <Text>{payment.paymentCard.cardType}</Text>
-                <Text>&bull;&bull;&bull;&bull; {payment.paymentCard.numberLastDigits}</Text>
-                <Text>
-                    {payment.paymentCard.expirationMonth}/{payment.paymentCard.expirationYear}
-                </Text>
-            </Stack>
+            {paymentMethodObj && paymentMethodObj.name}
         </Stack>
     )
 }
-
-PaymentCardSummary.propTypes = {payment: PropTypes.object}
-
-const PaymentSummaryCCV = ({payment}) => {
-    return (
-        <Stack direction="row" alignItems="center" spacing={3}>
-            {payment.paymentMethodId}
-        </Stack>
-    )
-}
-PaymentSummaryCCV.propTypes = {payment: PropTypes.object}
+PaymentSummaryCCV.propTypes = {payment: PropTypes.object, paymentMethodsMap: PropTypes.object}
 
 export default Payment
