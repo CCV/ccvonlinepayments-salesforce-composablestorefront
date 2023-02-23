@@ -318,9 +318,9 @@ export const CheckoutProvider = ({children}) => {
              */
             async setPaymentCCV(payment) {
                 const paymentInstrument = {
-                    paymentMethodId: payment.paymentInstrumentId
+                    paymentMethodId: payment.paymentInstrumentId,
+                    c_ccv_option: payment.ccvOption
                 }
-
                 await basket.setPaymentInstrument(paymentInstrument)
             },
 

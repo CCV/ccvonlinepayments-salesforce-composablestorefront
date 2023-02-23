@@ -18,7 +18,7 @@ const useCCV = () => {
             const paymentSession = await api.ccvPayment.createRedirectSession({
                 parameters: {
                     paymentType: ccvId,
-                    option: '',
+                    ccv_option: selectedPayment.c_ccv_option,
                     returnUrl: `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
                 }
             })

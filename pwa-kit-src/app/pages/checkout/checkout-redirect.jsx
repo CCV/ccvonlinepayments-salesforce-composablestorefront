@@ -20,8 +20,12 @@ const Checkout = () => {
             setGlobalError('There is an error processing your payment, please try again.')
             navigate('/checkout')
         } else {
-            await placeOrder()
-            navigate('/checkout/confirmation')
+            try {
+                await placeOrder()
+                navigate('/checkout/confirmation')
+            } catch (error) {
+                console.log(error)
+            }
         }
     }, [])
 
