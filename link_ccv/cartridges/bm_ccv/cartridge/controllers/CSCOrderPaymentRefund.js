@@ -15,6 +15,8 @@ var renderTemplate = function (templateName, viewParams) {
 var isRefundAllowed = function (order) {
     if (!order) return false;
     var orderStatus = order.status.value;
+
+    // todo: check the payment type as well
     return orderStatus !== Order.ORDER_STATUS_CANCELLED &&
         orderStatus !== Order.ORDER_STATUS_FAILED &&
         orderStatus !== Order.ORDER_STATUS_CREATED;
