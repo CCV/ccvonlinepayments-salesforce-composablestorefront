@@ -4,9 +4,7 @@ var OrderMgr = require('dw/order/OrderMgr');
 var Order = require('dw/order/Order');
 var Transaction = require('dw/system/Transaction');
 var { CCV_CONSTANTS, checkCCVTransaction } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
-
-// query created orders and check their CCV payment statuses
-
+var PaymentMgr = require('dw/order/PaymentMgr');
 
 exports.execute = function () {
     OrderMgr.processOrders(checkOrderStatus, `status=${Order.ORDER_STATUS_CREATED}`);
@@ -64,6 +62,21 @@ function checkOrderStatus(order) {
 
             Transaction.wrap(() => {
                 OrderMgr.placeOrder(order);
+                var paymentInstrument = order.paymentInstruments[0];
+                var paymentProcessor = PaymentMgr.getPaymentMethod(paymentInstrument.getPaymentMethod()).getPaymentProcessor();
+                var orderTotal = order.totalGrossPrice;
+
+                paymentInstrument.paymentTransaction.transactionID = ccvTransactionReference;
+                paymentInstrument.paymentTransaction.paymentProcessor = paymentProcessor;
+                // var paymentInstrument = paymentInstruments[0];
+                paymentInstrument.paymentTransaction.setAmount(orderTotal);
+
+                // paymentInstrument.paymentTransaction.setAmount(orderTotal);
+                // if ( autoCaptureEnabled) {
+                //     paymentInstrument.paymentTransaction.type = dw.order.PaymentTransaction.TYPE_CAPTURE;
+                // } else {
+                paymentInstrument.paymentTransaction.type = dw.order.PaymentTransaction.TYPE_AUTH;
+                // }
                 order.addNote('Order placed by updateTransactionStatuses job', 'transaction status: success');
             });
             return;
