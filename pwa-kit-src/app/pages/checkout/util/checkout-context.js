@@ -94,7 +94,7 @@ export const CheckoutProvider = ({children}) => {
                 return
             }
 
-            mergeState({step: CheckoutSteps.Payment})
+            mergeState({step: CheckoutSteps.Review_Order})
         }
     }, [customer, basket])
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 import {Box, Button, Checkbox, Container, Heading, Stack, Text, Divider} from '@chakra-ui/react'
 import {useCheckout} from '../util/checkout-context'
@@ -40,9 +40,16 @@ const Payment = () => {
 
     const {removePromoCode, ...promoCodeProps} = usePromoCode()
 
-    function removePaymentAndResetForm() {
-        removePayment()
-        paymentMethodForm.reset({paymentInstrumentId: ''})
+    const [isRemovingPayment, setIsRemovingPayment] = useState(false)
+    async function removePaymentAndResetForm() {
+        setIsRemovingPayment(true)
+        try {
+            await removePayment()
+            paymentMethodForm.reset({paymentInstrumentId: ''})
+        } catch (error) {
+            console.log(error)
+        }
+        setIsRemovingPayment(false)
     }
 
     useEffect(() => {
@@ -56,7 +63,8 @@ const Payment = () => {
             editing={step === checkoutSteps.Payment}
             isLoading={
                 paymentMethodForm.formState.isSubmitting ||
-                billingAddressForm.formState.isSubmitting
+                billingAddressForm.formState.isSubmitting ||
+                isRemovingPayment
             }
             disabled={selectedPayment == null}
             onEdit={() => setCheckoutStep(checkoutSteps.Payment)}
