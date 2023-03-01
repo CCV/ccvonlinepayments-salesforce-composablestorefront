@@ -1,9 +1,11 @@
 'use strict';
 
 var LocalServiceRegistry = require('dw/svc/LocalServiceRegistry');
+var StringUtils = require('dw/util/StringUtils');
 
 var CCV_CONSTANTS = {
     PATH: {
+        METHODS: '/method',
         CREATE_PAYMENT: '/payment',
         CHECK_TRANSACTION_STATUS: '/transaction'
     },
@@ -28,11 +30,13 @@ function callCCVService(svcParams) {
             svc.setRequestMethod(params.requestMethod || 'POST');
 
             var url = svc.configuration.credential.URL + (params.path || '');
+            var apiKey = svc.configuration.credential.password;
+            var authHeader = 'Basic ' + StringUtils.encodeBase64(apiKey + ':');
+
+            svc.addHeader('Authorization', authHeader);
             svc.setURL(url);
 
-            // TODO: auth header?
-
-            return params.requestBody || null;
+            return params.requestBody ? JSON.stringify(params.requestBody) : '';
         },
         parseResponse(svc, response) { // eslint-disable-line no-unused-vars
             if (response && response.text) {
@@ -41,21 +45,7 @@ function callCCVService(svcParams) {
             return null; // ?
         },
         mockCall() {
-            var mockResponseObj = svcParams.mockResponse || {
-                merchantOrderReference: '123456',
-                amount: svcParams.requestBody.amount,
-                returnUrl: svcParams.requestBody.returnUrl,
-                language: 'eng',
-                lastUpdate: 1450871254946,
-                payUrl: 'https://redirect.jforce.be/card/payment.html?reference=C151223124734945CB87E191.0',
-                reference: 'C151223124734945CB87E191.0',
-                created: 1450871254946,
-                currency: 'eur',
-                method: 'card',
-                type: 'sale',
-                description: 'Order 123456',
-                status: 'pending'
-            };
+            var mockResponseObj = svcParams.mockResponse;
             return {
                 statusCode: 200,
                 statusMessage: 'Success',
@@ -65,7 +55,7 @@ function callCCVService(svcParams) {
         filterLogMessage: (message) => (message)
     });
 
-    var result = service.setMock().call(svcParams);
+    var result = service.call(svcParams);
 
     if (result.isOk()) {
         return result.object;
@@ -81,17 +71,6 @@ function callCCVService(svcParams) {
  * @returns {Object} service call response
  */
 function createCCVPayment(params) {
-    // var body = {
-    //     "amount": 9.99,
-    //     "currency": "eur",
-    //     "method": "card",
-    //     "brand": "visa",
-    //     "returnUrl": "http://shop/return?order=123456",
-    //     "merchantOrderReference": "123456",
-    //     "description": "Order 123456",
-    //     "language": "eng"
-    // }
-
     return callCCVService({
         path: CCV_CONSTANTS.PATH.CREATE_PAYMENT,
         requestMethod: 'POST',
@@ -125,10 +104,10 @@ function createCCVPayment(params) {
 function checkCCVTransaction(reference) {
     return callCCVService({
         requestMethod: 'GET',
-        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}/?reference=${reference}`,
+        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?reference=${reference}`,
         mockResponse: {
             merchantOrderReference: '123456',
-            amount: 9.99,
+            amount: 33.17,
             brand: 'visa',
             returnUrl: 'http://shop/return?order=123456',
             language: 'eng',
@@ -140,7 +119,7 @@ function checkCCVTransaction(reference) {
             method: 'card',
             type: 'sale',
             description: 'Order 123456',
-            status: 'failed'
+            status: 'success'
         }
     });
 

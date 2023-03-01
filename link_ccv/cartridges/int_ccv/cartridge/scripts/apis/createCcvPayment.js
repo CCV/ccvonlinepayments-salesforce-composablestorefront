@@ -17,7 +17,7 @@ exports.get = function (httpParams) {
     var basketId = currentBasket.UUID;
 
     var selectedPaymentMethod = httpParams.c_type && httpParams.c_type.pop();
-    // var selectedOption = httpParams.c_option && httpParams.c_option.pop();
+    var selectedOption = httpParams.c_ccv_option && httpParams.c_ccv_option.pop();
     var returnUrl = httpParams.c_returnUrl && httpParams.c_returnUrl.pop();
     var requestLanguage = request.locale.split('_')[0];
 
@@ -31,6 +31,10 @@ exports.get = function (httpParams) {
         description: 'PWA Order',
         language: languageMap[requestLanguage]
     };
+
+    if ((selectedPaymentMethod === 'ideal' || selectedPaymentMethod === 'giropay') && selectedOption && selectedOption !== 'undefined') {
+        requestBody.issuer = selectedOption;
+    }
 
     var {
         createCCVPayment
