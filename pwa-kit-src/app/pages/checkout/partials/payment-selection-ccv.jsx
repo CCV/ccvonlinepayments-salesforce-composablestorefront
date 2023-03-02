@@ -19,7 +19,7 @@ import {
 } from '@chakra-ui/react'
 import {useForm, Controller} from 'react-hook-form'
 import {useCheckout} from '../util/checkout-context'
-import {useCCVPaymentMethodsMap} from '../../../utils/ccv-utils'
+import {useCCVPaymentMethodsMap, PaymentMethodIcons} from '../../../utils/ccv-utils'
 
 const CCVPaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
@@ -76,15 +76,26 @@ const CCVPaymentSelection = ({form}) => {
                         >
                             <Stack direction="column">
                                 {paymentMethods &&
-                                    paymentMethods.applicablePaymentMethods.map((paymentMethod) => {
-                                        return (
-                                            <Box key={paymentMethod.id}>
-                                                <Radio value={paymentMethod.id}>
-                                                    {paymentMethod.name}
-                                                </Radio>
-                                            </Box>
-                                        )
-                                    })}
+                                    paymentMethods.applicablePaymentMethods.map((paymentMethod) => (
+                                        <Box key={paymentMethod.id}>
+                                            <Radio value={paymentMethod.id} marginY="10px">
+                                                <Stack direction="row" spacing={1}>
+                                                    <Box>{paymentMethod.name}</Box>
+                                                    <PaymentMethodIcons
+                                                        ccvMethodId={paymentMethod.c_ccvMethodId}
+                                                        iconHeight="30px"
+                                                    />
+                                                </Stack>
+                                            </Radio>
+                                            {currentSelectedMethodId === paymentMethod.id && (
+                                                <CCVMethodOptions
+                                                    paymentMethodId={currentSelectedMethodId}
+                                                    form={form}
+                                                    paymentMethodsMap={paymentMethodsMap}
+                                                />
+                                            )}
+                                        </Box>
+                                    ))}
                             </Stack>
                         </RadioGroup>
                     )}
@@ -96,12 +107,6 @@ const CCVPaymentSelection = ({form}) => {
                     }}
                 />
             </FormControl>
-
-            <CCVMethodOptions
-                paymentMethodId={currentSelectedMethodId}
-                form={form}
-                paymentMethodsMap={paymentMethodsMap}
-            />
             <button onClick={test}>test</button>
         </form>
     )

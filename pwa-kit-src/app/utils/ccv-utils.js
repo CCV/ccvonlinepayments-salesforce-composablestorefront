@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react'
 import PropTypes from 'prop-types'
 import {useCheckout} from '../pages/checkout/util/checkout-context'
-import {AmexIcon, DiscoverIcon, MastercardIcon, VisaIcon, PaypalIcon} from '../components/icons'
+import {AmexIcon, MastercardIcon, VisaIcon, PaypalIcon, IdealIcon} from '../components/icons'
 import {Box, Stack} from '@chakra-ui/react'
 
 /**
@@ -39,7 +39,12 @@ export const PaymentSummaryCCV = ({selectedPayment}) => {
         <Stack>
             {selectedMethodName && <Box>{selectedMethodName}</Box>}
             {optionDescription && <Box>{optionDescription}</Box>}
-            <PaymentMethodIcons ccvMethodId={selectedPaymentData.c_ccvMethodId} />
+            <Stack direction="row" spacing={1}>
+                <PaymentMethodIcons
+                    ccvMethodId={selectedPaymentData.c_ccvMethodId}
+                    iconHeight="30px"
+                />
+            </Stack>
         </Stack>
     )
 }
@@ -47,25 +52,25 @@ PaymentSummaryCCV.propTypes = {
     selectedPayment: PropTypes.object
 }
 
-export const CreditCardIcons = () => {
-    return (
-        <Stack direction="row" spacing={1}>
-            <VisaIcon layerStyle="ccIcon" />
-            <MastercardIcon layerStyle="ccIcon" />
-            <AmexIcon layerStyle="ccIcon" />
-            <DiscoverIcon layerStyle="ccIcon" />
-        </Stack>
-    )
-}
 /**
  * Icons to be displayed for each payment method
  */
-const paymentIconsMap = {
-    paypal: <PaypalIcon width="auto" height="20px" />,
-    card: <CreditCardIcons />
+function getPaymentIcons(ccvMethodId, iconHeight = '25px') {
+    const iconMap = {
+        paypal: <PaypalIcon width="auto" height={iconHeight} />,
+        card: (
+            <>
+                <VisaIcon width="auto" height={iconHeight} />
+                <MastercardIcon width="auto" height={iconHeight} />
+                <AmexIcon width="auto" height={iconHeight} />
+            </>
+        ),
+        ideal: <IdealIcon width="auto" height={iconHeight} />
+    }
+    return iconMap[ccvMethodId] || null
 }
 
-export const PaymentMethodIcons = ({ccvMethodId}) => {
-    if (!ccvMethodId || !paymentIconsMap[ccvMethodId]) return null
-    return paymentIconsMap[ccvMethodId]
+export const PaymentMethodIcons = ({ccvMethodId, iconHeight}) => {
+    if (!ccvMethodId) return null
+    return getPaymentIcons(ccvMethodId, iconHeight)
 }
