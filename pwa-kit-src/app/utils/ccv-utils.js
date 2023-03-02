@@ -34,17 +34,16 @@ export const PaymentSummaryCCV = ({selectedPayment}) => {
             options && options.find((option) => option.issuerid === selectedPayment.c_ccv_option)
         optionDescription = (option && option.issuerdescription) || selectedPayment.c_ccv_option
     }
-    // const selectedMethodOptionDescription = selectedPaymentData?.
     return (
         <Stack>
-            {selectedMethodName && <Box>{selectedMethodName}</Box>}
-            {optionDescription && <Box>{optionDescription}</Box>}
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} align="center">
+                {selectedMethodName && <Box>{selectedMethodName}</Box>}
                 <PaymentMethodIcons
                     ccvMethodId={selectedPaymentData.c_ccvMethodId}
                     iconHeight="30px"
                 />
             </Stack>
+            {optionDescription && <Box>{optionDescription}</Box>}
         </Stack>
     )
 }

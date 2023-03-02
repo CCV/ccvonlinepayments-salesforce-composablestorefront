@@ -74,27 +74,36 @@ const CCVPaymentSelection = ({form}) => {
                                 onPaymentIdChange()
                             }}
                         >
-                            <Stack direction="column">
+                            <Stack>
                                 {paymentMethods &&
                                     paymentMethods.applicablePaymentMethods.map((paymentMethod) => (
-                                        <Box key={paymentMethod.id}>
-                                            <Radio value={paymentMethod.id} marginY="10px">
-                                                <Stack direction="row" spacing={1}>
-                                                    <Box>{paymentMethod.name}</Box>
-                                                    <PaymentMethodIcons
-                                                        ccvMethodId={paymentMethod.c_ccvMethodId}
-                                                        iconHeight="30px"
-                                                    />
-                                                </Stack>
-                                            </Radio>
+                                        <>
+                                            <Stack
+                                                key={paymentMethod.id}
+                                                direction="row"
+                                                align="center"
+                                            >
+                                                <Radio value={paymentMethod.id} marginTop="30px">
+                                                    <Stack direction="row">
+                                                        <Box>{paymentMethod.name}</Box>
+                                                        <PaymentMethodIcons
+                                                            ccvMethodId={
+                                                                paymentMethod.c_ccvMethodId
+                                                            }
+                                                            iconHeight="30px"
+                                                        />
+                                                    </Stack>
+                                                </Radio>
+                                            </Stack>
                                             {currentSelectedMethodId === paymentMethod.id && (
                                                 <CCVMethodOptions
+                                                    marginTop="-10px"
                                                     paymentMethodId={currentSelectedMethodId}
                                                     form={form}
                                                     paymentMethodsMap={paymentMethodsMap}
                                                 />
                                             )}
-                                        </Box>
+                                        </>
                                     ))}
                             </Stack>
                         </RadioGroup>
