@@ -319,7 +319,8 @@ export const CheckoutProvider = ({children}) => {
             async setPaymentCCV(payment) {
                 const paymentInstrument = {
                     paymentMethodId: payment.paymentInstrumentId,
-                    c_ccv_option: payment.ccvOption
+                    c_ccv_option: payment.ccvOption,
+                    c_ccv_save_for_later: payment.saveForLater
                 }
                 await basket.setPaymentInstrument(paymentInstrument)
             },

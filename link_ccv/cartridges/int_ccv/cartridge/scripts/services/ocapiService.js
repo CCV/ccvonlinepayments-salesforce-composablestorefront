@@ -22,7 +22,8 @@ function createOcapiService() {
             }
 
             return response;
-        }
+        },
+        filterLogMsg: (msg) => msg
     });
 }
 /**

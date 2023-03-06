@@ -20,10 +20,12 @@ import {
 import {useForm, Controller} from 'react-hook-form'
 import {useCheckout} from '../util/checkout-context'
 import {useCCVPaymentMethodsMap, PaymentMethodIcons} from '../../../utils/ccv-utils'
+import Field from '../../../components/field'
+import CCRadioGroup from './cc-radio-group'
 
 const CCVPaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
-    const {paymentMethods} = useCheckout()
+    const {basket, customer, paymentMethods} = useCheckout()
     const paymentFormRef = useRef()
     const paymentMethodsMap = useCCVPaymentMethodsMap()
 
@@ -124,6 +126,10 @@ const CCVPaymentSelection = ({form}) => {
 const CCVMethodOptions = function ({paymentMethodId, form, paymentMethodsMap}) {
     const {formatMessage} = useIntl()
     const selectedMethodData = paymentMethodsMap[paymentMethodId]
+    const {customer} = useCheckout()
+    const hasSavedCards = customer?.paymentInstruments?.length > 0
+
+    const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
 
     switch (paymentMethodId) {
         case 'CCV_IDEAL': {
@@ -171,6 +177,23 @@ const CCVMethodOptions = function ({paymentMethodId, form, paymentMethodsMap}) {
                 </FormControl>
             )
         }
+
+        case 'CCV_CREDIT_CARD': {
+            const fields = {
+                saveForLater: {
+                    name: `saveForLater`,
+                    label: formatMessage({
+                        defaultMessage: 'Save card for later use',
+                        id: 'payment_selection.message.save_card_for_later'
+                    }),
+                    type: 'checkbox',
+                    defaultValue: false,
+                    control: form.control
+                }
+            }
+            return <Field {...fields.saveForLater} />
+        }
+
         default:
             return <input type="hidden" {...form.register('ccvOption')} defaultValue="" />
     }

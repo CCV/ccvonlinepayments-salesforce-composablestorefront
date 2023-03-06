@@ -18,7 +18,6 @@ const useCCV = () => {
             const paymentSession = await api.ccvPayment.createRedirectSession({
                 parameters: {
                     paymentType: ccvId,
-                    ccv_option: selectedPayment.c_ccv_option,
                     returnUrl: `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
                 }
             })
@@ -33,11 +32,11 @@ const useCCV = () => {
                 // eslint-disable-next-line prettier/prettier
                 parameters: {}
             })
-            if (!paymentTransaction?.transactionStatus) {
-                throw new Error('Error creating payment redirect.')
+            if (!paymentTransaction?.status) {
+                throw new Error('Error checking transaction status.')
             }
 
-            return paymentTransaction.transactionStatus
+            return paymentTransaction
         },
         async submitOrder(setIsLoading) {
             try {

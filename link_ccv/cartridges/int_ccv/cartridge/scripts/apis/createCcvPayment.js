@@ -1,5 +1,5 @@
 'use strict';
-
+/* eslint-disable camelcase */ // custom properties can't be camelcase due to PWA implementation of ocapi calls
 var BasketMgr = require('dw/order/BasketMgr');
 
 var languageMap = {
@@ -17,9 +17,12 @@ exports.get = function (httpParams) {
     var basketId = currentBasket.UUID;
 
     var selectedPaymentMethod = httpParams.c_type && httpParams.c_type.pop();
-    var selectedOption = httpParams.c_ccv_option && httpParams.c_ccv_option.pop();
     var returnUrl = httpParams.c_returnUrl && httpParams.c_returnUrl.pop();
     var requestLanguage = request.locale.split('_')[0];
+    var orderDescription = currentBasket.allProductLineItems.toArray().map(pli => pli.quantity + ' ' + pli.productName).join(', ');
+
+    var { ccv_option, ccv_save_for_later } = currentBasket.paymentInstruments[0].custom;
+    // for vault: enabled allow storing in vault - otherwise we get a config error
 
     var requestBody = {
         amount: currentBasket.totalGrossPrice.value,
@@ -28,12 +31,13 @@ exports.get = function (httpParams) {
         // "brand": "visa",
         returnUrl: returnUrl,
         merchantOrderReference: basketId, // we use basket id as reference since order is not placed yet
-        description: 'PWA Order',
+        description: orderDescription,
+        storeInVault: ccv_save_for_later ? 'yes' : 'no',
         language: languageMap[requestLanguage]
     };
 
-    if ((selectedPaymentMethod === 'ideal' || selectedPaymentMethod === 'giropay') && selectedOption && selectedOption !== 'undefined') {
-        requestBody.issuer = selectedOption;
+    if ((selectedPaymentMethod === 'ideal' || selectedPaymentMethod === 'giropay') && ccv_option) {
+        requestBody.issuer = ccv_option;
     }
 
     var {
