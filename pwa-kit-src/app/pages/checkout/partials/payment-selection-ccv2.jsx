@@ -292,7 +292,7 @@ const CCVMethodOptions = function ({
                                 />
                             )}
 
-                            {isEditingPayment && (
+                            {(isEditingPayment || !hasSavedCards) && (
                                 <Box
                                     {...(hasSavedCards && {
                                         px: [4, 4, 6],
