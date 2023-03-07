@@ -10,7 +10,7 @@ import {Box, Button, Checkbox, Container, Heading, Stack, Text, Divider} from '@
 import {useCheckout} from '../util/checkout-context'
 import usePaymentForms from '../util/usePaymentForms'
 import {ToggleCard, ToggleCardEdit, ToggleCardSummary} from '../../../components/toggle-card'
-import CCVPaymentSelection from './payment-selection-ccv'
+import CCVPaymentSelection from './payment-selection-ccv2'
 import ShippingAddressSelection from './shipping-address-selection'
 import AddressDisplay from '../../../components/address-display'
 import {PromoCode, usePromoCode} from '../../../components/promo-code'
@@ -76,7 +76,7 @@ const Payment = () => {
 
                 <Stack spacing={6}>
                     {!selectedPayment ? (
-                        <CCVPaymentSelection form={paymentMethodForm} />
+                        <CCVPaymentSelection form={paymentMethodForm} hideSubmitButton />
                     ) : (
                         <Stack spacing={3}>
                             <Heading as="h3" fontSize="md">

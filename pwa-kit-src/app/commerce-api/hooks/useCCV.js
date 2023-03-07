@@ -41,6 +41,7 @@ const useCCV = () => {
         async submitOrder(setIsLoading) {
             try {
                 setIsLoading(true)
+                setGlobalError(undefined)
                 // create redirect session via ccv api
                 const createRedirectSessionResponse = await this.createRedirectSession()
                 // redirect to hosted payment page

@@ -13,6 +13,7 @@ var languageMap = {
 
 
 exports.get = function (httpParams) {
+    var { createCCVPayment } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
     var currentBasket = BasketMgr.getCurrentBasket();
     var basketId = currentBasket.UUID;
 
@@ -20,15 +21,15 @@ exports.get = function (httpParams) {
     var returnUrl = httpParams.c_returnUrl && httpParams.c_returnUrl.pop();
     var requestLanguage = request.locale.split('_')[0];
     var orderDescription = currentBasket.allProductLineItems.toArray().map(pli => pli.quantity + ' ' + pli.productName).join(', ');
-
-    var { ccv_option, ccv_save_for_later } = currentBasket.paymentInstruments[0].custom;
     // for vault: enabled allow storing in vault - otherwise we get a config error
+    var { ccv_option, ccv_save_for_later } = currentBasket.paymentInstruments[0].custom;
+
+    var paymentInstrument = currentBasket.paymentInstruments[0];
 
     var requestBody = {
         amount: currentBasket.totalGrossPrice.value,
         currency: currentBasket.currencyCode.toLowerCase(),
         method: selectedPaymentMethod,
-        // "brand": "visa",
         returnUrl: returnUrl,
         merchantOrderReference: basketId, // we use basket id as reference since order is not placed yet
         description: orderDescription,
@@ -40,9 +41,21 @@ exports.get = function (httpParams) {
         requestBody.issuer = ccv_option;
     }
 
-    var {
-        createCCVPayment
-    } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
+
+    if (selectedPaymentMethod === 'card' && paymentInstrument.creditCardNumber) {
+        var [firstName, lastName] = paymentInstrument.creditCardHolder.split(' ');
+        requestBody.details = {
+            pan: paymentInstrument.creditCardNumber,
+            expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`,
+            cardholderFirstName: firstName,
+            cardholderLastName: lastName || firstName
+            // cvc: "123"
+        };
+
+        if (paymentInstrument.creditCardType) {
+            requestBody.brand = paymentInstrument.creditCardType;
+        }
+    }
 
     var paymentResponse = createCCVPayment({
         requestBody: requestBody

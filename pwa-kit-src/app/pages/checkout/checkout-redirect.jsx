@@ -9,15 +9,13 @@ import useCCV from '../../commerce-api/hooks/useCCV'
 const Checkout = () => {
     const ccv = useCCV()
     const navigate = useNavigation()
-    const {placeOrder, setGlobalError} = useCheckout()
+    const {placeOrder} = useCheckout()
 
     useEffect(async () => {
         let transactionSatus = await ccv.checkTransactionStatus()
         console.log(transactionSatus)
 
         if (transactionSatus.status === 'failed') {
-            // // Handle errors
-            setGlobalError('There is an error processing your payment, please try again.')
             navigate('/checkout')
         } else {
             try {

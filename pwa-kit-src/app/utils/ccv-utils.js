@@ -2,7 +2,8 @@ import React, {useMemo} from 'react'
 import PropTypes from 'prop-types'
 import {useCheckout} from '../pages/checkout/util/checkout-context'
 import {AmexIcon, MastercardIcon, VisaIcon, PaypalIcon, IdealIcon} from '../components/icons'
-import {Box, Stack} from '@chakra-ui/react'
+import {Box, Stack, Text} from '@chakra-ui/react'
+import {getCreditCardIcon} from './cc-utils'
 
 /**
  * Returns a map of applicable payment methods keyed by payment method ID
@@ -22,30 +23,56 @@ export const useCCVPaymentMethodsMap = () => {
 }
 
 export const PaymentSummaryCCV = ({selectedPayment}) => {
-    const paymentMethodsMap = useCCVPaymentMethodsMap()
-    let optionDescription
-    const selectedPaymentData =
-        (selectedPayment && paymentMethodsMap[selectedPayment.paymentMethodId]) || {}
-    const selectedMethodName = selectedPaymentData.name
+    switch (selectedPayment.paymentMethodId) {
+        case 'CCV_CREDIT_CARD': {
+            const CardIcon = getCreditCardIcon(selectedPayment?.paymentCard?.cardType)
+            return (
+                <Box>
+                    {CardIcon && <CardIcon layerStyle="ccIcon" />}
 
-    if (selectedPaymentData && selectedPaymentData.c_ccvOptions) {
-        const options = JSON.parse(selectedPaymentData?.c_ccvOptions || null)
-        const option =
-            options && options.find((option) => option.issuerid === selectedPayment.c_ccv_option)
-        optionDescription = (option && option.issuerdescription) || selectedPayment.c_ccv_option
+                    <Stack direction="row">
+                        <Text>{selectedPayment.paymentCard.cardType}</Text>
+                        <Text>
+                            &bull;&bull;&bull;&bull; {selectedPayment.paymentCard.numberLastDigits}
+                        </Text>
+                        <Text>
+                            {selectedPayment.paymentCard.expirationMonth}/
+                            {selectedPayment.paymentCard.expirationYear}
+                        </Text>
+                    </Stack>
+                </Box>
+            )
+        }
+
+        default: {
+            const paymentMethodsMap = useCCVPaymentMethodsMap()
+            let optionDescription
+            const selectedPaymentData =
+                (selectedPayment && paymentMethodsMap[selectedPayment.paymentMethodId]) || {}
+            const selectedMethodName = selectedPaymentData.name
+
+            if (selectedPaymentData && selectedPaymentData.c_ccvOptions) {
+                const options = JSON.parse(selectedPaymentData?.c_ccvOptions || null)
+                const option =
+                    options &&
+                    options.find((option) => option.issuerid === selectedPayment.c_ccv_option)
+                optionDescription =
+                    (option && option.issuerdescription) || selectedPayment.c_ccv_option
+            }
+            return (
+                <Stack>
+                    <Stack direction="row" spacing={1} align="center">
+                        {selectedMethodName && <Text>{selectedMethodName}</Text>}
+                        <PaymentMethodIcons
+                            paymentMethodId={selectedPayment.paymentMethodId}
+                            iconHeight="30px"
+                        />
+                    </Stack>
+                    {optionDescription && <Box>{optionDescription}</Box>}
+                </Stack>
+            )
+        }
     }
-    return (
-        <Stack>
-            <Stack direction="row" spacing={1} align="center">
-                {selectedMethodName && <Box>{selectedMethodName}</Box>}
-                <PaymentMethodIcons
-                    ccvMethodId={selectedPaymentData.c_ccvMethodId}
-                    iconHeight="30px"
-                />
-            </Stack>
-            {optionDescription && <Box>{optionDescription}</Box>}
-        </Stack>
-    )
 }
 PaymentSummaryCCV.propTypes = {
     selectedPayment: PropTypes.object
@@ -54,22 +81,22 @@ PaymentSummaryCCV.propTypes = {
 /**
  * Icons to be displayed for each payment method
  */
-function getPaymentIcons(ccvMethodId, iconHeight = '25px') {
+function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
     const iconMap = {
-        paypal: <PaypalIcon width="auto" height={iconHeight} />,
-        card: (
+        CCV_PAYPAL: <PaypalIcon width="auto" height={iconHeight} />,
+        CCV_IDEAL: <IdealIcon width="auto" height={iconHeight} />,
+        CCV_CREDIT_CARD: (
             <>
                 <VisaIcon width="auto" height={iconHeight} />
                 <MastercardIcon width="auto" height={iconHeight} />
                 <AmexIcon width="auto" height={iconHeight} />
             </>
-        ),
-        ideal: <IdealIcon width="auto" height={iconHeight} />
+        )
     }
-    return iconMap[ccvMethodId] || null
+    return iconMap[paymentMethodId] || null
 }
 
-export const PaymentMethodIcons = ({ccvMethodId, iconHeight}) => {
-    if (!ccvMethodId) return null
-    return getPaymentIcons(ccvMethodId, iconHeight)
+export const PaymentMethodIcons = ({paymentMethodId, iconHeight}) => {
+    if (!paymentMethodId) return null
+    return getPaymentIcons(paymentMethodId, iconHeight)
 }

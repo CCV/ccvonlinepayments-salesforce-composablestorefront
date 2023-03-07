@@ -34,6 +34,8 @@ function callCCVService(svcParams) {
             var authHeader = 'Basic ' + StringUtils.encodeBase64(apiKey + ':');
 
             svc.addHeader('Authorization', authHeader);
+
+            // svc.addHeader('Idempotency-Reference', params.idempotencyReference);
             svc.setURL(url);
 
             return params.requestBody ? JSON.stringify(params.requestBody) : '';

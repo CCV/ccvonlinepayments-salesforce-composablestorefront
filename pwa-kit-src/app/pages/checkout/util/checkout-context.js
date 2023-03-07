@@ -177,6 +177,7 @@ export const CheckoutProvider = ({children}) => {
             },
 
             setCheckoutStep(step) {
+                mergeState({globalError: undefined})
                 mergeState({step})
             },
 
@@ -310,19 +311,81 @@ export const CheckoutProvider = ({children}) => {
                     customer.addSavedPaymentInstrument(paymentInstrument)
                 }
             },
-
             /**
-             * Applies the given CCV payment instrument to the basket.
+             * Applies the given payment instrument to the basket.
              * @see {@link https://salesforcecommercecloud.github.io/commerce-sdk-isomorphic/modules/shoppercustomers.html#orderpaymentinstrument}
              * @param {Object} payment
              */
             async setPaymentCCV(payment) {
-                const paymentInstrument = {
-                    paymentMethodId: payment.paymentInstrumentId,
-                    c_ccv_option: payment.ccvOption,
-                    c_ccv_save_for_later: payment.saveForLater
+                /**
+                 * ADD NEW CARD
+                 * {
+                    "paymentInstrumentId": "",
+                    "number": "4111 1111 1111 1111",
+                    "holder": "George Georgeson",
+                    "expiry": "12/25",
+                    "securityCode": "111",
+                    "cardType": "visa",
+                    "paymentMethodId": "CCV_CREDIT_CARD"
                 }
+
+                USE EXISTING CARD
+                {
+                    "paymentInstrumentId": "2a418714c94d942b7d27ec2294",
+                    "paymentMethodId": "CCV_CREDIT_CARD"
+                }
+
+                USE CCV METHOD
+                {
+                    "ccvOption": "INGBNL2A",
+                    "paymentMethodId": "CCV_IDEAL"
+                }
+
+                */
+                const {paymentInstrumentId, paymentMethodId, ccvOption} = payment
+
+                const paymentInstrument = {
+                    paymentMethodId
+                }
+
+                if (ccvOption) {
+                    paymentInstrument.c_ccv_option = ccvOption
+                }
+
+                if (paymentInstrumentId) {
+                    // Customer selected a saved card
+                    await basket.setPaymentInstrument({
+                        customerPaymentInstrumentId: paymentInstrumentId
+                    })
+                    return
+                }
+
+                // adding new credit card
+                if (payment.number) {
+                    const [expirationMonth, expirationYear] = payment.expiry.split('/')
+
+                    paymentInstrument.paymentCard = {
+                        holder: payment.holder,
+                        number: payment.number.replace(/ /g, ''),
+                        cardType: getPaymentInstrumentCardType(payment.cardType),
+                        expirationMonth: parseInt(expirationMonth),
+                        expirationYear: parseInt(expirationYear),
+
+                        // TODO: These fields are required for saving the card to the customer's
+                        // account. Im not sure what they are for or how to get them, so for now
+                        // we're just passing some values to make it work. Need to investigate.
+                        issueNumber: '',
+                        validFromMonth: 1,
+                        validFromYear: 2020
+                    }
+                }
+
                 await basket.setPaymentInstrument(paymentInstrument)
+
+                // Save the payment instrument to the customer's account if they are registered
+                if (!state.isGuestCheckout && !payment.id) {
+                    customer.addSavedPaymentInstrument(paymentInstrument)
+                }
             },
 
             /**
