@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import React, {useState} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 import PropTypes from 'prop-types'
 import {
@@ -24,7 +24,6 @@ import {useCheckout} from '../util/checkout-context'
 import CreditCardFields from '../../../components/forms/credit-card-fields'
 import CCRadioGroup from './cc-radio-group'
 import {useCCVPaymentMethodsMap, PaymentMethodIcons} from '../../../utils/ccv-utils'
-// import Field from '../../../components/field'
 
 const PaymentSelection = ({form, hideSubmitButton}) => {
     const {formatMessage} = useIntl()
@@ -32,6 +31,7 @@ const PaymentSelection = ({form, hideSubmitButton}) => {
 
     const hasSavedCards = customer?.paymentInstruments?.length > 0
     const paymentMethodsMap = useCCVPaymentMethodsMap()
+    const paymentFormRef = useRef()
 
     const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
 
@@ -65,6 +65,13 @@ const PaymentSelection = ({form, hideSubmitButton}) => {
         form.trigger()
     }
 
+    // focus form on error
+    useEffect(() => {
+        if (Object.keys(form.errors).length > 0) {
+            paymentFormRef.current.scrollIntoView({behavior: 'smooth', block: 'start'})
+        }
+    }, [form.errors])
+
     const test = (e) => {
         e.preventDefault()
         console.log(form.getValues())
@@ -74,7 +81,11 @@ const PaymentSelection = ({form, hideSubmitButton}) => {
 
     return (
         <form>
-            <FormControl id="paymentMethodId" isInvalid={form.errors.paymentMethodId}>
+            <FormControl
+                id="paymentMethodId"
+                isInvalid={form.errors.paymentMethodId}
+                ref={paymentFormRef}
+            >
                 <FormErrorMessage marginTop={0} marginBottom={4}>
                     {form.errors.paymentMethodId?.message}
                 </FormErrorMessage>
