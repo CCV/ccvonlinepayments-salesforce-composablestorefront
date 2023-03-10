@@ -62,13 +62,13 @@ function checkOrderStatus(order) {
 
             Transaction.wrap(() => {
                 OrderMgr.placeOrder(order);
+
                 var paymentInstrument = order.paymentInstruments[0];
                 var paymentProcessor = PaymentMgr.getPaymentMethod(paymentInstrument.getPaymentMethod()).getPaymentProcessor();
                 var orderTotal = order.totalGrossPrice;
 
                 paymentInstrument.paymentTransaction.transactionID = ccvTransactionReference;
                 paymentInstrument.paymentTransaction.paymentProcessor = paymentProcessor;
-                // var paymentInstrument = paymentInstruments[0];
                 paymentInstrument.paymentTransaction.setAmount(orderTotal);
 
                 // paymentInstrument.paymentTransaction.setAmount(orderTotal);
@@ -78,6 +78,23 @@ function checkOrderStatus(order) {
                 paymentInstrument.paymentTransaction.type = dw.order.PaymentTransaction.TYPE_AUTH;
                 // }
                 order.addNote('Order placed by updateTransactionStatuses job', 'transaction status: success');
+
+
+                if (transactionStatusResponse.details
+                    && transactionStatusResponse.details.vaultAccessToken) {
+                    var customerPaymentInstruments = order.customer.profile.wallet.paymentInstruments;
+
+                    for (var i = 0; i < customerPaymentInstruments.length; i++) {
+                        var customerPaymentInstrument = customerPaymentInstruments[i];
+                        if (!customerPaymentInstrument.creditCardToken
+                            && transactionStatusResponse.details.maskedPan.includes(customerPaymentInstrument.creditCardNumberLastDigits)) {
+                            Transaction.wrap(() => { // eslint-disable-line no-loop-func
+                                customerPaymentInstrument.setCreditCardToken(transactionStatusResponse.details.vaultAccessToken);
+                            });
+                            break;
+                        }
+                    }
+                }
             });
             return;
         }

@@ -22,10 +22,11 @@ exports.get = function (httpParams) {
     var requestLanguage = request.locale.split('_')[0];
     var orderDescription = currentBasket.allProductLineItems.toArray().map(pli => pli.quantity + ' ' + pli.productName).join(', ');
     // for vault: enabled allow storing in vault - otherwise we get a config error
-    var { ccv_option, ccv_save_for_later } = currentBasket.paymentInstruments[0].custom;
+    var { ccv_option } = currentBasket.paymentInstruments[0].custom;
 
     var paymentInstrument = currentBasket.paymentInstruments[0];
 
+    // DEFAULT
     var requestBody = {
         amount: currentBasket.totalGrossPrice.value,
         currency: currentBasket.currencyCode.toLowerCase(),
@@ -33,7 +34,6 @@ exports.get = function (httpParams) {
         returnUrl: returnUrl,
         merchantOrderReference: basketId, // we use basket id as reference since order is not placed yet
         description: orderDescription,
-        storeInVault: ccv_save_for_later ? 'yes' : 'no',
         language: languageMap[requestLanguage]
     };
 
@@ -41,20 +41,31 @@ exports.get = function (httpParams) {
         requestBody.issuer = ccv_option;
     }
 
-
+    // CREDIT CARD
     if (selectedPaymentMethod === 'card' && paymentInstrument.creditCardNumber) {
-        var [firstName, lastName] = paymentInstrument.creditCardHolder.split(' ');
-        requestBody.details = {
-            pan: paymentInstrument.creditCardNumber,
-            expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`,
-            cardholderFirstName: firstName,
-            cardholderLastName: lastName || firstName
-            // cvc: "123"
-        };
-
-        if (paymentInstrument.creditCardType) {
-            requestBody.brand = paymentInstrument.creditCardType;
+        if (paymentInstrument.creditCardToken) {
+            requestBody.details = {
+                vaultAccessToken: paymentInstrument.creditCardToken
+            };
+        } else {
+            var [firstName, lastName] = paymentInstrument.creditCardHolder.split(' ');
+            requestBody.details = {
+                pan: paymentInstrument.creditCardNumber,
+                expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`,
+                cardholderFirstName: firstName,
+                cardholderLastName: lastName || firstName
+                // cvc: "123"
+            };
+            // a vaultAccessToken will be returned in the checkTransactionInfo response
+            // we will add itto the customer's payment instrument in the UpdateStatuses job
+            // todo: feature switch?
+            requestBody.storeInVault = 'yes';
         }
+    }
+
+    // BANCONTACT
+    if (paymentInstrument.paymentMethod === 'CCV_BANCONTACT') {
+        requestBody.brand = 'bcmc';
     }
 
     var paymentResponse = createCCVPayment({

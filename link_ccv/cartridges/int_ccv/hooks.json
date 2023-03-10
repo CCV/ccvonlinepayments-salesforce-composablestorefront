@@ -5,8 +5,8 @@
             "script": "./cartridge/scripts/hooks/customObjectsHooks.js"
         },
         {
-            "name": "dw.ocapi.shop.customer.payment_instrument.afterPOST",
-            "script": "./cartridge/scripts/hooks/customerPaymentInstrumentsHooks.js"
+            "name": "dw.ocapi.shop.order.beforePOST",
+            "script": "./cartridge/scripts/hooks/orderHooks.js"
         }
     ]
 }
