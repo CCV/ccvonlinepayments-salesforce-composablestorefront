@@ -24,6 +24,30 @@
                     }
                 ]
 			 }
+		  },
+		  {
+			 "@type-id":"custom.CCV.ProcessRefunds",
+			 "@supports-parallel-execution":"false",
+			 "@supports-site-context":"true",
+			 "@supports-organization-context":"false",
+			 "description":"Updates refund status on orders with pending refunds",
+			 "module":"int_ccv/cartridge/scripts/jobs/processRefunds.js",
+			 "function":"execute",
+			 "transactional":"true",
+			 "timeout-in-seconds":"900",
+			 "parameters":{},
+			 "status-codes":{
+                "status": [
+                    {
+                        "@code": "ERROR",
+                        "description": "Used when an error occurred."
+                    },
+                    {
+                        "@code": "OK",
+                        "description": "Used when execution was successful."
+                    }
+                ]
+			 }
 		  }
 	   ]
 	}

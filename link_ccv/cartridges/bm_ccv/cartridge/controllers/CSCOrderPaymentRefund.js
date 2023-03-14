@@ -2,6 +2,7 @@ var ISML = require('dw/template/ISML');
 var OrderMgr = require('dw/order/OrderMgr');
 var Order = require('dw/order/Order');
 var Logger = require('dw/system/Logger');
+var Transaction = require('dw/system/Transaction');
 
 var renderTemplate = function (templateName, viewParams) {
     try {
@@ -16,44 +17,75 @@ var isRefundAllowed = function (order) {
     if (!order) return false;
     var orderStatus = order.status.value;
 
-    // todo: check the payment type as well
+    if (!order.custom.ccvTransactionReference) return false;
+
     return orderStatus !== Order.ORDER_STATUS_CANCELLED &&
         orderStatus !== Order.ORDER_STATUS_FAILED &&
         orderStatus !== Order.ORDER_STATUS_CREATED;
 };
 
 exports.Start = function () {
+    var { getRefundAmountRemaining } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var orderNo = request.httpParameterMap.get('order_no').stringValue;
     var order = OrderMgr.getOrder(orderNo);
+    var refunds = JSON.parse(order.custom.ccvRefunds || '[]');
+
+    var refundAmountRemaining = getRefundAmountRemaining(order);
 
     if (!isRefundAllowed(order)) {
         renderTemplate('order/payment/refund/order_payment_refund_not_available.isml');
     } else {
         renderTemplate('order/payment/refund/order_payment_refund.isml', {
-            order: order
+            order,
+            refunds,
+            refundAmountRemaining
         });
     }
 };
 
 exports.Refund = function () {
-    var orderNo = request.httpParameterMap.get('orderId').stringValue;
+    var { getRefundAmountRemaining, refundCCVPayment } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+    var orderNo = request.httpParameterMap.get('orderNo').stringValue;
     var refundAmount = request.httpParameterMap.get('refundAmount').stringValue;
-    var currencyCode = request.httpParameterMap.get('currencyCode').stringValue;
-    var paymentMethodID = request.httpParameterMap.get('paymentMethodID').stringValue;
     var order = OrderMgr.getOrder(orderNo);
 
     var viewParams = {
         success: true,
-        orderId: orderNo,
-        refundAmount: refundAmount,
-        currencyCode: currencyCode
+        orderId: orderNo
     };
 
     try {
-        var paymentInstrument = order.getPaymentInstruments(paymentMethodID).toArray()[0];
-        // paymentService.refundPayment(order, paymentInstrument, Number(refundAmount));
+        var refundAmountRemaining = getRefundAmountRemaining(order);
+
+        if (refundAmountRemaining - refundAmount < 0) {
+            throw new Error('Refund amount exceeds order total amount!');
+        }
+        var ccvRefunds = JSON.parse(order.custom.ccvRefunds || '[]');
+
+        var refundResponse = refundCCVPayment({
+            reference: order.custom.ccvTransactionReference,
+            orderNo: orderNo,
+            amount: refundAmount,
+            description: 'CSC refund'
+        });
+
+        ccvRefunds.push({
+            reference: refundResponse.reference,
+            amount: refundResponse.amount,
+            status: refundResponse.status,
+            currency: refundResponse.currency,
+            failureCode: refundResponse.failureCode,
+            date: refundResponse.created
+        });
+        Transaction.wrap(()=> {
+            order.custom.ccvRefunds = JSON.stringify(ccvRefunds);
+            order.custom.ccvHasPendingRefunds = true;
+        });
+        viewParams.order = order;
+        viewParams.refunds = ccvRefunds;
+        viewParams.refundAmountRemaining = getRefundAmountRemaining(order);
     } catch (e) {
-        Logger.error('PAYMENT :: ERROR :: Error while refunding payment for order ' + orderNo + '. ' + e.message);
+        Logger.error('CSC: Error while refunding payment for order ' + orderNo + '. ' + e.message);
         viewParams.success = false;
         viewParams.errorMessage = e.message;
     }

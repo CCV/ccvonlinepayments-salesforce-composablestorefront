@@ -125,82 +125,65 @@ function checkCCVTransaction(reference) {
             status: 'success'
         }
     });
+}
 
-    /**
- *     var exampleResponse = {
-        "merchantOrderReference" : "123456",
-        "amount" : 9.99,
-        "brand" : "visa",
-        "returnUrl" : "http://shop/return?order=123456",
-        "language" : "eng",
-        "lastUpdate" : 1450871414476,
-        "payUrl" : "https://redirect.jforce.be/card/payment.html?reference=C151223124734945CB87E191.0",
-        "reference" : "C151223124734945CB87E191.0",
-        "created" : 1450871254959,
-        "currency" : "eur",
-        "method" : "card",
-        "type" : "sale",
-        "description" : "Order 123456",
-        "status" : "success"
-      }
+/**
+ * Checks the status of multiple CCV transactions
+ * @param {string} references CCV transaction reference
+ * @returns {Object} response from service call
  */
+function checkCCVTransactions(references) {
+    return callCCVService({
+        requestMethod: 'GET',
+        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?references=${references}`
+    });
 }
 
 /**
  * Refunds an existing payment
  * Refunds are allowed for all existing payment methods, except LandingPage, Terminal, Token and Vault.
  * @param {string} reference CCV transaction reference
+ * @param {string} orderNo refunded order number
  * @returns {Object} response from service call
  */
-function refundCCVPayment({ reference, description }) {
+function refundCCVPayment({ reference, amount, description }) {
+    // throw new Error(1234)
     return callCCVService({
         path: CCV_CONSTANTS.PATH.REFUND,
         requestBody: {
-            reference: reference,
-            description: description
-        },
-
-        mockResponse: {
-            type: 'refund',
-            amount: 9.99,
-            currency: 'eur',
-            paidout: 'no',
-            merchantOrderReference: '123456',
-            brand: 'visa',
-            language: 'eng',
-            lastUpdate: 1450871414476,
-            failureCode: '',
-            reference: 'C151223124734945CB87E191.0',
-            created: 1450871254959,
-            method: 'card',
-            description: 'Order 123456',
-            status: 'success'
+            reference,
+            amount,
+            description
         }
     });
-
-    /**
- *     var exampleResponse = {
-        "merchantOrderReference" : "123456",
-        "amount" : 9.99,
-        "brand" : "visa",
-        "returnUrl" : "http://shop/return?order=123456",
-        "language" : "eng",
-        "lastUpdate" : 1450871414476,
-        "payUrl" : "https://redirect.jforce.be/card/payment.html?reference=C151223124734945CB87E191.0",
-        "reference" : "C151223124734945CB87E191.0",
-        "created" : 1450871254959,
-        "currency" : "eur",
-        "method" : "card",
-        "type" : "sale",
-        "description" : "Order 123456",
-        "status" : "success"
-      }
- */
 }
+
+/**
+ * Returns amount eligible for refund for the given order
+ * @param {dw.order.Order} order SFCC order
+ * @returns {number} refundable amount
+ */
+function getRefundAmountRemaining(order) {
+    var refunds = JSON.parse(order.custom.ccvRefunds || '[]');
+
+    var refundedTotalAmount = refunds.reduce((sum, curr) => {
+        if (curr.status !== CCV_CONSTANTS.STATUS.FAILED) {
+            sum += curr.amount; // eslint-disable-line no-param-reassign
+        }
+        return sum;
+    }, 0);
+
+    var refundAmountRemaining = order.totalGrossPrice - refundedTotalAmount;
+    return refundAmountRemaining;
+}
+
 
 module.exports = {
     callCCVService,
     CCV_CONSTANTS,
     createCCVPayment,
-    checkCCVTransaction
+    checkCCVTransaction,
+    checkCCVTransactions,
+    refundCCVPayment,
+    getRefundAmountRemaining
 };

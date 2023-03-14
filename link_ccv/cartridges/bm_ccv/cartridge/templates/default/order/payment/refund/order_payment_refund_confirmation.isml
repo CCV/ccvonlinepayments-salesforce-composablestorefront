@@ -1,7 +1,7 @@
 <isdecorate template="pt_csc.isml">
     <isif condition="${pdict.success}">
         <div class="alert alert-success">
-            Successfully refunded <isprint value="${pdict.currencyCode}"> <isprint value="${pdict.refundAmount}">
+            Refund request submitted. <isprint value="${pdict.currencyCode}"> <isprint value="${pdict.refundAmount}">
         </div>
     <iselse>
         <div class="alert alert-danger">
