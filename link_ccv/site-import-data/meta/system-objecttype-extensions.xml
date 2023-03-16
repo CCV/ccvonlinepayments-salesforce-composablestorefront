@@ -62,18 +62,10 @@
 
     <type-extension type-id="OrderPaymentInstrument">
         <custom-attribute-definitions>
-            <attribute-definition attribute-id="ccv_option">
+            <attribute-definition attribute-id="ccv_issuer_id">
                 <display-name xml:lang="x-default">CCV option</display-name>
                 <description xml:lang="x-default">Selected option required for some CCV payment methods</description>
                 <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="ccv_save_for_later">
-                <display-name xml:lang="x-default">CCV option</display-name>
-                <description xml:lang="x-default">True if customer selected "save card for later" </description>
-                <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
@@ -82,8 +74,7 @@
         <group-definitions>
             <attribute-group group-id="ccv">
                 <display-name xml:lang="x-default">CCV payment processor</display-name>
-                <attribute attribute-id="ccv_option"/>
-                <attribute attribute-id="ccv_save_for_later"/>
+                <attribute attribute-id="ccv_issuer_id"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

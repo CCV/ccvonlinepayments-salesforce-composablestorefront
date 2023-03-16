@@ -21,8 +21,8 @@ exports.get = function (httpParams) {
     var returnUrl = httpParams.c_returnUrl && httpParams.c_returnUrl.pop();
     var requestLanguage = request.locale.split('_')[0];
     var orderDescription = currentBasket.allProductLineItems.toArray().map(pli => pli.quantity + ' ' + pli.productName).join(', ');
-    // for vault: enabled allow storing in vault - otherwise we get a config error
-    var { ccv_option } = currentBasket.paymentInstruments[0].custom;
+
+    var { ccv_issuer_id } = currentBasket.paymentInstruments[0].custom;
 
     var paymentInstrument = currentBasket.paymentInstruments[0];
 
@@ -37,8 +37,8 @@ exports.get = function (httpParams) {
         language: languageMap[requestLanguage]
     };
 
-    if ((selectedPaymentMethod === 'ideal' || selectedPaymentMethod === 'giropay') && ccv_option) {
-        requestBody.issuer = ccv_option;
+    if ((selectedPaymentMethod === 'ideal' || selectedPaymentMethod === 'giropay') && ccv_issuer_id) {
+        requestBody.issuer = ccv_issuer_id;
     }
 
     // CREDIT CARD
@@ -54,7 +54,6 @@ exports.get = function (httpParams) {
                 expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`,
                 cardholderFirstName: firstName,
                 cardholderLastName: lastName || firstName
-                // cvc: "123"
             };
             // a vaultAccessToken will be returned in the checkTransactionInfo response
             // we will add itto the customer's payment instrument in the UpdateStatuses job

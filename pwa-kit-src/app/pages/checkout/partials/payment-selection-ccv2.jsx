@@ -54,7 +54,6 @@ const PaymentSelection = ({form, hideSubmitButton}) => {
     const onPaymentMethodChange = (value) => {
         console.log('payment method change', value)
         setCurrentSelectedMethodId(value)
-        form.setValue('ccvOption', '')
     }
 
     // Opens/closes the 'add payment' form. Notice that when toggling either state,
@@ -223,10 +222,10 @@ const CCVMethodOptions = function ({
             })
 
             return (
-                <FormControl id="ccvOption" isInvalid={form.errors.ccvOption}>
+                <FormControl id="ccvIssuerID" isInvalid={form.errors.ccvIssuerID}>
                     <Controller
                         as={Select}
-                        name="ccvOption"
+                        name="ccvIssuerID"
                         defaultValue=""
                         control={form.control}
                         rules={{
@@ -251,28 +250,13 @@ const CCVMethodOptions = function ({
                             )
                         })}
                         <FormErrorMessage marginTop={0} marginBottom={4}>
-                            {form.errors.ccvOption?.message}
+                            {form.errors.ccvIssuerID?.message}
                         </FormErrorMessage>
                     </Controller>
                 </FormControl>
             )
         }
 
-        // case 'CCV_CREDIT_CARD': {
-        //     const fields = {
-        //         saveForLater: {
-        //             name: `saveForLater`,
-        //             label: formatMessage({
-        //                 defaultMessage: 'Save card for later use',
-        //                 id: 'payment_selection.message.save_card_for_later'
-        //             }),
-        //             type: 'checkbox',
-        //             defaultValue: false,
-        //             control: form.control
-        //         }
-        //     }
-        //     return <Field {...fields.saveForLater} />
-        // }
         case 'CCV_CREDIT_CARD': {
             return (
                 <>
@@ -351,7 +335,7 @@ const CCVMethodOptions = function ({
         }
 
         default:
-            return <input type="hidden" {...form.register('ccvOption')} defaultValue="" />
+            return <input type="hidden" {...form.register('ccvIssuerID')} defaultValue="" />
     }
 }
 
