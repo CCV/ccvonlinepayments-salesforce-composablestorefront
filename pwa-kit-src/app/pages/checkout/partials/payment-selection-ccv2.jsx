@@ -24,6 +24,7 @@ import {useCheckout} from '../util/checkout-context'
 import CreditCardFields from '../../../components/forms/credit-card-fields'
 import CCRadioGroup from './cc-radio-group'
 import {useCCVPaymentMethodsMap, PaymentMethodIcons} from '../../../utils/ccv-utils'
+import Field from '../../../components/field'
 
 const PaymentSelection = ({form, hideSubmitButton}) => {
     const {formatMessage} = useIntl()
@@ -254,6 +255,47 @@ const CCVMethodOptions = function ({
                         </FormErrorMessage>
                     </Controller>
                 </FormControl>
+            )
+        }
+
+        case 'CCV_GIROPAY': {
+            const options = JSON.parse(selectedMethodData.c_ccvOptions || '[]')
+            const selectOptions = options.map((option) => {
+                return {value: option.issuerid, label: option.issuerdescription}
+            })
+
+            const issuerField = {
+                name: `ccvIssuerID`,
+                defaultValue: '',
+                type: 'select',
+                label: formatMessage({
+                    defaultMessage: 'Select your bank.',
+                    id: 'payment_selection.message.select_bank'
+                }),
+                options: [
+                    {
+                        value: '',
+                        label: formatMessage({
+                            defaultMessage: 'Select your bank.',
+                            id: 'payment_selection.message.select_bank'
+                        })
+                    },
+                    ...selectOptions
+                ],
+                rules: {
+                    required: formatMessage({
+                        defaultMessage: 'Bank required.',
+                        id: 'payment_selection.message.select_bank'
+                    })
+                },
+                error: form.errors.ccvIssuerID,
+                control: form.control
+            }
+
+            return (
+                <Box marginBottom={4}>
+                    <Field {...issuerField} />
+                </Box>
             )
         }
 

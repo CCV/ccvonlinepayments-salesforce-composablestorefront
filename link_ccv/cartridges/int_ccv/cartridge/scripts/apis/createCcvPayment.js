@@ -34,11 +34,17 @@ exports.get = function (httpParams) {
         returnUrl: returnUrl,
         merchantOrderReference: basketId, // we use basket id as reference since order is not placed yet
         description: orderDescription,
-        language: languageMap[requestLanguage]
+        language: languageMap[requestLanguage],
+        details: {}
     };
 
-    if ((selectedPaymentMethod === 'ideal' || selectedPaymentMethod === 'giropay') && ccv_issuer_id) {
+
+    if ((selectedPaymentMethod === 'ideal') && ccv_issuer_id) {
         requestBody.issuer = ccv_issuer_id;
+    }
+
+    if (selectedPaymentMethod === 'giropay' && ccv_issuer_id) {
+        requestBody.details.bic = ccv_issuer_id;
     }
 
     // CREDIT CARD
