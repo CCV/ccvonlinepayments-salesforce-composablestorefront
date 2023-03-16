@@ -1,7 +1,15 @@
 import React, {useMemo} from 'react'
 import PropTypes from 'prop-types'
 import {useCheckout} from '../pages/checkout/util/checkout-context'
-import {AmexIcon, MastercardIcon, VisaIcon, PaypalIcon, IdealIcon} from '../components/icons'
+import {
+    AmexIcon,
+    MastercardIcon,
+    VisaIcon,
+    PaypalIcon,
+    IdealIcon,
+    BanContactIcon,
+    GiropayIcon
+} from '../components/icons'
 import {Box, Stack, Text} from '@chakra-ui/react'
 import {getCreditCardIcon} from './cc-utils'
 
@@ -85,11 +93,21 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
     const iconMap = {
         CCV_PAYPAL: <PaypalIcon width="auto" height={iconHeight} />,
         CCV_IDEAL: <IdealIcon width="auto" height={iconHeight} />,
+        CCV_BANCONTACT: <BanContactIcon width="auto" height={iconHeight} />,
+        CCV_GIROPAY: <GiropayIcon width="auto" height={iconHeight} />,
         CCV_CREDIT_CARD: (
             <>
                 <VisaIcon width="auto" height={iconHeight} />
                 <MastercardIcon width="auto" height={iconHeight} />
                 <AmexIcon width="auto" height={iconHeight} />
+            </>
+        ),
+        CCV_CREDIT_CARD_HPP: (
+            <>
+                <VisaIcon width="auto" height={iconHeight} />
+                <MastercardIcon width="auto" height={iconHeight} />
+                <AmexIcon width="auto" height={iconHeight} />
+                <BanContactIcon width="auto" height={iconHeight} />
             </>
         )
     }
