@@ -17,7 +17,8 @@ import {
     Select,
     Stack,
     FormErrorMessage,
-    FormControl
+    FormControl,
+    Spacer
 } from '@chakra-ui/react'
 import {useForm, Controller} from 'react-hook-form'
 import {useCheckout} from '../util/checkout-context'
@@ -89,97 +90,89 @@ const PaymentSelection = ({form, hideSubmitButton}) => {
                 <FormErrorMessage marginTop={0} marginBottom={4}>
                     {form.errors.paymentMethodId?.message}
                 </FormErrorMessage>
-                <Stack spacing={8}>
-                    <Stack spacing={5}>
-                        <Box
-                            border="1px solid"
-                            borderColor="gray.100"
-                            rounded="base"
-                            overflow="hidden"
-                        >
-                            {/* credit card radio */}
-                            <Controller
-                                name="paymentMethodId"
-                                defaultValue=""
-                                control={form.control}
-                                render={({onChange}) => (
-                                    <RadioGroup
-                                        onChange={(e) => {
-                                            console.log(e)
-                                            onChange(e)
-                                            onPaymentMethodChange(e)
-                                        }}
-                                    >
-                                        {/* dynamic payment methods */}
-                                        {paymentMethods &&
-                                            paymentMethods.applicablePaymentMethods.map(
-                                                (paymentMethod) => {
-                                                    return (
-                                                        <Box key={paymentMethod.id}>
-                                                            <Box
-                                                                py={3}
-                                                                px={[4, 4, 6]}
-                                                                bg="gray.50"
-                                                                borderColor="gray.100"
+                <Stack spacing={5}>
+                    <Box overflow="hidden">
+                        {/* credit card radio */}
+                        <Controller
+                            name="paymentMethodId"
+                            defaultValue=""
+                            control={form.control}
+                            render={({onChange}) => (
+                                <RadioGroup
+                                    onChange={(e) => {
+                                        console.log(e)
+                                        onChange(e)
+                                        onPaymentMethodChange(e)
+                                    }}
+                                >
+                                    {/* dynamic payment methods */}
+                                    {paymentMethods &&
+                                        paymentMethods.applicablePaymentMethods.map(
+                                            (paymentMethod) => {
+                                                return (
+                                                    <Box
+                                                        key={paymentMethod.id}
+                                                        border="1px solid"
+                                                        borderColor="gray.100"
+                                                        rounded="base"
+                                                        marginBottom="2"
+                                                    >
+                                                        {/* payment method heading row */}
+                                                        <Box bg="gray.50" py={3} px={[4, 4, 6]}>
+                                                            <Radio
+                                                                value={paymentMethod.id}
+                                                                alignItems="center"
                                                             >
-                                                                <Radio
-                                                                    value={paymentMethod.id}
-                                                                    marginTop="30px"
+                                                                <Stack
+                                                                    direction="row"
+                                                                    align="center"
                                                                 >
-                                                                    <Stack direction="row">
-                                                                        <Box>
-                                                                            {paymentMethod.name}
-                                                                        </Box>
-                                                                        <PaymentMethodIcons
-                                                                            paymentMethodId={
-                                                                                paymentMethod.id
-                                                                            }
-                                                                            iconHeight="30px"
-                                                                        />
-                                                                    </Stack>
-                                                                </Radio>
-                                                            </Box>
-                                                            {currentSelectedMethodId ===
-                                                                paymentMethod.id && (
-                                                                <CCVMethodOptions
-                                                                    marginBottom="10px"
-                                                                    paymentMethodId={
-                                                                        currentSelectedMethodId
-                                                                    }
-                                                                    onPaymentIdChange={
-                                                                        onPaymentIdChange
-                                                                    }
-                                                                    form={form}
-                                                                    hideSubmitButton={
-                                                                        hideSubmitButton
-                                                                    }
-                                                                    paymentMethodsMap={
-                                                                        paymentMethodsMap
-                                                                    }
-                                                                    togglePaymentEdit={
-                                                                        togglePaymentEdit
-                                                                    }
-                                                                    isEditingPayment={
-                                                                        isEditingPayment
-                                                                    }
-                                                                />
-                                                            )}
+                                                                    <Box>{paymentMethod.name}</Box>
+                                                                    <Spacer />
+                                                                    <PaymentMethodIcons
+                                                                        paymentMethodId={
+                                                                            paymentMethod.id
+                                                                        }
+                                                                        iconHeight="30px"
+                                                                    />
+                                                                </Stack>
+                                                            </Radio>
                                                         </Box>
-                                                    )
-                                                }
-                                            )}
-                                    </RadioGroup>
-                                )}
-                                rules={{
-                                    required: formatMessage({
-                                        defaultMessage: 'Please select a payment method.',
-                                        id: 'payment_selection.message.select_payment_method'
-                                    })
-                                }}
-                            />
-                            <button onClick={test}>test</button>
-                        </Box>
-                    </Stack>
+                                                        {currentSelectedMethodId ===
+                                                            paymentMethod.id && (
+                                                            <CCVMethodOptions
+                                                                paymentMethodId={
+                                                                    currentSelectedMethodId
+                                                                }
+                                                                onPaymentIdChange={
+                                                                    onPaymentIdChange
+                                                                }
+                                                                form={form}
+                                                                hideSubmitButton={hideSubmitButton}
+                                                                paymentMethodsMap={
+                                                                    paymentMethodsMap
+                                                                }
+                                                                togglePaymentEdit={
+                                                                    togglePaymentEdit
+                                                                }
+                                                                isEditingPayment={isEditingPayment}
+                                                            />
+                                                        )}
+                                                    </Box>
+                                                )
+                                            }
+                                        )}
+                                </RadioGroup>
+                            )}
+                            rules={{
+                                required: formatMessage({
+                                    defaultMessage: 'Please select a payment method.',
+                                    id: 'payment_selection.message.select_payment_method'
+                                })
+                            }}
+                        />
+                        <button onClick={test}>test</button>
+                    </Box>
                 </Stack>
             </FormControl>
         </form>
@@ -223,7 +216,7 @@ const CCVMethodOptions = function ({
             })
 
             return (
-                <FormControl id="ccvIssuerID" isInvalid={form.errors.ccvIssuerID}>
+                <FormControl id="ccvIssuerID" isInvalid={form.errors.ccvIssuerID} padding="20px">
                     <Controller
                         as={Select}
                         name="ccvIssuerID"
@@ -293,7 +286,7 @@ const CCVMethodOptions = function ({
             }
 
             return (
-                <Box marginBottom={4}>
+                <Box padding="20px">
                     <Field {...issuerField} />
                 </Box>
             )

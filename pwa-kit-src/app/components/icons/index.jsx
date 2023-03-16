@@ -84,7 +84,7 @@ SocialPinterestSymbol.viewBox = SocialPinterestSymbol.viewBox || '0 0 21 20'
 VisaSymbol.viewBox = VisaSymbol.viewBox || '0 0 38 22'
 IdealSymbol.viewBox = IdealSymbol.viewBox || '0 0 306.1 269.8'
 BancontactSymbol.viewBox = BancontactSymbol.viewBox || '0 0 326.1 230.5'
-GiropaySymbol.viewBox = GiropaySymbol.viewBox || '0 0 80 20'
+GiropaySymbol.viewBox = GiropaySymbol.viewBox || '0 0 38 22'
 
 /**
  * A helper for creating a Chakra-wrapped icon from our own SVG imports via sprite sheet.
