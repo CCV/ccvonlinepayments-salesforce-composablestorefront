@@ -342,14 +342,14 @@ export const CheckoutProvider = ({children}) => {
                 }
 
                 */
-                const {paymentInstrumentId, paymentMethodId, ccvOption} = payment
+                const {paymentInstrumentId, paymentMethodId, ccvIssuerID} = payment
 
                 const paymentInstrument = {
                     paymentMethodId
                 }
 
-                if (ccvOption) {
-                    paymentInstrument.c_ccv_option = ccvOption
+                if (ccvIssuerID) {
+                    paymentInstrument.c_ccv_issuer_id = ccvIssuerID
                 }
 
                 if (paymentInstrumentId) {
@@ -383,7 +383,7 @@ export const CheckoutProvider = ({children}) => {
                 await basket.setPaymentInstrument(paymentInstrument)
 
                 // Save the payment instrument to the customer's account if they are registered
-                if (!state.isGuestCheckout && !payment.id) {
+                if (!state.isGuestCheckout && !payment.id && payment.number) {
                     customer.addSavedPaymentInstrument(paymentInstrument)
                 }
             },
