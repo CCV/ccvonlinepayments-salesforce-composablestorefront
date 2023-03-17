@@ -57,7 +57,7 @@ exports.get = function (httpParams) {
             var [firstName, lastName] = paymentInstrument.creditCardHolder.split(' ');
             requestBody.details = {
                 pan: paymentInstrument.creditCardNumber,
-                expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`,
+                expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`.padStart(4, '0'),
                 cardholderFirstName: firstName,
                 cardholderLastName: lastName || firstName
             };
