@@ -4,132 +4,146 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import React, {useEffect, useRef, useState} from 'react'
-import {useIntl} from 'react-intl'
+import React, {useRef, useEffect} from 'react'
+import {FormattedMessage, useIntl} from 'react-intl'
 import PropTypes from 'prop-types'
 import {
-    FormLabel,
+    Box,
+    Button,
+    Container,
+    Heading,
     Radio,
     RadioGroup,
-    Stack,
     Select,
+    Stack,
     FormErrorMessage,
     FormControl,
-    Box
+    Spacer
 } from '@chakra-ui/react'
 import {useForm, Controller} from 'react-hook-form'
 import {useCheckout} from '../util/checkout-context'
-import {useCCVPaymentMethodsMap, PaymentMethodIcons} from '../../../utils/ccv-utils'
-import Field from '../../../components/field'
+import CreditCardFields from '../../../components/forms/credit-card-fields'
 import CCRadioGroup from './cc-radio-group'
+import {PaymentMethodIcons} from '../util/ccv-utils/ccv-utils'
+import Field from '../../../components/field'
+import {useCCVPaymentSelect} from '../util/ccv-utils/ccv-context'
 
-const CCVPaymentSelection = ({form}) => {
+const PaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
-    const {basket, customer, paymentMethods} = useCheckout()
-    const paymentFormRef = useRef()
-    const paymentMethodsMap = useCCVPaymentMethodsMap()
+    const {paymentMethods} = useCheckout()
 
+    const paymentFormRef = useRef()
     form = form || useForm()
-    const onPaymentIdChange = () => {
-        // form.clearErrors('paymentInstrumentId')
-        // form.setValue('paymentInstrumentId', value)
-        form.setValue('ccvOption', '')
-        setCurrentSelectedMethodId(form.getValues('paymentInstrumentId'))
-    }
-    const test = (e) => {
-        e.preventDefault()
-        console.log(form.getValues())
-        console.log(form)
-    }
-    console.log(form.getValues())
+
+    const {currentSelectedMethodId, setCurrentSelectedMethodId, onPaymentMethodChange} =
+        useCCVPaymentSelect(form)
+
     useEffect(() => {
-        form.reset({paymentInstrumentId: ''})
-        form.trigger()
+        // reset currentSelectedMethod on first load
+        setCurrentSelectedMethodId(null)
     }, [])
 
-    const [currentSelectedMethodId, setCurrentSelectedMethodId] = useState(
-        form.getValues('paymentInstrumentId')
-    )
-
+    // focus form on error
     useEffect(() => {
-        if (form.errors.paymentInstrumentId?.ref) {
+        if (Object.keys(form.errors).length > 0) {
             paymentFormRef.current.scrollIntoView({behavior: 'smooth', block: 'start'})
         }
     }, [form.errors])
 
+    const test = (e) => {
+        e.preventDefault()
+        console.log(form.getValues())
+        console.log(form)
+        console.log(currentSelectedMethodId)
+    }
+
     return (
-        <form id="payment-form" ref={paymentFormRef} style={{scrollMarginTop: '5rem'}}>
-            <FormControl id="paymentInstrumentId" isInvalid={form.errors.paymentInstrumentId}>
-                <FormLabel>Select a payment method</FormLabel>
+        <form>
+            <FormControl
+                id="paymentMethodId"
+                isInvalid={form.errors.paymentMethodId}
+                ref={paymentFormRef}
+            >
                 <FormErrorMessage marginTop={0} marginBottom={4}>
-                    {form.errors.paymentInstrumentId?.message}
+                    {form.errors.paymentMethodId?.message}
                 </FormErrorMessage>
-                <Controller
-                    name="paymentInstrumentId"
-                    defaultValue=""
-                    control={form.control}
-                    render={({onChange}) => (
-                        <RadioGroup
-                            onChange={(e) => {
-                                console.log(e)
-                                onChange(e)
-                                onPaymentIdChange()
+                <Stack spacing={5}>
+                    <Box overflow="hidden">
+                        <Controller
+                            name="paymentMethodId"
+                            defaultValue=""
+                            control={form.control}
+                            render={({onChange}) => (
+                                <RadioGroup
+                                    onChange={(e) => {
+                                        console.log(e)
+                                        onChange(e)
+                                        onPaymentMethodChange(e)
+                                    }}
+                                >
+                                    {/* dynamic payment methods */}
+                                    {paymentMethods &&
+                                        paymentMethods.applicablePaymentMethods.map(
+                                            (paymentMethod) => {
+                                                return (
+                                                    <CCVPaymentMethodRadio
+                                                        key={paymentMethod.id}
+                                                        paymentMethod={paymentMethod}
+                                                        currentSelectedMethodId={
+                                                            currentSelectedMethodId
+                                                        }
+                                                        form={form}
+                                                    />
+                                                )
+                                            }
+                                        )}
+                                </RadioGroup>
+                            )}
+                            rules={{
+                                required: formatMessage({
+                                    defaultMessage: 'Please select a payment method.',
+                                    id: 'payment_selection.message.select_payment_method'
+                                })
                             }}
-                        >
-                            <Stack>
-                                {paymentMethods &&
-                                    paymentMethods.applicablePaymentMethods.map((paymentMethod) => (
-                                        <>
-                                            <Stack
-                                                key={paymentMethod.id}
-                                                direction="row"
-                                                align="center"
-                                            >
-                                                <Radio value={paymentMethod.id} marginTop="30px">
-                                                    <Stack direction="row">
-                                                        <Box>{paymentMethod.name}</Box>
-                                                        <PaymentMethodIcons
-                                                            ccvMethodId={
-                                                                paymentMethod.c_ccvMethodId
-                                                            }
-                                                            iconHeight="30px"
-                                                        />
-                                                    </Stack>
-                                                </Radio>
-                                            </Stack>
-                                            {currentSelectedMethodId === paymentMethod.id && (
-                                                <CCVMethodOptions
-                                                    marginTop="-10px"
-                                                    paymentMethodId={currentSelectedMethodId}
-                                                    form={form}
-                                                    paymentMethodsMap={paymentMethodsMap}
-                                                />
-                                            )}
-                                        </>
-                                    ))}
-                            </Stack>
-                        </RadioGroup>
-                    )}
-                    rules={{
-                        required: formatMessage({
-                            defaultMessage: 'Please select a payment method.',
-                            id: 'payment_selection.message.select_payment_method'
-                        })
-                    }}
-                />
+                        />
+                        <button onClick={test}>test</button>
+                    </Box>
+                </Stack>
             </FormControl>
-            <button onClick={test}>test</button>
         </form>
     )
 }
 
-const CCVMethodOptions = function ({paymentMethodId, form, paymentMethodsMap}) {
-    const {formatMessage} = useIntl()
-    const selectedMethodData = paymentMethodsMap[paymentMethodId]
-    const {customer} = useCheckout()
-    const hasSavedCards = customer?.paymentInstruments?.length > 0
+PaymentSelection.propTypes = {
+    /** The form object returnd from `useForm` */
+    form: PropTypes.object
+}
 
-    const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
+const CCVPaymentMethodRadio = function ({paymentMethod, currentSelectedMethodId}) {
+    return (
+        <Box border="1px solid" borderColor="gray.100" rounded="base" marginBottom="2">
+            {/* payment method heading row */}
+            <Box bg="gray.50" py={3} px={[4, 4, 6]}>
+                <Radio value={paymentMethod.id} alignItems="center">
+                    <Stack direction="row" align="center">
+                        <Box>{paymentMethod.name}</Box>
+                        <Spacer />
+                        <PaymentMethodIcons paymentMethodId={paymentMethod.id} iconHeight="30px" />
+                    </Stack>
+                </Radio>
+            </Box>
+            {currentSelectedMethodId === paymentMethod.id && (
+                <CCVMethodOptions paymentMethodId={currentSelectedMethodId} />
+            )}
+        </Box>
+    )
+}
+
+const CCVMethodOptions = function ({paymentMethodId}) {
+    const {formatMessage} = useIntl()
+    const {form, paymentMethodsMap} = useCCVPaymentSelect()
+    const selectedMethodData = paymentMethodsMap[paymentMethodId]
+    const hideSubmitButton = true
 
     switch (paymentMethodId) {
         case 'CCV_IDEAL': {
@@ -143,13 +157,10 @@ const CCVMethodOptions = function ({paymentMethodId, form, paymentMethodsMap}) {
             })
 
             return (
-                <FormControl id="ccvOption" isInvalid={form.errors.ccvOption}>
-                    <FormErrorMessage marginTop={0} marginBottom={4}>
-                        {form.errors.ccvOption?.message}
-                    </FormErrorMessage>
+                <FormControl id="ccvIssuerID" isInvalid={form.errors.ccvIssuerID} padding="20px">
                     <Controller
                         as={Select}
-                        name="ccvOption"
+                        name="ccvIssuerID"
                         defaultValue=""
                         control={form.control}
                         rules={{
@@ -173,46 +184,148 @@ const CCVMethodOptions = function ({paymentMethodId, form, paymentMethodsMap}) {
                                 </optgroup>
                             )
                         })}
+                        <FormErrorMessage marginTop={0} marginBottom={4}>
+                            {form.errors.ccvIssuerID?.message}
+                        </FormErrorMessage>
                     </Controller>
                 </FormControl>
             )
         }
 
-        case 'CCV_CREDIT_CARD': {
-            const fields = {
-                saveForLater: {
-                    name: `saveForLater`,
-                    label: formatMessage({
-                        defaultMessage: 'Save card for later use',
-                        id: 'payment_selection.message.save_card_for_later'
-                    }),
-                    type: 'checkbox',
-                    defaultValue: false,
-                    control: form.control
-                }
+        case 'CCV_GIROPAY': {
+            const options = JSON.parse(selectedMethodData.c_ccvOptions || '[]')
+            const selectOptions = options.map((option) => {
+                return {value: option.issuerid, label: option.issuerdescription}
+            })
+
+            const issuerField = {
+                name: `ccvIssuerID`,
+                defaultValue: '',
+                type: 'select',
+                label: formatMessage({
+                    defaultMessage: 'Select your bank.',
+                    id: 'payment_selection.message.select_bank'
+                }),
+                options: [
+                    {
+                        value: '',
+                        label: formatMessage({
+                            defaultMessage: 'Select your bank.',
+                            id: 'payment_selection.message.select_bank'
+                        })
+                    },
+                    ...selectOptions
+                ],
+                rules: {
+                    required: formatMessage({
+                        defaultMessage: 'Bank required.',
+                        id: 'payment_selection.message.select_bank'
+                    })
+                },
+                error: form.errors.ccvIssuerID,
+                control: form.control
             }
-            return <Field {...fields.saveForLater} />
+
+            return (
+                <Box padding="20px">
+                    <Field {...issuerField} />
+                </Box>
+            )
+        }
+
+        case 'CCV_CREDIT_CARD': {
+            const {onPaymentIdChange, togglePaymentEdit, isEditingPayment, hasSavedCards} =
+                useCCVPaymentSelect()
+            return (
+                <>
+                    <Box p={[4, 4, 6]} borderBottom="1px solid" borderColor="gray.100">
+                        <Stack spacing={6}>
+                            {hasSavedCards && (
+                                <Controller
+                                    name="paymentInstrumentId"
+                                    defaultValue=""
+                                    control={form.control}
+                                    rules={{
+                                        required: !isEditingPayment
+                                            ? formatMessage({
+                                                  defaultMessage: 'Please select a payment method.',
+                                                  id: 'payment_selection.message.select_payment_method'
+                                              })
+                                            : false
+                                    }}
+                                    render={({value}) => (
+                                        <CCRadioGroup
+                                            form={form}
+                                            value={value}
+                                            isEditingPayment={isEditingPayment}
+                                            togglePaymentEdit={togglePaymentEdit}
+                                            onPaymentIdChange={onPaymentIdChange}
+                                        />
+                                    )}
+                                />
+                            )}
+
+                            {(isEditingPayment || !hasSavedCards) && (
+                                <Box
+                                    {...(hasSavedCards && {
+                                        px: [4, 4, 6],
+                                        py: 6,
+                                        rounded: 'base',
+                                        border: '1px solid',
+                                        borderColor: 'blue.600'
+                                    })}
+                                >
+                                    <Stack spacing={6}>
+                                        {hasSavedCards && (
+                                            <Heading as="h3" size="sm">
+                                                <FormattedMessage
+                                                    defaultMessage="Add New Card"
+                                                    id="payment_selection.heading.add_new_card"
+                                                />
+                                            </Heading>
+                                        )}
+
+                                        <CreditCardFields form={form} />
+
+                                        {!hideSubmitButton && (
+                                            <Box>
+                                                <Container variant="form">
+                                                    <Button
+                                                        isLoading={form.formState.isSubmitting}
+                                                        type="submit"
+                                                        w="full"
+                                                    >
+                                                        <FormattedMessage
+                                                            defaultMessage="Save & Continue"
+                                                            id="payment_selection.button.save_and_continue"
+                                                        />
+                                                    </Button>
+                                                </Container>
+                                            </Box>
+                                        )}
+                                    </Stack>
+                                </Box>
+                            )}
+                        </Stack>
+                    </Box>
+                </>
+            )
         }
 
         default:
-            return <input type="hidden" {...form.register('ccvOption')} defaultValue="" />
+            return <input type="hidden" {...form.register('ccvIssuerID')} defaultValue="" />
     }
 }
 
 CCVMethodOptions.propTypes = {
-    /** Payment method for which options should be rendered */
-    paymentMethodId: PropTypes.string,
-    /** The form object returnd from `useForm` */
-    form: PropTypes.object,
-    /** Convenience object */
-    paymentMethodsMap: PropTypes.shape({
-        c_ccv_options: PropTypes.string
-    })
+    /** Currently selected payment method ID */
+    paymentMethodId: PropTypes.string
 }
 
-CCVPaymentSelection.propTypes = {
-    /** The form object returnd from `useForm` */
-    form: PropTypes.object
+CCVPaymentMethodRadio.propTypes = {
+    /** Currently selected payment method ID */
+    paymentMethod: PropTypes.object,
+    currentSelectedMethodId: PropTypes.string
 }
 
-export default CCVPaymentSelection
+export default PaymentSelection

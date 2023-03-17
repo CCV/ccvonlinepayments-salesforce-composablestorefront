@@ -64,7 +64,7 @@ const Payment = () => {
 
                 <Stack spacing={6}>
                     {!selectedPayment?.paymentCard ? (
-                        <PaymentSelection form={paymentMethodForm} hideSubmitButton />
+                        <PaymentSelection form={paymentMethodForm} />
                     ) : (
                         <Stack spacing={3}>
                             <Heading as="h3" fontSize="md">

@@ -1,0 +1,62 @@
+import React, {useState} from 'react'
+import PropTypes from 'prop-types'
+import {useCCVPaymentMethodsMap} from './ccv-utils'
+import {useCheckout} from '../checkout-context'
+const CCVPaymentSelectContext = React.createContext()
+
+export const CCVPaymentSelectProvider = ({form, children}) => {
+    const {customer} = useCheckout()
+
+    const hasSavedCards = customer?.paymentInstruments?.length > 0
+    const paymentMethodsMap = useCCVPaymentMethodsMap()
+
+    const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
+
+    const [currentSelectedMethodId, setCurrentSelectedMethodId] = useState(
+        form.getValues('paymentMethodId')
+    )
+
+    const onPaymentIdChange = (value) => {
+        console.log(form.getValues())
+        if (value && isEditingPayment) {
+            togglePaymentEdit()
+        }
+        form.reset({paymentInstrumentId: value})
+    }
+
+    const togglePaymentEdit = () => {
+        form.reset({paymentInstrumentId: ''})
+        setIsEditingPayment(!isEditingPayment)
+        form.trigger()
+    }
+
+    const onPaymentMethodChange = (value) => {
+        console.log('payment method change', value)
+        setCurrentSelectedMethodId(value)
+    }
+
+    return (
+        <CCVPaymentSelectContext.Provider
+            value={{
+                form,
+                hasSavedCards,
+                isEditingPayment,
+                currentSelectedMethodId,
+                setCurrentSelectedMethodId,
+                setIsEditingPayment,
+                paymentMethodsMap,
+                onPaymentIdChange,
+                togglePaymentEdit,
+                onPaymentMethodChange
+            }}
+        >
+            {children}
+        </CCVPaymentSelectContext.Provider>
+    )
+}
+
+CCVPaymentSelectProvider.propTypes = {children: PropTypes.any, form: PropTypes.object}
+
+export const useCCVPaymentSelect = () => {
+    return React.useContext(CCVPaymentSelectContext)
+}
