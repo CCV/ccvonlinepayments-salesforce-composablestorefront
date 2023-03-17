@@ -16,12 +16,12 @@ import useBasket from '../../commerce-api/hooks/useBasket'
 import CCVPayment from './partials/payment-ccv'
 import CheckoutSkeleton from './partials/checkout-skeleton'
 import OrderSummary from '../../components/order-summary'
-import useCCV from '../../commerce-api/hooks/useCCV'
+import useCCVApi from './util/ccv-utils/useCCVApi'
 
 const Checkout = () => {
     const {globalError, step} = useCheckout()
     const [isLoading, setIsLoading] = useState(false)
-    const ccv = useCCV()
+    const ccv = useCCVApi()
 
     // Scroll to the top when we get a global error
     useEffect(() => {

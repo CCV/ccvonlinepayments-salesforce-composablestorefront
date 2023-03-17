@@ -1,9 +1,9 @@
-import {useCommerceAPI} from '../contexts'
+import {useCommerceAPI} from '../../../../commerce-api/contexts'
 import {getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
-import {useCheckout} from '../../pages/checkout/util/checkout-context'
+import {useCheckout} from '../checkout-context'
 
-const useCCV = () => {
+const useCCVApi = () => {
     const api = useCommerceAPI()
     const {locale} = useIntl()
     const {selectedPayment, paymentMethods, setGlobalError} = useCheckout()
@@ -57,4 +57,4 @@ const useCCV = () => {
         }
     }
 }
-export default useCCV
+export default useCCVApi

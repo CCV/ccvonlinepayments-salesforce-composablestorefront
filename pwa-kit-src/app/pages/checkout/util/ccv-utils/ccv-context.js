@@ -2,10 +2,13 @@ import React, {useState} from 'react'
 import PropTypes from 'prop-types'
 import {useCCVPaymentMethodsMap} from './ccv-utils'
 import {useCheckout} from '../checkout-context'
-const CCVPaymentSelectContext = React.createContext()
+const CCVPaymentContext = React.createContext()
+import {useForm} from 'react-hook-form'
 
-export const CCVPaymentSelectProvider = ({form, children}) => {
+/** Can only be used inside checkout context */
+export const CCVPaymentProvider = ({form, children}) => {
     const {customer} = useCheckout()
+    form = form || useForm()
 
     const hasSavedCards = customer?.paymentInstruments?.length > 0
     const paymentMethodsMap = useCCVPaymentMethodsMap()
@@ -33,10 +36,13 @@ export const CCVPaymentSelectProvider = ({form, children}) => {
     const onPaymentMethodChange = (value) => {
         console.log('payment method change', value)
         setCurrentSelectedMethodId(value)
+        if (isEditingPayment) {
+            togglePaymentEdit()
+        }
     }
 
     return (
-        <CCVPaymentSelectContext.Provider
+        <CCVPaymentContext.Provider
             value={{
                 form,
                 hasSavedCards,
@@ -51,12 +57,12 @@ export const CCVPaymentSelectProvider = ({form, children}) => {
             }}
         >
             {children}
-        </CCVPaymentSelectContext.Provider>
+        </CCVPaymentContext.Provider>
     )
 }
 
-CCVPaymentSelectProvider.propTypes = {children: PropTypes.any, form: PropTypes.object}
+CCVPaymentProvider.propTypes = {children: PropTypes.any, form: PropTypes.object}
 
-export const useCCVPaymentSelect = () => {
-    return React.useContext(CCVPaymentSelectContext)
+export const useCCVPayment = () => {
+    return React.useContext(CCVPaymentContext)
 }

@@ -18,6 +18,7 @@ import {
     Stack,
     FormErrorMessage,
     FormControl,
+    Skeleton,
     Spacer
 } from '@chakra-ui/react'
 import {useForm, Controller} from 'react-hook-form'
@@ -26,7 +27,7 @@ import CreditCardFields from '../../../components/forms/credit-card-fields'
 import CCRadioGroup from './cc-radio-group'
 import {PaymentMethodIcons} from '../util/ccv-utils/ccv-utils'
 import Field from '../../../components/field'
-import {useCCVPaymentSelect} from '../util/ccv-utils/ccv-context'
+import {useCCVPayment} from '../util/ccv-utils/ccv-context'
 
 const PaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
@@ -36,7 +37,7 @@ const PaymentSelection = ({form}) => {
     form = form || useForm()
 
     const {currentSelectedMethodId, setCurrentSelectedMethodId, onPaymentMethodChange} =
-        useCCVPaymentSelect(form)
+        useCCVPayment()
 
     useEffect(() => {
         // reset currentSelectedMethod on first load
@@ -82,21 +83,29 @@ const PaymentSelection = ({form}) => {
                                     }}
                                 >
                                     {/* dynamic payment methods */}
-                                    {paymentMethods &&
-                                        paymentMethods.applicablePaymentMethods.map(
-                                            (paymentMethod) => {
-                                                return (
-                                                    <CCVPaymentMethodRadio
-                                                        key={paymentMethod.id}
-                                                        paymentMethod={paymentMethod}
-                                                        currentSelectedMethodId={
-                                                            currentSelectedMethodId
-                                                        }
-                                                        form={form}
-                                                    />
-                                                )
-                                            }
+                                    <Stack gap={1}>
+                                        {paymentMethods ? (
+                                            paymentMethods.applicablePaymentMethods.map(
+                                                (paymentMethod) => {
+                                                    return (
+                                                        <CCVPaymentMethodRadio
+                                                            key={paymentMethod.id}
+                                                            paymentMethod={paymentMethod}
+                                                            currentSelectedMethodId={
+                                                                currentSelectedMethodId
+                                                            }
+                                                        />
+                                                    )
+                                                }
+                                            )
+                                        ) : (
+                                            <Stack>
+                                                <Skeleton height="56px" />
+                                                <Skeleton height="56px" />
+                                                <Skeleton height="56px" />
+                                            </Stack>
                                         )}
+                                    </Stack>
                                 </RadioGroup>
                             )}
                             rules={{
@@ -121,7 +130,7 @@ PaymentSelection.propTypes = {
 
 const CCVPaymentMethodRadio = function ({paymentMethod, currentSelectedMethodId}) {
     return (
-        <Box border="1px solid" borderColor="gray.100" rounded="base" marginBottom="2">
+        <Box border="1px solid" borderColor="gray.100" rounded="base">
             {/* payment method heading row */}
             <Box bg="gray.50" py={3} px={[4, 4, 6]}>
                 <Radio value={paymentMethod.id} alignItems="center">
@@ -141,7 +150,7 @@ const CCVPaymentMethodRadio = function ({paymentMethod, currentSelectedMethodId}
 
 const CCVMethodOptions = function ({paymentMethodId}) {
     const {formatMessage} = useIntl()
-    const {form, paymentMethodsMap} = useCCVPaymentSelect()
+    const {form, paymentMethodsMap} = useCCVPayment()
     const selectedMethodData = paymentMethodsMap[paymentMethodId]
     const hideSubmitButton = true
 
@@ -170,7 +179,12 @@ const CCVMethodOptions = function ({paymentMethodId}) {
                             })
                         }}
                     >
-                        <option value="">Choose your bank...</option>
+                        <option value="">
+                            {formatMessage({
+                                defaultMessage: 'Select your bank.',
+                                id: 'payment_selection.message.select_bank'
+                            })}
+                        </option>
                         {Object.keys(countryGroups).map((countryGroup) => {
                             return (
                                 <optgroup label={countryGroup} key={countryGroup}>
@@ -184,10 +198,10 @@ const CCVMethodOptions = function ({paymentMethodId}) {
                                 </optgroup>
                             )
                         })}
-                        <FormErrorMessage marginTop={0} marginBottom={4}>
-                            {form.errors.ccvIssuerID?.message}
-                        </FormErrorMessage>
                     </Controller>
+                    <FormErrorMessage marginTop={0} marginBottom={4}>
+                        {form.errors.ccvIssuerID?.message}
+                    </FormErrorMessage>
                 </FormControl>
             )
         }
@@ -202,10 +216,6 @@ const CCVMethodOptions = function ({paymentMethodId}) {
                 name: `ccvIssuerID`,
                 defaultValue: '',
                 type: 'select',
-                label: formatMessage({
-                    defaultMessage: 'Select your bank.',
-                    id: 'payment_selection.message.select_bank'
-                }),
                 options: [
                     {
                         value: '',
@@ -218,8 +228,8 @@ const CCVMethodOptions = function ({paymentMethodId}) {
                 ],
                 rules: {
                     required: formatMessage({
-                        defaultMessage: 'Bank required.',
-                        id: 'payment_selection.message.select_bank'
+                        defaultMessage: 'Please select an option.',
+                        id: 'payment_selection.message.select_payment_method_option'
                     })
                 },
                 error: form.errors.ccvIssuerID,
@@ -235,7 +245,7 @@ const CCVMethodOptions = function ({paymentMethodId}) {
 
         case 'CCV_CREDIT_CARD': {
             const {onPaymentIdChange, togglePaymentEdit, isEditingPayment, hasSavedCards} =
-                useCCVPaymentSelect()
+                useCCVPayment()
             return (
                 <>
                     <Box p={[4, 4, 6]} borderBottom="1px solid" borderColor="gray.100">

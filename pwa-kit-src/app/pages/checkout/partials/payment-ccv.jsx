@@ -15,7 +15,8 @@ import ShippingAddressSelection from './shipping-address-selection'
 import AddressDisplay from '../../../components/address-display'
 import {PromoCode, usePromoCode} from '../../../components/promo-code'
 import {PaymentSummaryCCV} from '../util/ccv-utils/ccv-utils'
-import {CCVPaymentSelectProvider} from '../util/ccv-utils/ccv-context'
+import {CCVPaymentProvider} from '../util/ccv-utils/ccv-context'
+
 const Payment = () => {
     const {formatMessage} = useIntl()
 
@@ -57,7 +58,7 @@ const Payment = () => {
     }, [])
 
     return (
-        <CCVPaymentSelectProvider form={paymentMethodForm}>
+        <CCVPaymentProvider form={paymentMethodForm}>
             <ToggleCard
                 id="step-3"
                 title={formatMessage({
@@ -179,7 +180,7 @@ const Payment = () => {
                     </Stack>
                 </ToggleCardSummary>
             </ToggleCard>
-        </CCVPaymentSelectProvider>
+        </CCVPaymentProvider>
     )
 }
 

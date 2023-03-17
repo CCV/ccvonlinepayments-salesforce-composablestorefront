@@ -4,11 +4,11 @@ import useCustomer from '../../commerce-api/hooks/useCustomer'
 import useBasket from '../../commerce-api/hooks/useBasket'
 import {CheckoutProvider, useCheckout} from './util/checkout-context'
 import CheckoutSkeleton from './partials/checkout-skeleton'
-import useCCV from '../../commerce-api/hooks/useCCV'
+import useCCVApi from './util/ccv-utils/useCCVApi'
 import {Box, Text} from '@chakra-ui/react'
 
 const Checkout = () => {
-    const ccv = useCCV()
+    const ccv = useCCVApi()
     const navigate = useNavigation()
     const {placeOrder} = useCheckout()
 
@@ -18,20 +18,19 @@ const Checkout = () => {
             console.log(transactionSatus)
 
             if (!transactionSatus || transactionSatus.status === 'failed') {
-                navigate('/checkout')
+                throw new Error('Payment auth failed.')
             } else {
                 await placeOrder()
                 navigate('/checkout/confirmation')
             }
         } catch (error) {
-            console.log(error)
             navigate('/checkout')
         }
     }, [])
 
     return (
         <Box>
-            <Text align="center" fontSize="xl" fontWeight="semibold">
+            <Text align="center" fontSize="xl" fontWeight="semibold" padding="20px">
                 Checking transaction status...
             </Text>
             <CheckoutSkeleton />
