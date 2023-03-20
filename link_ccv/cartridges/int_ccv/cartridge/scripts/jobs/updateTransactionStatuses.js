@@ -3,7 +3,7 @@ var Logger = require('dw/system/Logger');
 var OrderMgr = require('dw/order/OrderMgr');
 var Order = require('dw/order/Order');
 var Transaction = require('dw/system/Transaction');
-var { CCV_CONSTANTS, checkCCVTransaction } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
+var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
 var PaymentMgr = require('dw/order/PaymentMgr');
 
 exports.execute = function () {
@@ -57,7 +57,7 @@ function checkOrderStatus(order) {
             return;
         }
 
-        // if transaction.status = success => place order? update payment?
+        // if transaction.status = success => place order and update paymentTransaction object
         if (status === CCV_CONSTANTS.STATUS.SUCCESS) {
             Logger.info(`Successful transaction. Placing order. ${order.orderNo}`);
 
@@ -72,30 +72,11 @@ function checkOrderStatus(order) {
                 paymentInstrument.paymentTransaction.paymentProcessor = paymentProcessor;
                 paymentInstrument.paymentTransaction.setAmount(orderTotal);
 
-                // paymentInstrument.paymentTransaction.setAmount(orderTotal);
-                // if ( autoCaptureEnabled) {
-                //     paymentInstrument.paymentTransaction.type = dw.order.PaymentTransaction.TYPE_CAPTURE;
-                // } else {
-                paymentInstrument.paymentTransaction.type = dw.order.PaymentTransaction.TYPE_AUTH;
-                // }
+                paymentInstrument.paymentTransaction.type = transactionStatusResponse.type === CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE
+                    ? dw.order.PaymentTransaction.TYPE_AUTH
+                    : dw.order.PaymentTransaction.TYPE_CAPTURE;
+
                 order.addNote('Order placed by updateTransactionStatuses job', 'transaction status: success');
-
-
-                if (transactionStatusResponse.details
-                    && transactionStatusResponse.details.vaultAccessToken) {
-                    var customerPaymentInstruments = order.customer.profile.wallet.paymentInstruments;
-
-                    for (var i = 0; i < customerPaymentInstruments.length; i++) {
-                        var customerPaymentInstrument = customerPaymentInstruments[i];
-                        if (!customerPaymentInstrument.creditCardToken
-                            && transactionStatusResponse.details.maskedPan.includes(customerPaymentInstrument.creditCardNumberLastDigits)) {
-                            Transaction.wrap(() => { // eslint-disable-line no-loop-func
-                                customerPaymentInstrument.setCreditCardToken(transactionStatusResponse.details.vaultAccessToken);
-                            });
-                            break;
-                        }
-                    }
-                }
             });
             return;
         }

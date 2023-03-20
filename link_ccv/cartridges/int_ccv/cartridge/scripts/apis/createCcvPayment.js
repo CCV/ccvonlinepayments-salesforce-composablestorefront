@@ -1,6 +1,7 @@
 'use strict';
 /* eslint-disable camelcase */ // custom properties can't be camelcase due to PWA implementation of ocapi calls
 var BasketMgr = require('dw/order/BasketMgr');
+var Site = require('dw/system/Site');
 
 var languageMap = {
     nl: 'nld',
@@ -13,7 +14,7 @@ var languageMap = {
 
 
 exports.get = function (httpParams) {
-    var { createCCVPayment } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
+    var { createCCVPayment, CCV_CONSTANTS } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
     var currentBasket = BasketMgr.getCurrentBasket();
     var basketId = currentBasket.UUID;
 
@@ -48,12 +49,14 @@ exports.get = function (httpParams) {
     }
 
     // CREDIT CARD
-    if (selectedPaymentMethod === 'card' && paymentInstrument.creditCardNumber) {
+    if (selectedPaymentMethod === 'card') {
         if (paymentInstrument.creditCardToken) {
+            // vault payment
             requestBody.details = {
                 vaultAccessToken: paymentInstrument.creditCardToken
             };
-        } else {
+        } else if (paymentInstrument.creditCardNumber) {
+            // new inline credit card payment
             var [firstName, lastName] = paymentInstrument.creditCardHolder.split(' ');
             requestBody.details = {
                 pan: paymentInstrument.creditCardNumber,
@@ -65,6 +68,11 @@ exports.get = function (httpParams) {
             // we will add itto the customer's payment instrument in the UpdateStatuses job
             // todo: feature switch?
             requestBody.storeInVault = 'yes';
+        }
+
+        if (!Site.current.getCustomPreferenceValue('ccvCardsAutoCaptureEnabled')) {
+            // if we don't specify a transactionType in the request, 'sale' wil be used by default
+            requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
         }
     }
 

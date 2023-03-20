@@ -15,6 +15,10 @@ var CCV_CONSTANTS = {
         SUCCESS: 'success',
         FAILED: 'failed',
         MANUAL_INTERVENTION: 'manualintervention'
+    },
+    TRANSACTION_TYPE: {
+        AUTHORISE: 'authorise',
+        CAPTURE: 'sale'
     }
 };
 
