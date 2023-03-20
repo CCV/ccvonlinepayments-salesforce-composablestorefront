@@ -140,22 +140,44 @@ function checkCCVTransactions(references) {
 }
 
 /**
- * Refunds an existing payment
+ * Refunds an existing payment.
  * Refunds are allowed for all existing payment methods, except LandingPage, Terminal, Token and Vault.
- * @param {string} reference CCV transaction reference
- * @param {string} orderNo refunded order number
- * @returns {Object} response from service call
- */
-function refundCCVPayment({ reference, amount, description }) {
-    // throw new Error(1234)
-    return callCCVService({
+ * @returns {Object} ccvRefunds object with data about existing refund requests
+*/
+function refundCCVPayment({ order, amount, description }) {
+    var Transaction = require('dw/system/Transaction');
+
+    var ccvRefunds = JSON.parse(order.custom.ccvRefunds || '[]');
+
+    var requestBody = {
+        reference: order.custom.ccvTransactionReference,
+        description: description
+    };
+
+    if (amount) {
+        // for partial refunds
+        requestBody.amount = amount;
+    }
+
+    var refundResponse = callCCVService({
         path: CCV_CONSTANTS.PATH.REFUND,
-        requestBody: {
-            reference,
-            amount,
-            description
-        }
+        requestBody: requestBody
     });
+
+    ccvRefunds.push({
+        reference: refundResponse.reference,
+        amount: refundResponse.amount,
+        status: refundResponse.status,
+        currency: refundResponse.currency,
+        failureCode: refundResponse.failureCode,
+        date: refundResponse.created
+    });
+    Transaction.wrap(()=> {
+        order.custom.ccvRefunds = JSON.stringify(ccvRefunds); // eslint-disable-line no-param-reassign
+        order.custom.ccvHasPendingRefunds = true; // eslint-disable-line no-param-reassign
+    });
+
+    return ccvRefunds;
 }
 
 /**

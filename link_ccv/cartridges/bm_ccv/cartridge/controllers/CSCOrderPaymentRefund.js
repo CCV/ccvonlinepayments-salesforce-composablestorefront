@@ -2,7 +2,6 @@ var ISML = require('dw/template/ISML');
 var OrderMgr = require('dw/order/OrderMgr');
 var Order = require('dw/order/Order');
 var Logger = require('dw/system/Logger');
-var Transaction = require('dw/system/Transaction');
 
 var renderTemplate = function (templateName, viewParams) {
     try {
@@ -60,27 +59,13 @@ exports.Refund = function () {
         if (refundAmountRemaining - refundAmount < 0) {
             throw new Error('Refund amount exceeds order total amount!');
         }
-        var ccvRefunds = JSON.parse(order.custom.ccvRefunds || '[]');
 
-        var refundResponse = refundCCVPayment({
-            reference: order.custom.ccvTransactionReference,
-            orderNo: orderNo,
+        var ccvRefunds = refundCCVPayment({
+            order: order,
             amount: refundAmount,
             description: 'CSC refund'
         });
 
-        ccvRefunds.push({
-            reference: refundResponse.reference,
-            amount: refundResponse.amount,
-            status: refundResponse.status,
-            currency: refundResponse.currency,
-            failureCode: refundResponse.failureCode,
-            date: refundResponse.created
-        });
-        Transaction.wrap(()=> {
-            order.custom.ccvRefunds = JSON.stringify(ccvRefunds);
-            order.custom.ccvHasPendingRefunds = true;
-        });
         viewParams.order = order;
         viewParams.refunds = ccvRefunds;
         viewParams.refundAmountRemaining = getRefundAmountRemaining(order);

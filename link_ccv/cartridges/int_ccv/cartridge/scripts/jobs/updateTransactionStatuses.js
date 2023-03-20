@@ -28,8 +28,6 @@ function checkOrderStatus(order) {
         var transactionStatusResponse = checkCCVTransaction(ccvTransactionReference);
         var status = transactionStatusResponse.status;
 
-        // if transaction.status !== order.total - mark for refund;
-
         if (status === CCV_CONSTANTS.STATUS.FAILED) {
             // if transaction.status = failed => fail order
             Logger.info(`Failed transaction in order ${order.orderNo}. Failing order.`);
@@ -47,12 +45,15 @@ function checkOrderStatus(order) {
             var msg = `Payment amount or currency mismatch: (${transactionStatusResponse.amount} | ${order.totalGrossPrice}) (${transactionStatusResponse.currency}|${order.currencyCode.toLowerCase()}).`;
             Logger.warn(`${msg} Failing order ${order.orderNo}`);
 
+            refundCCVPayment({
+                order: order,
+                description: 'Price or currency mismatch - refund by updateTransactionStatuses job'
+            });
+
             Transaction.wrap(() => {
                 OrderMgr.failOrder(order);
                 order.addNote('Order failed by updateTransactionStatuses job', msg);
             });
-
-            // TODO: mark for refund - create custom object with transaction info and a job processing them?
             return;
         }
 
