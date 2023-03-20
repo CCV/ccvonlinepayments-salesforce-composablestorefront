@@ -47,7 +47,7 @@ function checkOrderStatus(order) {
 
             refundCCVPayment({
                 order: order,
-                description: 'Price or currency mismatch - refund by updateTransactionStatuses job'
+                description: 'Price or currency mismatch - refund/reversal by updateTransactionStatuses job'
             });
 
             Transaction.wrap(() => {

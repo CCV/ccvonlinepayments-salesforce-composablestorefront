@@ -8,7 +8,8 @@ var CCV_CONSTANTS = {
         METHODS: '/method',
         CREATE_PAYMENT: '/payment',
         CHECK_TRANSACTION_STATUS: '/transaction',
-        REFUND: '/refund'
+        REFUND: '/refund',
+        REVERSAL: '/reversal'
     },
     STATUS: {
         PENDING: 'pending',
@@ -158,13 +159,15 @@ function refundCCVPayment({ order, amount, description }) {
         description: description
     };
 
-    if (amount) {
+    var isReversal = order.paymentTransaction.type.value === dw.order.PaymentTransaction.TYPE_AUTH;
+
+    if (amount && !isReversal) {
         // for partial refunds
         requestBody.amount = amount;
     }
 
     var refundResponse = callCCVService({
-        path: CCV_CONSTANTS.PATH.REFUND,
+        path: isReversal ? CCV_CONSTANTS.PATH.REVERSAL : CCV_CONSTANTS.PATH.REFUND,
         requestBody: requestBody
     });
 
@@ -174,7 +177,8 @@ function refundCCVPayment({ order, amount, description }) {
         status: refundResponse.status,
         currency: refundResponse.currency,
         failureCode: refundResponse.failureCode,
-        date: refundResponse.created
+        date: refundResponse.created,
+        type: isReversal ? 'reversal' : 'refund'
     });
     Transaction.wrap(()=> {
         order.custom.ccvRefunds = JSON.stringify(ccvRefunds); // eslint-disable-line no-param-reassign

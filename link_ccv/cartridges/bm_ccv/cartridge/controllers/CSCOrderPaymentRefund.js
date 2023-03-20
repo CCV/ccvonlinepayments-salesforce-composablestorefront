@@ -29,6 +29,8 @@ exports.Start = function () {
     var order = OrderMgr.getOrder(orderNo);
     var refunds = JSON.parse(order.custom.ccvRefunds || '[]');
 
+    var transactionType = order.paymentTransaction.type.value === dw.order.PaymentTransaction.TYPE_AUTH ? 'auth' : 'capture';
+
     var refundAmountRemaining = getRefundAmountRemaining(order);
 
     if (!isRefundAllowed(order)) {
@@ -37,7 +39,8 @@ exports.Start = function () {
         renderTemplate('order/payment/refund/order_payment_refund.isml', {
             order,
             refunds,
-            refundAmountRemaining
+            refundAmountRemaining,
+            transactionType
         });
     }
 };
@@ -46,6 +49,7 @@ exports.Refund = function () {
     var { getRefundAmountRemaining, refundCCVPayment } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var orderNo = request.httpParameterMap.get('orderNo').stringValue;
     var refundAmount = request.httpParameterMap.get('refundAmount').stringValue;
+    var isReversal = request.httpParameterMap.get('reversal').stringValue;
     var order = OrderMgr.getOrder(orderNo);
 
     var viewParams = {
@@ -63,7 +67,7 @@ exports.Refund = function () {
         var ccvRefunds = refundCCVPayment({
             order: order,
             amount: refundAmount,
-            description: 'CSC refund'
+            description: `CSC ${isReversal ? 'reversal' : 'refund'}`
         });
 
         viewParams.order = order;
