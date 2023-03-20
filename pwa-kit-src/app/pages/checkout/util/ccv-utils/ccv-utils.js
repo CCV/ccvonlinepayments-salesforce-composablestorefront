@@ -8,7 +8,10 @@ import {
     PaypalIcon,
     IdealIcon,
     BanContactIcon,
-    GiropayIcon
+    GiropayIcon,
+    SofortIcon,
+    EPSIcon,
+    PayconiqIcon
 } from '../../../../components/icons'
 
 import {Box, Stack, Text} from '@chakra-ui/react'
@@ -110,7 +113,10 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
                 <AmexIcon width="auto" height={iconHeight} />
                 <BanContactIcon width="auto" height={iconHeight} />
             </>
-        )
+        ),
+        CCV_SOFORT: <SofortIcon width="auto" height={iconHeight} />,
+        CCV_EPS: <EPSIcon width="auto" height={iconHeight} />,
+        CCV_PAYCONIQ: <PayconiqIcon width="auto" height={iconHeight} />
     }
     return iconMap[paymentMethodId] || null
 }
