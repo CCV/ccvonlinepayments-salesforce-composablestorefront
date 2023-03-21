@@ -21,7 +21,10 @@ exports.get = function (httpParams) {
     var selectedPaymentMethod = httpParams.c_type && httpParams.c_type.pop();
     var returnUrl = httpParams.c_returnUrl && httpParams.c_returnUrl.pop();
     var requestLanguage = request.locale.split('_')[0];
-    var orderDescription = currentBasket.allProductLineItems.toArray().map(pli => pli.quantity + ' ' + pli.productName).join(', ');
+    var orderDescription = currentBasket.allProductLineItems.toArray()
+        .map(pli => pli.quantity + ' ' + pli.productName)
+        .join(', ')
+        .substring(0, 255);
 
     var { ccv_issuer_id } = currentBasket.paymentInstruments[0].custom;
 
