@@ -4,9 +4,21 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
+import PropTypes from 'prop-types'
 import {FormattedMessage, useIntl} from 'react-intl'
-import {Box, Button, Checkbox, Container, Heading, Stack, Text, Divider} from '@chakra-ui/react'
+import {
+    Alert,
+    AlertIcon,
+    Box,
+    Button,
+    Checkbox,
+    Container,
+    Heading,
+    Stack,
+    Text,
+    Divider
+} from '@chakra-ui/react'
 import {useCheckout} from '../util/checkout-context'
 import usePaymentForms from '../util/usePaymentForms'
 import {ToggleCard, ToggleCardEdit, ToggleCardSummary} from '../../../components/toggle-card'
@@ -16,6 +28,7 @@ import AddressDisplay from '../../../components/address-display'
 import {PromoCode, usePromoCode} from '../../../components/promo-code'
 import {PaymentSummaryCCV} from '../util/ccv-utils/ccv-utils'
 import {CCVPaymentProvider} from '../util/ccv-utils/ccv-context'
+import {useLocation} from 'react-router-dom'
 
 const Payment = () => {
     const {formatMessage} = useIntl()
@@ -41,6 +54,23 @@ const Payment = () => {
 
     const {removePromoCode, ...promoCodeProps} = usePromoCode()
 
+    const location = useLocation()
+    const [paymentError, setPaymentError] = useState(location.state?.paymentErrorMsg)
+    const paymentErrorRef = useRef()
+
+    // focus on payment error
+    // TODO: fix conflict with scroll handler in checkout/index.js
+    useEffect(() => {
+        if (paymentError && paymentErrorRef.current) {
+            paymentErrorRef.current.scrollIntoView({behavior: 'smooth', block: 'start'})
+        }
+    }, [paymentError, paymentErrorRef])
+
+    // clearing any payment errors from location.state
+    useEffect(() => {
+        window.history.replaceState({}, '')
+    }, [])
+
     const [isRemovingPayment, setIsRemovingPayment] = useState(false)
     async function removePaymentAndResetForm() {
         setIsRemovingPayment(true)
@@ -59,6 +89,8 @@ const Payment = () => {
 
     return (
         <CCVPaymentProvider form={paymentMethodForm}>
+            <CCVPaymentError msg={paymentError} innerRef={paymentErrorRef} />
+
             <ToggleCard
                 id="step-3"
                 title={formatMessage({
@@ -72,7 +104,10 @@ const Payment = () => {
                     isRemovingPayment
                 }
                 disabled={selectedPayment == null}
-                onEdit={() => setCheckoutStep(checkoutSteps.Payment)}
+                onEdit={() => {
+                    setCheckoutStep(checkoutSteps.Payment)
+                    setPaymentError(null)
+                }}
             >
                 <ToggleCardEdit>
                     <Box mt={-2} mb={4}>
@@ -182,6 +217,44 @@ const Payment = () => {
             </ToggleCard>
         </CCVPaymentProvider>
     )
+}
+
+const CCVPaymentError = ({msg, innerRef}) => {
+    if (!msg) return null
+
+    const {formatMessage} = useIntl()
+    let formattedMsg
+
+    if (msg === 'card_refused') {
+        formattedMsg = formatMessage({
+            defaultMessage: 'The payment could not be completed - card refused.',
+            id: `checkout_payment.ccv_payment_error_card_refused`
+        })
+    } else if (msg === 'insufficient_funds') {
+        formattedMsg = formatMessage({
+            defaultMessage: 'The payment could not be completed - insufficient funds.',
+            id: `checkout_payment.ccv_payment_error_insufficient_funds`
+        })
+    } else {
+        formattedMsg = formatMessage({
+            defaultMessage: 'The payment could not be completed successfully.',
+            id: `checkout_payment.ccv_payment_error_default`
+        })
+    }
+
+    return (
+        <Alert ref={innerRef} status="error" variant="left-accent">
+            <AlertIcon />
+            {formattedMsg}
+        </Alert>
+    )
+}
+
+CCVPaymentError.propTypes = {
+    /** Error msg text */
+    msg: PropTypes.string,
+    /** Ref */
+    innerRef: PropTypes.object
 }
 
 export default Payment

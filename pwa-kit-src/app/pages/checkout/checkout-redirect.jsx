@@ -18,13 +18,13 @@ const Checkout = () => {
             console.log(transactionSatus)
 
             if (!transactionSatus || transactionSatus.status === 'failed') {
-                throw new Error('Payment auth failed.')
+                throw new Error(transactionSatus.errorMsg)
             } else {
                 await placeOrder()
                 navigate('/checkout/confirmation')
             }
         } catch (error) {
-            navigate('/checkout')
+            navigate('/checkout', 'push', {paymentErrorMsg: error.message})
         }
     }, [])
 

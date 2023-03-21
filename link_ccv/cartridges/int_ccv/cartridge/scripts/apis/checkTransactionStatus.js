@@ -34,7 +34,8 @@ exports.get = function () {
         }
     }
     var result = {
-        status: transactionStatus.status
+        status: transactionStatus.status,
+        errorMsg: transactionStatus.failureCode
     };
 
     return result;
