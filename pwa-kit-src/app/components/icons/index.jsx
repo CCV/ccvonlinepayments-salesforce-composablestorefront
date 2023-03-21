@@ -73,6 +73,7 @@ import GiropaySymbol from '../../assets/svg/giropay-logo.svg'
 import SofortSymbol from '../../assets/svg/sofort-logo.svg'
 import EPSSymbol from '../../assets/svg/eps-logo.svg'
 import PayconiqSymbol from '../../assets/svg/payconiq-logo.svg'
+import MaestroSymbol from '../../assets/svg/maestro-logo.svg'
 
 // TODO: We're hardcoding the `viewBox` for these imported SVGs temporarily as the
 // SVG loader plugin is not properly providing us the symbol data on the client side.
@@ -91,6 +92,7 @@ GiropaySymbol.viewBox = GiropaySymbol.viewBox || '0 0 38 22'
 SofortSymbol.viewBox = SofortSymbol.viewBox || '0 0 746.1 286.2'
 EPSSymbol.viewBox = EPSSymbol.viewBox || '0 0 889 577'
 PayconiqSymbol.viewBox = PayconiqSymbol.viewBox || '0 0 326 230.5'
+MaestroSymbol.viewBox = MaestroSymbol.viewBox || '0 0 125 120'
 
 /**
  * A helper for creating a Chakra-wrapped icon from our own SVG imports via sprite sheet.
@@ -176,3 +178,4 @@ export const GiropayIcon = icon('giropay-logo', {viewBox: GiropaySymbol.viewBox}
 export const SofortIcon = icon('sofort-logo', {viewBox: SofortSymbol.viewBox})
 export const EPSIcon = icon('eps-logo', {viewBox: EPSSymbol.viewBox})
 export const PayconiqIcon = icon('payconiq-logo', {viewBox: PayconiqSymbol.viewBox})
+export const MaestroIcon = icon('maestro-logo', {viewBox: MaestroSymbol.viewBox})

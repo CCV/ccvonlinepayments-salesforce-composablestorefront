@@ -11,7 +11,8 @@ import {
     GiropayIcon,
     SofortIcon,
     EPSIcon,
-    PayconiqIcon
+    PayconiqIcon,
+    MaestroIcon
 } from '../../../../components/icons'
 
 import {Box, Stack, Text} from '@chakra-ui/react'
@@ -111,6 +112,7 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
                 <VisaIcon width="auto" height={iconHeight} />
                 <MastercardIcon width="auto" height={iconHeight} />
                 <AmexIcon width="auto" height={iconHeight} />
+                <MaestroIcon width="auto" height={iconHeight} />
                 <BanContactIcon width="auto" height={iconHeight} />
             </>
         ),

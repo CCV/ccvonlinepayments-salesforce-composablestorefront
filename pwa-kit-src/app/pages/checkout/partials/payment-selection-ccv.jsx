@@ -137,7 +137,7 @@ const CCVPaymentMethodRadio = function ({paymentMethod, currentSelectedMethodId}
                     <Stack direction="row" align="center">
                         <Box>{paymentMethod.name}</Box>
                         <Spacer />
-                        <PaymentMethodIcons paymentMethodId={paymentMethod.id} iconHeight="30px" />
+                        <PaymentMethodIcons paymentMethodId={paymentMethod.id} iconHeight="28px" />
                     </Stack>
                 </Radio>
             </Box>
