@@ -194,16 +194,19 @@ function refundCCVPayment({ order, amount, description }) {
  * @returns {number} refundable amount
  */
 function getRefundAmountRemaining(order) {
+    var Money = require('dw/value/Money');
+
     var refunds = JSON.parse(order.custom.ccvRefunds || '[]');
+    var currencyCode = order.currencyCode;
+    var refundedTotalAmount = new Money(0, currencyCode);
 
-    var refundedTotalAmount = refunds.reduce((sum, curr) => {
-        if (curr.status !== CCV_CONSTANTS.STATUS.FAILED) {
-            sum += curr.amount; // eslint-disable-line no-param-reassign
+    refunds.forEach((refund) => {
+        if (refund.status !== CCV_CONSTANTS.STATUS.FAILED) {
+            refundedTotalAmount = refundedTotalAmount.add(new Money(refund.amount, currencyCode));
         }
-        return sum;
-    }, 0);
+    });
 
-    var refundAmountRemaining = order.totalGrossPrice - refundedTotalAmount;
+    var refundAmountRemaining = order.totalGrossPrice.subtract(refundedTotalAmount);
     return refundAmountRemaining;
 }
 

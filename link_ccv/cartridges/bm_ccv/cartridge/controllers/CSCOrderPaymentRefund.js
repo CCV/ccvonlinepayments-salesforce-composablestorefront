@@ -46,11 +46,18 @@ exports.Start = function () {
 };
 
 exports.Refund = function () {
+    var Money = require('dw/value/Money');
     var { getRefundAmountRemaining, refundCCVPayment } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var orderNo = request.httpParameterMap.get('orderNo').stringValue;
-    var refundAmount = request.httpParameterMap.get('refundAmount').stringValue;
     var isReversal = request.httpParameterMap.get('reversal').stringValue;
     var order = OrderMgr.getOrder(orderNo);
+    var refundAmount;
+
+    if (request.httpParameterMap.get('refundAmount').doubleValue) {
+        refundAmount = new Money(request.httpParameterMap.get('refundAmount').doubleValue, order.currencyCode);
+    }
+
+    var transactionType = order.paymentTransaction.type.value === dw.order.PaymentTransaction.TYPE_AUTH ? 'auth' : 'capture';
 
     var viewParams = {
         success: true,
@@ -66,13 +73,14 @@ exports.Refund = function () {
 
         var ccvRefunds = refundCCVPayment({
             order: order,
-            amount: refundAmount,
+            amount: isReversal ? null : refundAmount.value,
             description: `CSC ${isReversal ? 'reversal' : 'refund'}`
         });
 
         viewParams.order = order;
         viewParams.refunds = ccvRefunds;
         viewParams.refundAmountRemaining = getRefundAmountRemaining(order);
+        viewParams.transactionType = transactionType;
     } catch (e) {
         Logger.error('CSC: Error while refunding payment for order ' + orderNo + '. ' + e.message);
         viewParams.success = false;

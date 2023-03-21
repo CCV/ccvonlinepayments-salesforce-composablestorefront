@@ -37,8 +37,8 @@
                         class="form-control"
                         type="number"
                         min="1"
-                        max="${pdict.refundAmountRemaining}"
-                        value="${pdict.refundAmountRemaining}"
+                        max="${pdict.refundAmountRemaining.value}"
+                        value="${pdict.refundAmountRemaining.value}"
                         pattern="^\d*(\.\d{0,2})?$"
                         step="0.01"
                         name="refundAmount"
@@ -48,7 +48,7 @@
                     </div>
                 <iselse/>
                         <input type="hidden" value="true" name="reversal" />
-                        <div class="align-self-center mr-1">${pdict.refundAmountRemaining}</div>
+                        <div class="align-self-center mr-1">${pdict.refundAmountRemaining.value}</div>
                         <button class="btn btn-primary" type="submit">Reverse</button>
                 </isif>
                 </div>
