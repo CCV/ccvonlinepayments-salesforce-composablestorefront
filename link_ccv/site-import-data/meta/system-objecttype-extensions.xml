@@ -110,7 +110,15 @@
     <type-extension type-id="SitePreferences">
         <custom-attribute-definitions>
             <attribute-definition attribute-id="ccvCardsAutoCaptureEnabled">
-                <description xml:lang="x-default">The payment method id in CCV</description>
+                <description xml:lang="x-default">If set to true, card payments will be automatically captured. Otherwise just authorized.</description>
+                <type>boolean</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvStoreCardsInVaultEnabled">
+                <description xml:lang="x-default">Toggle the 'store in vault' functionality for cards</description>
                 <type>boolean</type>
                 <localizable-flag>false</localizable-flag>
                 <mandatory-flag>false</mandatory-flag>
@@ -122,6 +130,7 @@
             <attribute-group group-id="CCV">
                 <display-name xml:lang="x-default">ccv</display-name>
                 <attribute attribute-id="ccvCardsAutoCaptureEnabled"/>
+                <attribute attribute-id="ccvStoreCardsInVaultEnabled"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

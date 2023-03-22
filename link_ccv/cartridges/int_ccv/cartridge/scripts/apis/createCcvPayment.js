@@ -67,10 +67,11 @@ exports.get = function (httpParams) {
                 cardholderFirstName: firstName,
                 cardholderLastName: lastName || firstName
             };
-            // a vaultAccessToken will be returned in the checkTransactionInfo response
-            // we will add itto the customer's payment instrument in the UpdateStatuses job
-            // todo: feature switch?
-            requestBody.storeInVault = 'yes';
+            if (customer.registered && customer.authenticated && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
+                // a vaultAccessToken will be returned in the checkTransactionInfo response
+                // we will add it to the customer's payment instrument in the UpdateStatuses job
+                requestBody.storeInVault = 'yes';
+            }
         }
 
         if (!Site.current.getCustomPreferenceValue('ccvCardsAutoCaptureEnabled')) {
