@@ -60,11 +60,19 @@
         </group-definitions>
     </type-extension>
 
-    <type-extension type-id="OrderPaymentInstrument">
+    <type-extension type-id="CustomerPaymentInstrument">
         <custom-attribute-definitions>
             <attribute-definition attribute-id="ccv_issuer_id">
-                <display-name xml:lang="x-default">CCV option</display-name>
+                <display-name xml:lang="x-default">CCV issuer ID</display-name>
                 <description xml:lang="x-default">Selected option required for some CCV payment methods</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_method_id">
+                <display-name xml:lang="x-default">CCV method id</display-name>
+                <description xml:lang="x-default">Payment method ID in CCV system</description>
                 <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -75,6 +83,53 @@
             <attribute-group group-id="ccv">
                 <display-name xml:lang="x-default">CCV payment processor</display-name>
                 <attribute attribute-id="ccv_issuer_id"/>
+                <attribute attribute-id="ccv_method_id"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="OrderPaymentInstrument">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccv_issuer_id">
+                <display-name xml:lang="x-default">CCV issuer ID</display-name>
+                <description xml:lang="x-default">Selected option required for some CCV payment methods</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_method_id">
+                <display-name xml:lang="x-default">CCV method id</display-name>
+                <description xml:lang="x-default">Payment method ID in CCV system</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_transaction_status">
+                <display-name xml:lang="x-default">CCV transaction status</display-name>
+                <description xml:lang="x-default">Status of the CCV payment transaction</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_failure_code">
+                <display-name xml:lang="x-default">CCV transaction status</display-name>
+                <description xml:lang="x-default">Status of the CCV payment transaction</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="ccv">
+                <display-name xml:lang="x-default">CCV payment processor</display-name>
+                <attribute attribute-id="ccv_issuer_id"/>
+                <attribute attribute-id="ccv_method_id"/>
+                <attribute attribute-id="ccv_transaction_status"/>
+                <attribute attribute-id="ccv_failure_code"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

@@ -6,20 +6,17 @@ class OcapiCCV {
     }
 
     async createRedirectSession(...args) {
-        const required = ['returnUrl', 'paymentType']
+        const required = ['returnUrl']
         let requiredParametersError = checkRequiredParameters(args[0], required)
         if (requiredParametersError) {
             return requiredParametersError
         }
         let {
-            parameters: {returnUrl, paymentType}
+            parameters: {returnUrl}
         } = args[0]
 
-        if (!paymentType) {
-            throw new Error('No payment type set.')
-        }
         return this.fetch(
-            `custom_objects/CustomApi/create-ccv-payment?c_returnUrl=${returnUrl}&c_type=${paymentType}`,
+            `custom_objects/CustomApi/create-ccv-payment?c_returnUrl=${returnUrl}`,
             'GET',
             args,
             'createPaymentSession'
@@ -27,12 +24,21 @@ class OcapiCCV {
     }
 
     async checkTransactionStatus(...args) {
-        const result = await this.fetch(
-            `custom_objects/CustomApi/check-transaction-status`,
+        const required = ['ref', 'token']
+        let requiredParametersError = checkRequiredParameters(args[0], required)
+        if (requiredParametersError) {
+            return requiredParametersError
+        }
+        let {
+            parameters: {ref, token}
+        } = args[0]
+
+        return this.fetch(
+            `custom_objects/CustomApi/check-transaction-status?ref=${ref}&token=${token}`,
             'GET',
-            args
+            args,
+            'checkTransactionStatus'
         )
-        return result?.c_result
     }
 }
 export default OcapiCCV

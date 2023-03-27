@@ -15,9 +15,7 @@ export const CCVPaymentProvider = ({form, children}) => {
 
     const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
 
-    const [currentSelectedMethodId, setCurrentSelectedMethodId] = useState(
-        form.getValues('paymentMethodId')
-    )
+    const [currentSelectedMethodId, setCurrentSelectedMethodId] = useState(null)
 
     const onPaymentIdChange = (value) => {
         console.log(form.getValues())

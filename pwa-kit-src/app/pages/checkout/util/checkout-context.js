@@ -342,7 +342,7 @@ export const CheckoutProvider = ({children}) => {
                 }
 
                 */
-                const {paymentInstrumentId, paymentMethodId, ccvIssuerID} = payment
+                const {paymentInstrumentId, paymentMethodId, ccvIssuerID, ccvMethodId} = payment
 
                 if (paymentInstrumentId) {
                     // Customer selected a saved card
@@ -360,6 +360,9 @@ export const CheckoutProvider = ({children}) => {
                     paymentInstrument.c_ccv_issuer_id = ccvIssuerID
                 }
 
+                if (ccvMethodId) {
+                    paymentInstrument.c_ccv_method_id = ccvMethodId
+                }
 
                 // adding new credit card
                 if (payment.number) {

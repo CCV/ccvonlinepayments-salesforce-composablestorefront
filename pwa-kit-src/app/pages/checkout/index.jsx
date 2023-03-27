@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 import React, {useEffect, useState} from 'react'
-import {FormattedMessage} from 'react-intl'
+import {FormattedMessage, useIntl} from 'react-intl'
 import {Alert, AlertIcon, Box, Button, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
 import {CheckoutProvider, useCheckout} from './util/checkout-context'
 import ContactInfo from './partials/contact-info'
@@ -19,10 +19,10 @@ import OrderSummary from '../../components/order-summary'
 import useCCVApi from './util/ccv-utils/useCCVApi'
 
 const Checkout = () => {
-    const {globalError, step} = useCheckout()
+    const {globalError, setGlobalError, step} = useCheckout()
     const [isLoading, setIsLoading] = useState(false)
     const ccv = useCCVApi()
-
+    const {formatMessage} = useIntl()
     // Scroll to the top when we get a global error
     useEffect(() => {
         if (globalError || step === 4) {
@@ -41,7 +41,30 @@ const Checkout = () => {
     //     }
     // }
 
-    const submitOrder = () => ccv.submitOrder(setIsLoading)
+    const submitOrder = async () => {
+        try {
+            setIsLoading(true)
+            setGlobalError(undefined)
+            // create redirect session via ccv api
+            const createRedirectSessionResponse = await ccv.createRedirectSession()
+            console.log(createRedirectSessionResponse)
+            // const placeOrderResponse = await placeOrder()
+            localStorage.setItem(
+                'newOrderData',
+                JSON.stringify(createRedirectSessionResponse.order)
+            )
+
+            // redirect to hosted payment page
+            window.location.href = createRedirectSessionResponse.payUrl
+        } catch (error) {
+            setIsLoading(false)
+            const message = formatMessage({
+                id: 'checkout.message.generic_error',
+                defaultMessage: 'An unexpected error occurred during checkout.'
+            })
+            setGlobalError(message)
+        }
+    }
 
     return (
         <Box background="gray.50" flex="1">

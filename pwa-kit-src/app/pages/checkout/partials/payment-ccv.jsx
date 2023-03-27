@@ -55,7 +55,7 @@ const Payment = () => {
     const {removePromoCode, ...promoCodeProps} = usePromoCode()
 
     const location = useLocation()
-    const [paymentError, setPaymentError] = useState(location.state?.paymentErrorMsg)
+    const [paymentError, setPaymentError] = useState(location.state?.paymentErrorMsg || '')
     const paymentErrorRef = useRef()
 
     // focus on payment error
@@ -65,6 +65,15 @@ const Payment = () => {
             paymentErrorRef.current.scrollIntoView({behavior: 'smooth', block: 'start'})
         }
     }, [paymentError, paymentErrorRef])
+
+    useEffect(async () => {
+        if (paymentError && selectedPayment?.paymentCard) {
+            // delete customer payment instrument if there was an error and the basket was reopened
+            // because the PAN will be masked
+            await removePaymentAndResetForm()
+            setCheckoutStep(checkoutSteps.Payment)
+        }
+    }, [])
 
     // clearing any payment errors from location.state
     useEffect(() => {
@@ -116,7 +125,11 @@ const Payment = () => {
 
                     <Stack spacing={6}>
                         {!selectedPayment ? (
-                            <CCVPaymentSelection form={paymentMethodForm} hideSubmitButton />
+                            <CCVPaymentSelection
+                                form={paymentMethodForm}
+                                setPaymentError={setPaymentError}
+                                hideSubmitButton
+                            />
                         ) : (
                             <Stack spacing={3}>
                                 <Heading as="h3" fontSize="md">

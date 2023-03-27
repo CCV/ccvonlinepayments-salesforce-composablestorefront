@@ -1,23 +1,16 @@
 import {useCommerceAPI} from '../../../../commerce-api/contexts'
 import {getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
-import {useCheckout} from '../checkout-context'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()
     const {locale} = useIntl()
-    const {selectedPayment, paymentMethods, setGlobalError} = useCheckout()
-    const {formatMessage} = useIntl()
 
     return {
         async createRedirectSession() {
-            const ccvId = paymentMethods.applicablePaymentMethods.find(
-                (method) => method.id === selectedPayment.paymentMethodId
-            ).c_ccvMethodId
-
             const paymentSession = await api.ccvPayment.createRedirectSession({
+                // headers: {_sfdc_customer_id: api.auth.usid},
                 parameters: {
-                    paymentType: ccvId,
                     returnUrl: `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
                 }
             })
@@ -27,33 +20,17 @@ const useCCVApi = () => {
 
             return paymentSession.c_result
         },
-        async checkTransactionStatus() {
+        async checkTransactionStatus({parameters}) {
             const paymentTransaction = await api.ccvPayment.checkTransactionStatus({
                 // eslint-disable-next-line prettier/prettier
-                parameters: {}
+                parameters: parameters
             })
-            if (!paymentTransaction?.status) {
+            console.log(paymentTransaction)
+            if (!paymentTransaction?.c_result) {
                 throw new Error('Error checking transaction status.')
             }
 
-            return paymentTransaction
-        },
-        async submitOrder(setIsLoading) {
-            try {
-                setIsLoading(true)
-                setGlobalError(undefined)
-                // create redirect session via ccv api
-                const createRedirectSessionResponse = await this.createRedirectSession()
-                // redirect to hosted payment page
-                window.location.href = createRedirectSessionResponse.payUrl
-            } catch (error) {
-                setIsLoading(false)
-                const message = formatMessage({
-                    id: 'checkout.message.generic_error',
-                    defaultMessage: 'An unexpected error occurred during checkout.'
-                })
-                setGlobalError(message)
-            }
+            return paymentTransaction.c_result
         }
     }
 }

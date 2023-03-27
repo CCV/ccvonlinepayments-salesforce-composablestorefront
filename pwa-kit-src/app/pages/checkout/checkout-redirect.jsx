@@ -1,29 +1,33 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useContext} from 'react'
 import useNavigation from '../../hooks/use-navigation'
-import useCustomer from '../../commerce-api/hooks/useCustomer'
-import useBasket from '../../commerce-api/hooks/useBasket'
-import {CheckoutProvider, useCheckout} from './util/checkout-context'
 import CheckoutSkeleton from './partials/checkout-skeleton'
 import useCCVApi from './util/ccv-utils/useCCVApi'
 import {Box, Text} from '@chakra-ui/react'
+import {BasketContext} from '../../commerce-api/contexts'
 
-const Checkout = () => {
-    const ccv = useCCVApi()
+const CheckoutRedirect = () => {
     const navigate = useNavigation()
-    const {placeOrder} = useCheckout()
+    const {setBasket} = useContext(BasketContext)
+    const ccv = useCCVApi()
 
     useEffect(async () => {
         try {
-            let transactionSatus = await ccv.checkTransactionStatus()
-            console.log(transactionSatus)
+            const urlParams = new URLSearchParams(location.search)
+            const ref = urlParams.get('ref')
+            const token = urlParams.get('token')
 
-            if (!transactionSatus || transactionSatus.status === 'failed') {
-                throw new Error(transactionSatus.errorMsg)
+            let transactionStatus = await ccv.checkTransactionStatus({parameters: {ref, token}})
+
+            if (!transactionStatus || transactionStatus.status === 'failed') {
+                localStorage.removeItem('newOrderData')
+                throw new Error(transactionStatus.errorMsg)
             } else {
-                await placeOrder()
+                await setBasket(JSON.parse(localStorage.getItem('newOrderData')))
+                localStorage.removeItem('newOrderData')
                 navigate('/checkout/confirmation')
             }
         } catch (error) {
+            console.log(error)
             navigate('/checkout', 'push', {paymentErrorMsg: error.message})
         }
     }, [])
@@ -33,20 +37,10 @@ const Checkout = () => {
             <Text align="center" fontSize="xl" fontWeight="semibold" padding="20px">
                 Checking transaction status...
             </Text>
+
             <CheckoutSkeleton />
         </Box>
     )
 }
-const CheckoutRedirect = () => {
-    const customer = useCustomer()
-    const basket = useBasket()
-    if (!customer || !customer.customerId || !basket || !basket.basketId) {
-        return <CheckoutSkeleton />
-    }
-    return (
-        <CheckoutProvider>
-            <Checkout />
-        </CheckoutProvider>
-    )
-}
+
 export default CheckoutRedirect

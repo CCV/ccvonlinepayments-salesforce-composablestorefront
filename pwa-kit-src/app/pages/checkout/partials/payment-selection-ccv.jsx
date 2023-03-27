@@ -29,20 +29,14 @@ import {PaymentMethodIcons} from '../util/ccv-utils/ccv-utils'
 import Field from '../../../components/field'
 import {useCCVPayment} from '../util/ccv-utils/ccv-context'
 
-const PaymentSelection = ({form}) => {
+const PaymentSelection = ({form, setPaymentError}) => {
     const {formatMessage} = useIntl()
     const {paymentMethods} = useCheckout()
 
     const paymentFormRef = useRef()
     form = form || useForm()
 
-    const {currentSelectedMethodId, setCurrentSelectedMethodId, onPaymentMethodChange} =
-        useCCVPayment()
-
-    useEffect(() => {
-        // reset currentSelectedMethod on first load
-        setCurrentSelectedMethodId(null)
-    }, [])
+    const {currentSelectedMethodId, onPaymentMethodChange} = useCCVPayment()
 
     // focus form on error
     useEffect(() => {
@@ -53,6 +47,7 @@ const PaymentSelection = ({form}) => {
 
     const test = (e) => {
         e.preventDefault()
+        // console.log(paymentMethods)
         console.log(form.getValues())
         console.log(form)
         console.log(currentSelectedMethodId)
@@ -80,6 +75,7 @@ const PaymentSelection = ({form}) => {
                                         console.log(e)
                                         onChange(e)
                                         onPaymentMethodChange(e)
+                                        setPaymentError('')
                                     }}
                                 >
                                     {/* dynamic payment methods */}
@@ -125,10 +121,13 @@ const PaymentSelection = ({form}) => {
 
 PaymentSelection.propTypes = {
     /** The form object returnd from `useForm` */
-    form: PropTypes.object
+    form: PropTypes.object,
+    setPaymentError: PropTypes.func
 }
 
 const CCVPaymentMethodRadio = function ({paymentMethod, currentSelectedMethodId}) {
+    const {form} = useCCVPayment()
+
     return (
         <Box border="1px solid" borderColor="gray.100" rounded="base">
             {/* payment method heading row */}
@@ -142,7 +141,15 @@ const CCVPaymentMethodRadio = function ({paymentMethod, currentSelectedMethodId}
                 </Radio>
             </Box>
             {currentSelectedMethodId === paymentMethod.id && (
-                <CCVMethodOptions paymentMethodId={currentSelectedMethodId} />
+                <>
+                    <CCVMethodOptions paymentMethodId={currentSelectedMethodId} />
+                    <input
+                        type="hidden"
+                        name="ccvMethodId"
+                        ref={form.register}
+                        defaultValue={paymentMethod.c_ccvMethodId}
+                    />
+                </>
             )}
         </Box>
     )

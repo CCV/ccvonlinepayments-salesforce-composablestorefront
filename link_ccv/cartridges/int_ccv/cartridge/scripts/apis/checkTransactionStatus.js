@@ -1,41 +1,46 @@
 'use strict';
-
+var OrderMgr = require('dw/order/OrderMgr');
 exports.get = function () {
-    var BasketMgr = require('dw/order/BasketMgr');
-    var { checkCCVTransaction } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
+    var orderRef = request.httpParameters.ref && request.httpParameters.ref[0];
+    var orderToken = request.httpParameters.token && request.httpParameters.token[0];
 
-    var currentBasket = BasketMgr.getCurrentBasket();
-    var reference = currentBasket.custom.ccvTransactionReference;
-
-    if (!reference) {
-        throw new Error('No transaction reference found.');
+    if (!orderRef || !orderToken) {
+        throw new Error(`CCV: Order reference or token missing from request: OrderNo: ${orderRef} token: ${orderToken}`);
     }
 
-    var transactionStatus = checkCCVTransaction(reference);
+    var order = OrderMgr.getOrder(orderRef, orderToken);
 
-    // if 'storeInVault' was passed in the createCCVPayment call, this response will include a
-    // vaultAccessToken, which we will save as a token to the customer's payment instrument later (when placing the order)
-    if (transactionStatus.status === 'success'
-        && transactionStatus.details
-        && transactionStatus.details.vaultAccessToken) {
-        var ocapiService = require('*/cartridge/scripts/services/ocapiService.js');
-        try {
-            // save card token to basket so we can save it to customer's payment instrument when placing the order
-            ocapiService.createOcapiService().call({
-                requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/baskets/${currentBasket.getUUID()}`,
-                requestMethod: 'PATCH',
-                requestBody: {
-                    c_ccvVaultAccessToken: transactionStatus.details.vaultAccessToken
-                }
-            });
-        } catch (error) {
-            var Logger = require('dw/system/Logger');
-            Logger.error('Failed saving CCV vaultAccessToken to customer\'s basket');
-        }
+    if (!order) {
+        throw new Error('CCV: Order not found.');
     }
+
+    if (order.customer.ID !== customer.ID) {
+        throw new Error('CCV: Order reference belongs to a different customer.');
+    }
+
+    var ocapiService = require('*/cartridge/scripts/services/ocapiService.js');
+
+    var orderPaymentInstrument = order.paymentInstruments[0];
+
+    var paymentInstrumentPatchBody = {
+        payment_method_id: orderPaymentInstrument.paymentMethod,
+        payment_card: orderPaymentInstrument.creditCardType ?
+    { card_type: orderPaymentInstrument.creditCardType } : undefined
+    };
+
+    var patchOrderPaymentInstrumentResponse = ocapiService.createOcapiService().call({
+        requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/orders/${order.orderNo}/payment_instruments/${orderPaymentInstrument.UUID}`,
+        requestMethod: 'PATCH',
+        requestBody: paymentInstrumentPatchBody
+    });
+
+    if (!patchOrderPaymentInstrumentResponse.ok) {
+        throw new Error(`CCV: could not authorize payment: ${patchOrderPaymentInstrumentResponse.errorMessage}`);
+    }
+
     var result = {
-        status: transactionStatus.status,
-        errorMsg: transactionStatus.failureCode
+        status: orderPaymentInstrument.custom.ccv_transaction_status,
+        errorMsg: orderPaymentInstrument.custom.ccv_failure_code
     };
 
     return result;
