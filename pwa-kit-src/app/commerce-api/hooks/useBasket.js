@@ -28,7 +28,7 @@ export default function useBasket(opts = {}) {
 
             // Check if a this represents a valid basket
             get loaded() {
-                return basket && basket.basketId
+                return basket && (basket.basketId || basket.c_order_status_pending)
             },
 
             get itemCount() {

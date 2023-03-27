@@ -35,7 +35,7 @@ exports.get = function () {
     });
 
     if (!patchOrderPaymentInstrumentResponse.ok) {
-        throw new Error(`CCV: could not authorize payment: ${patchOrderPaymentInstrumentResponse.errorMessage}`);
+        throw new Error(`CCV: error authorizing payment: ${patchOrderPaymentInstrumentResponse.errorMessage}`);
     }
 
     var result = {
