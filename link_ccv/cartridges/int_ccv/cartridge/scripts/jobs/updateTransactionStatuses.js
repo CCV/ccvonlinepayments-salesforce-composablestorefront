@@ -2,6 +2,7 @@ var Status = require('dw/system/Status');
 var Logger = require('dw/system/Logger');
 var OrderMgr = require('dw/order/OrderMgr');
 var Order = require('dw/order/Order');
+var Site = require('dw/system/Site');
 var Transaction = require('dw/system/Transaction');
 var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
 var PaymentMgr = require('dw/order/PaymentMgr');
@@ -43,12 +44,18 @@ function checkOrderStatus(order) {
         if (status === CCV_CONSTANTS.STATUS.SUCCESS &&
             (transactionStatusResponse.amount !== order.totalGrossPrice.value || transactionStatusResponse.currency !== order.currencyCode.toLowerCase())) {
             var msg = `Payment amount or currency mismatch: (${transactionStatusResponse.amount} | ${order.totalGrossPrice}) (${transactionStatusResponse.currency}|${order.currencyCode.toLowerCase()}).`;
-            Logger.warn(`${msg} Failing order ${order.orderNo}`);
+            Logger.fatal(`${msg} Failing order ${order.orderNo}`);
 
-            refundCCVPayment({
-                order: order,
-                description: 'Price or currency mismatch - refund/reversal by updateTransactionStatuses job'
-            });
+            if (Site.current.getCustomPreferenceValue('ccvAutoRefundEnabled')) {
+                refundCCVPayment({
+                    order: order,
+                    description: 'Price or currency mismatch - refund/reversal by updateTransactionStatuses job'
+                });
+                Transaction.wrap(() => {
+                    OrderMgr.failOrder(order);
+                    order.addNote('Order failed by updateTransactionStatuses job', msg);
+                });
+            }
 
             Transaction.wrap(() => {
                 OrderMgr.failOrder(order);

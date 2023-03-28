@@ -115,8 +115,8 @@
                 <min-length>0</min-length>
             </attribute-definition>
             <attribute-definition attribute-id="ccv_failure_code">
-                <display-name xml:lang="x-default">CCV transaction status</display-name>
-                <description xml:lang="x-default">Status of the CCV payment transaction</description>
+                <display-name xml:lang="x-default">CCV failure code</display-name>
+                <description xml:lang="x-default">CCV code indicating why the payment failed</description>
                 <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -180,12 +180,22 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="ccvAutoRefundEnabled">
+                <display-name xml:lang="x-default">Auto Refund Enabled</display-name>
+                <description xml:lang="x-default">If enabled, orders with mismatching totals/currency in SFCC compared to CCV will be automatically refunded in updateTransactionStatuses job</description>
+                <type>boolean</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="CCV">
                 <display-name xml:lang="x-default">ccv</display-name>
                 <attribute attribute-id="ccvCardsAutoCaptureEnabled"/>
                 <attribute attribute-id="ccvStoreCardsInVaultEnabled"/>
+                <attribute attribute-id="ccvAutoRefundEnabled"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

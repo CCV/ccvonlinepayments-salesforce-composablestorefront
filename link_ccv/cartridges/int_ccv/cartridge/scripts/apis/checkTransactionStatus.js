@@ -1,11 +1,13 @@
 'use strict';
 var OrderMgr = require('dw/order/OrderMgr');
+var Order = require('dw/order/Order');
+
 exports.get = function () {
     var orderRef = request.httpParameters.ref && request.httpParameters.ref[0];
     var orderToken = request.httpParameters.token && request.httpParameters.token[0];
 
     if (!orderRef || !orderToken) {
-        throw new Error(`CCV: Order reference or token missing from request: OrderNo: ${orderRef} token: ${orderToken}`);
+        throw new Error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef} token: ${orderToken}`);
     }
 
     var order = OrderMgr.getOrder(orderRef, orderToken);
@@ -16,6 +18,10 @@ exports.get = function () {
 
     if (order.customer.ID !== customer.ID) {
         throw new Error('CCV: Order reference belongs to a different customer.');
+    }
+
+    if (order.status.value !== Order.ORDER_STATUS_CREATED) {
+        throw new Error('CCV: Trying to update an order that is not in "Created" status.');
     }
 
     var ocapiService = require('*/cartridge/scripts/services/ocapiService.js');
