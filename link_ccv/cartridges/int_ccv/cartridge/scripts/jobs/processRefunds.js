@@ -1,5 +1,5 @@
 var Status = require('dw/system/Status');
-var Logger = require('dw/system/Logger');
+var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv_refunds');
 var OrderMgr = require('dw/order/OrderMgr');
 var Transaction = require('dw/system/Transaction');
 var { CCV_CONSTANTS, checkCCVTransactions } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
@@ -15,7 +15,7 @@ exports.execute = function () {
  * @param {dw.order.Order} order order
  */
 function checkRefundStatus(order) {
-    Logger.info(`Processing refund for order ${order.orderNo}`);
+    ccvLogger.info(`Processing refund for order ${order.orderNo}`);
     try {
         var refunds = JSON.parse(order.custom.ccvRefunds || '[]');
 
@@ -42,7 +42,7 @@ function checkRefundStatus(order) {
             order.custom.ccvHasPendingRefunds = hasPendingRefunds; // eslint-disable-line no-param-reassign
         });
     } catch (error) {
-        Logger.error(`Error updating status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
+        ccvLogger.error(`Error updating status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
     }
 }
 

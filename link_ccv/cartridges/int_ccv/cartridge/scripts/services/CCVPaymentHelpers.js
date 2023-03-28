@@ -159,7 +159,7 @@ function refundCCVPayment({ order, amount, description }) {
         description: description
     };
 
-    var isReversal = order.paymentTransaction.type.value === dw.order.PaymentTransaction.TYPE_AUTH;
+    var isReversal = order.paymentInstruments[0].paymentTransaction.type.value === dw.order.PaymentTransaction.TYPE_AUTH;
 
     if (amount && !isReversal) {
         // for partial refunds

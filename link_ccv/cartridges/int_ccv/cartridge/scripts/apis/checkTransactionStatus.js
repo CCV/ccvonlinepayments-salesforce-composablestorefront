@@ -30,8 +30,12 @@ exports.get = function () {
 
     var paymentInstrumentPatchBody = {
         payment_method_id: orderPaymentInstrument.paymentMethod,
-        payment_card: orderPaymentInstrument.creditCardType ?
-    { card_type: orderPaymentInstrument.creditCardType } : undefined
+        payment_card: orderPaymentInstrument.creditCardNumber ?
+        { card_type: orderPaymentInstrument.creditCardType,
+            number: orderPaymentInstrument.creditCardNumber,
+            expiration_month: orderPaymentInstrument.creditCardExpirationMonth,
+            expiration_year: orderPaymentInstrument.creditCardExpirationYear
+        } : undefined
     };
 
     var patchOrderPaymentInstrumentResponse = ocapiService.createOcapiService().call({

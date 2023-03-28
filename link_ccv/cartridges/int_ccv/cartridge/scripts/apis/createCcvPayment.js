@@ -91,7 +91,7 @@ exports.get = function (httpParams) {
             if (customer.registered && customer.authenticated && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
                 // a vaultAccessToken will be returned in the checkTransactionInfo response
                 // we will add it to the customer's payment instrument in the UpdateStatuses job
-                requestBody.storeInVault = 'yes';
+                // requestBody.storeInVault = 'yes';
             }
         }
 
@@ -113,13 +113,17 @@ exports.get = function (httpParams) {
     // ============= 3. SAVE CCV DATA TO ORDER PAYMENT INSTRUMENT =============
 
     var updatePaymentInstrumentResponse = ocapiService.createOcapiService().call({
-        requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/orders/${order.orderNo}/payment_instruments/${paymentInstrument.UUID}`,
+        requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/orders/${order.orderNo}/payment_instruments/${paymentInstrument.UUID}?skip_authorization=true`,
         requestMethod: 'PATCH',
         requestBody: {
             payment_method_id: paymentInstrument.paymentMethod,
             c_ccvTransactionReference: paymentResponse.reference,
             payment_card: paymentInstrument.creditCardNumber ?
-            { card_type: paymentInstrument.creditCardType } : undefined
+            { card_type: paymentInstrument.creditCardType,
+                number: paymentInstrument.creditCardNumber,
+                expiration_month: paymentInstrument.creditCardExpirationMonth,
+                expiration_year: paymentInstrument.creditCardExpirationYear
+            } : undefined
         }
     });
 
