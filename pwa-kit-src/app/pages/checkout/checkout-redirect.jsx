@@ -18,7 +18,7 @@ const CheckoutRedirect = () => {
             const newOrderData = JSON.parse(localStorage.getItem('newOrderData'))
 
             // if we don't have newOrderData, we can't show a confirmation page, so we
-            // throw an error and redirect to home. However, the order is still created and
+            // throw an error and redirect to home. However, the order is still "created" and
             // will be processed by the updateTransactionStatuses job
             if (!ref || !token || !newOrderData) {
                 throw new Error()
@@ -34,11 +34,15 @@ const CheckoutRedirect = () => {
 
             if (!transactionStatus) {
                 throw new Error()
-            } else if (transactionStatus.status === 'failed') {
+            } else if (
+                transactionStatus.status === 'failed' ||
+                transactionStatus.customPaymentError
+            ) {
                 await setBasket({c_order_status_pending: false})
                 localStorage.removeItem('newOrderData')
+                var errorMsg = transactionStatus.errorMsg || transactionStatus.customPaymentError
 
-                navigate('/checkout', 'push', {paymentErrorMsg: transactionStatus.errorMsg})
+                navigate('/checkout', 'push', {paymentErrorMsg: errorMsg})
             } else {
                 await setBasket({
                     ...newOrderData,

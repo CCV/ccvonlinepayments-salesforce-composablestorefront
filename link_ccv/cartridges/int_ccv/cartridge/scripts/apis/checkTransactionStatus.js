@@ -50,7 +50,8 @@ exports.get = function () {
 
     var result = {
         status: orderPaymentInstrument.custom.ccv_transaction_status,
-        errorMsg: orderPaymentInstrument.custom.ccv_failure_code
+        errorMsg: orderPaymentInstrument.custom.ccv_failure_code,
+        customPaymentError: order.custom.ccvPriceOrCurrencyMismatch && 'price_or_currency_mismatch'
     };
 
     return result;
