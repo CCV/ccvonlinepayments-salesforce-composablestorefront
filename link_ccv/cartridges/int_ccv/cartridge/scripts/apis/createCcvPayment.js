@@ -54,6 +54,7 @@ exports.get = function (httpParams) {
     var requestBody = {
         amount: order.totalGrossPrice.value,
         // amount: 8.01,
+        // amount: 50,
         currency: order.currencyCode.toLowerCase(),
         method: selectedMethodCCVId,
         returnUrl: `${returnUrl}?ref=${order.orderNo}&token=${order.orderToken}`,

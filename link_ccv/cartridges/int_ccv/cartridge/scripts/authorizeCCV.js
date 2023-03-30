@@ -1,6 +1,7 @@
 var Status = require('dw/system/Status');
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
 var OrderMgr = require('dw/order/OrderMgr');
+var PaymentTransaction = require('dw/order/PaymentTransaction');
 var Site = require('dw/system/Site');
 var PaymentMgr = require('dw/order/PaymentMgr');
 var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
@@ -33,8 +34,8 @@ exports.authorizeCCV = function (order, orderPaymentInstrument) {
         paymentInstrument.paymentTransaction.setTransactionID(ccvTransactionReference);
         paymentInstrument.paymentTransaction.paymentProcessor = paymentProcessor;
         paymentInstrument.paymentTransaction.type = transactionStatusResponse.type === CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE // eslint-disable-line no-param-reassign
-            ? dw.order.PaymentTransaction.TYPE_AUTH
-            : dw.order.PaymentTransaction.TYPE_CAPTURE;
+            ? PaymentTransaction.TYPE_AUTH
+            : PaymentTransaction.TYPE_CAPTURE;
     }
 
     if (status === CCV_CONSTANTS.STATUS.FAILED) {

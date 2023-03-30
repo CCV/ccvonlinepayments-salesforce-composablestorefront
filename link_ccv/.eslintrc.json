@@ -46,5 +46,8 @@
     "dataLayer": true,
     "$$": true,
     "$$$": true
+  },
+  "env": {
+    "mocha": true
   }
 }
