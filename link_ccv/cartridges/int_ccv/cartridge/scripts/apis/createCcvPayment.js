@@ -29,8 +29,6 @@ exports.get = function (httpParams) {
         }
     });
 
-    // throw new Error(123);
-
     if (!orderResponse.ok) {
         throw new Error(orderResponse.errorMessage);
     }
@@ -105,9 +103,15 @@ exports.get = function (httpParams) {
         requestBody.brand = 'bcmc';
     }
 
-    var paymentResponse = createCCVPayment({
-        requestBody: requestBody
-    });
+    var paymentResponse = {};
+    try {
+        paymentResponse = createCCVPayment({
+            requestBody: requestBody
+        });
+    } catch (error) {
+        var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
+        ccvLogger.error(`Failed creating a CCV payment request: ${error}`);
+    }
 
     // ============= 3. SAVE CCV DATA TO ORDER PAYMENT INSTRUMENT =============
 
@@ -131,7 +135,10 @@ exports.get = function (httpParams) {
     }
 
     if (!order.custom.ccvTransactionReference) {
-        throw new Error('No CCV transaction reference in basket - order failed');
+        // we don't throw an error here because we want special handling for this case
+        // on client-side - we have to remove payment instruments with masked data from
+        // the reopened basket
+        return { errorMsg: 'missing_reference' };
     }
 
     return {

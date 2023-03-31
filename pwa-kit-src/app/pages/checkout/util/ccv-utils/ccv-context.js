@@ -15,8 +15,6 @@ export const CCVPaymentProvider = ({form, children}) => {
 
     const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
 
-    const [currentSelectedMethodId, setCurrentSelectedMethodId] = useState(null)
-
     const onPaymentIdChange = (value) => {
         console.log(form.getValues())
         if (value && isEditingPayment) {
@@ -31,9 +29,7 @@ export const CCVPaymentProvider = ({form, children}) => {
         form.trigger()
     }
 
-    const onPaymentMethodChange = (value) => {
-        console.log('payment method change', value)
-        setCurrentSelectedMethodId(value)
+    const onPaymentMethodChange = () => {
         if (isEditingPayment) {
             togglePaymentEdit()
         }
@@ -45,8 +41,6 @@ export const CCVPaymentProvider = ({form, children}) => {
                 form,
                 hasSavedCards,
                 isEditingPayment,
-                currentSelectedMethodId,
-                setCurrentSelectedMethodId,
                 setIsEditingPayment,
                 paymentMethodsMap,
                 onPaymentIdChange,

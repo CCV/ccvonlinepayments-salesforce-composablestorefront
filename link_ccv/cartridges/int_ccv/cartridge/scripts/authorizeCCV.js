@@ -18,8 +18,8 @@ exports.authorizeCCV = function (order, orderPaymentInstrument) {
     var transactionStatusResponse;
 
     if (!ccvTransactionReference) {
-        ccvLogger.warn(`No ccv transaction reference found for order ${order.orderNo}`);
-        return {};
+        ccvLogger.warn(`No CCV transaction reference found for order ${order.orderNo}`);
+        return { error: 'No CCV transaction reference found' };
     }
 
     try {
@@ -61,12 +61,8 @@ exports.handleAuthorizationResult = function (authResult, order) {
     var { status, transactionStatusResponse, currencyMismatch, priceMismatch, isAuthorized, error } = authResult;
 
     if (error) {
-        return new Status(Status.ERROR, `< CCV: error ${error}>`);
-    }
-
-    if (!order.custom.ccvTransactionReference) {
         handleError(order);
-        return new Status(Status.ERROR, '< CCV: no transaction response >');
+        return new Status(Status.ERROR, `< CCV: error: ${error}>`);
     }
 
     if (status === CCV_CONSTANTS.STATUS.FAILED) {
@@ -133,12 +129,16 @@ function handlePriceOrCurrencyMismatch(order, transactionStatusResponse) {
     var msg = `Payment amount or currency mismatch: (${transactionStatusResponse.amount} | ${order.totalGrossPrice}) (${transactionStatusResponse.currency} | ${order.currencyCode.toLowerCase()}).`;
 
     if (Site.current.getCustomPreferenceValue('ccvAutoRefundEnabled')) {
-        var refundResult = refundCCVPayment({
-            order: order,
-            description: 'Price or currency mismatch - automatic refund/reversal'
-        });
-        if (refundResult) {
-            order.addNote('Automatic refund initiated', 'reason: price/currency mismatch');
+        try {
+            var refundResult = refundCCVPayment({
+                order: order,
+                description: 'Price or currency mismatch - automatic refund/reversal'
+            });
+            if (refundResult) {
+                order.addNote('CCV: Automatic refund initiated', 'reason: price/currency mismatch');
+            }
+        } catch (error) {
+            order.addNote('CCV: Automatic refund failed', error);
         }
     }
 

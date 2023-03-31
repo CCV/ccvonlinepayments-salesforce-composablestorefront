@@ -28,9 +28,8 @@ import AddressDisplay from '../../../components/address-display'
 import {PromoCode, usePromoCode} from '../../../components/promo-code'
 import {PaymentSummaryCCV} from '../util/ccv-utils/ccv-utils'
 import {CCVPaymentProvider} from '../util/ccv-utils/ccv-context'
-import {useLocation} from 'react-router-dom'
 
-const Payment = () => {
+const Payment = ({paymentError, setPaymentError}) => {
     const {formatMessage} = useIntl()
 
     const {
@@ -54,8 +53,6 @@ const Payment = () => {
 
     const {removePromoCode, ...promoCodeProps} = usePromoCode()
 
-    const location = useLocation()
-    const [paymentError, setPaymentError] = useState(location.state?.paymentErrorMsg || '')
     const paymentErrorRef = useRef()
 
     // focus on payment error
@@ -73,7 +70,7 @@ const Payment = () => {
             await removePaymentAndResetForm()
             setCheckoutStep(checkoutSteps.Payment)
         }
-    }, [])
+    }, [paymentError])
 
     // clearing any payment errors from location.state
     useEffect(() => {
@@ -230,6 +227,11 @@ const Payment = () => {
             </ToggleCard>
         </CCVPaymentProvider>
     )
+}
+
+Payment.propTypes = {
+    paymentError: PropTypes.string,
+    setPaymentError: PropTypes.func
 }
 
 const CCVPaymentError = ({msg, innerRef}) => {

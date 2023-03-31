@@ -17,33 +17,28 @@ import CCVPayment from './partials/payment-ccv'
 import CheckoutSkeleton from './partials/checkout-skeleton'
 import OrderSummary from '../../components/order-summary'
 import useCCVApi from './util/ccv-utils/useCCVApi'
+import {useLocation} from 'react-router-dom'
 
 const Checkout = () => {
     const {globalError, setGlobalError, step} = useCheckout()
     const [isLoading, setIsLoading] = useState(false)
     const ccv = useCCVApi()
     const {formatMessage} = useIntl()
+    const location = useLocation()
+
+    const [paymentError, setPaymentError] = useState(location.state?.paymentErrorMsg || '')
+
     // Scroll to the top when we get a global error
     useEffect(() => {
-        if (globalError || step === 4) {
+        if (globalError || (step === 4 && !paymentError)) {
             window.scrollTo({top: 0})
         }
     }, [globalError, step])
 
-    // const submitOrder = async () => {
-    //     return;
-    //     setIsLoading(true)
-    //     try {
-    //         await placeOrder()
-    //         navigate('/checkout/confirmation')
-    //     } catch (error) {
-    //         setIsLoading(false)
-    //     }
-    // }
-
     const submitOrder = async () => {
         try {
             setIsLoading(true)
+            setPaymentError('')
             setGlobalError(undefined)
             // create redirect session via ccv api
             const createRedirectSessionResponse = await ccv.createRedirectSession()
@@ -62,7 +57,11 @@ const Checkout = () => {
                 id: 'checkout.message.generic_error',
                 defaultMessage: 'An unexpected error occurred during checkout.'
             })
-            setGlobalError(message)
+            if (error.message === 'missing_reference') {
+                setPaymentError('missing_reference')
+            } else {
+                setGlobalError(message)
+            }
         }
     }
 
@@ -87,7 +86,10 @@ const Checkout = () => {
                             <ContactInfo />
                             <ShippingAddress />
                             <ShippingOptions />
-                            <CCVPayment />
+                            <CCVPayment
+                                paymentError={paymentError}
+                                setPaymentError={setPaymentError}
+                            />
 
                             {step === 4 && (
                                 <Box pt={3} display={{base: 'none', lg: 'block'}}>

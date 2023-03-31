@@ -36,7 +36,7 @@ const PaymentSelection = ({form, setPaymentError}) => {
     const paymentFormRef = useRef()
     form = form || useForm()
 
-    const {currentSelectedMethodId, onPaymentMethodChange} = useCCVPayment()
+    const {onPaymentMethodChange} = useCCVPayment()
 
     // focus form on error
     useEffect(() => {
@@ -50,7 +50,6 @@ const PaymentSelection = ({form, setPaymentError}) => {
         // console.log(paymentMethods)
         console.log(form.getValues())
         console.log(form)
-        console.log(currentSelectedMethodId)
     }
 
     return (
@@ -87,9 +86,6 @@ const PaymentSelection = ({form, setPaymentError}) => {
                                                         <CCVPaymentMethodRadio
                                                             key={paymentMethod.id}
                                                             paymentMethod={paymentMethod}
-                                                            currentSelectedMethodId={
-                                                                currentSelectedMethodId
-                                                            }
                                                         />
                                                     )
                                                 }
@@ -125,8 +121,9 @@ PaymentSelection.propTypes = {
     setPaymentError: PropTypes.func
 }
 
-const CCVPaymentMethodRadio = function ({paymentMethod, currentSelectedMethodId}) {
+const CCVPaymentMethodRadio = function ({paymentMethod}) {
     const {form} = useCCVPayment()
+    const currentSelectedMethodId = form.getValues('paymentMethodId')
 
     return (
         <Box border="1px solid" borderColor="gray.100" rounded="base">

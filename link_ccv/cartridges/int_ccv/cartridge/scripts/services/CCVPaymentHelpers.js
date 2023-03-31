@@ -84,24 +84,6 @@ function createCCVPayment(params) {
         requestMethod: 'POST',
         requestBody: params.requestBody
     });
-
-    /** response
-     * {
-        "merchantOrderReference" : "123456",
-        "amount" : 9.99,
-        "returnUrl" : "http://shop/return?order=123456",
-        "language" : "eng",
-        "lastUpdate" : 1450871254946,
-        "payUrl" : "https://redirect.jforce.be/card/payment.html?reference=C151223124734945CB87E191.0",
-        "reference" : "C151223124734945CB87E191.0",
-        "created" : 1450871254946,
-        "currency" : "eur",
-        "method" : "card",
-        "type" : "sale",
-        "description" : "Order 123456",
-        "status" : "pending"
-        }
-     */
 }
 
 /**
@@ -112,23 +94,7 @@ function createCCVPayment(params) {
 function checkCCVTransaction(reference) {
     return callCCVService({
         requestMethod: 'GET',
-        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?reference=${reference}`,
-        mockResponse: {
-            merchantOrderReference: '123456',
-            amount: 33.17,
-            brand: 'visa',
-            returnUrl: 'http://shop/return?order=123456',
-            language: 'eng',
-            lastUpdate: 1450871414476,
-            payUrl: 'https://redirect.jforce.be/card/payment.html?reference=C151223124734945CB87E191.0',
-            reference: 'C151223124734945CB87E191.0',
-            created: 1450871254959,
-            currency: 'eur',
-            method: 'card',
-            type: 'sale',
-            description: 'Order 123456',
-            status: 'success'
-        }
+        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?reference=${reference}`
     });
 }
 

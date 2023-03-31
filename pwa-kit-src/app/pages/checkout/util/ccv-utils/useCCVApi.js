@@ -14,11 +14,12 @@ const useCCVApi = () => {
                     returnUrl: `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
                 }
             })
-            if (!paymentSession.c_result || !paymentSession.c_result.payUrl) {
-                throw new Error('Error creating payment redirect.')
+            const result = paymentSession?.c_result
+            if (!result || result.errorMsg || !result.payUrl) {
+                throw new Error(result.errorMsg || 'Error creating payment redirect.')
             }
 
-            return paymentSession.c_result
+            return result
         },
         async checkTransactionStatus({parameters}) {
             const paymentTransaction = await api.ccvPayment.checkTransactionStatus({
