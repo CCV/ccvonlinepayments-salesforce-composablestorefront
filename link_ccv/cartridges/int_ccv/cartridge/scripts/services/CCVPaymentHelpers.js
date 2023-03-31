@@ -165,11 +165,18 @@ function refundCCVPayment({ order, amount, description }) {
         // for partial refunds
         requestBody.amount = amount;
     }
+    var refundResponse;
 
-    var refundResponse = callCCVService({
-        path: isReversal ? CCV_CONSTANTS.PATH.REVERSAL : CCV_CONSTANTS.PATH.REFUND,
-        requestBody: requestBody
-    });
+    try {
+        refundResponse = callCCVService({
+            path: isReversal ? CCV_CONSTANTS.PATH.REVERSAL : CCV_CONSTANTS.PATH.REFUND,
+            requestBody: requestBody
+        });
+    } catch (error) {
+        // refund requests can fail if, for example, we exceed the refundable amount
+        order.addNote('CCV: refund request failed', error);
+        return null;
+    }
 
     ccvRefunds.push({
         reference: refundResponse.reference,

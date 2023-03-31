@@ -11,17 +11,23 @@ var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('~/cartri
  * Must be called in a transactional context.
  * @param {dw.order.Order} order order being processed
  * @param {dw.order.OrderPaymentInstrument|undefined} orderPaymentInstrument order payment instrument (optional)
- * @returns {dw.system.Status} authorization status
+ * @returns {Object} authorization status object
  */
 exports.authorizeCCV = function (order, orderPaymentInstrument) {
     var ccvTransactionReference = order.custom.ccvTransactionReference;
+    var transactionStatusResponse;
 
     if (!ccvTransactionReference) {
         ccvLogger.warn(`No ccv transaction reference found for order ${order.orderNo}`);
-        return new Status(Status.ERROR);
+        return {};
     }
 
-    var transactionStatusResponse = checkCCVTransaction(ccvTransactionReference);
+    try {
+        transactionStatusResponse = checkCCVTransaction(ccvTransactionReference);
+    } catch (error) {
+        return { error };
+    }
+
     var status = transactionStatusResponse.status;
     var paymentInstrument = orderPaymentInstrument || order.paymentInstruments[0];
 
@@ -38,31 +44,64 @@ exports.authorizeCCV = function (order, orderPaymentInstrument) {
             : PaymentTransaction.TYPE_CAPTURE;
     }
 
+    var currencyMismatch = transactionStatusResponse.currency !== order.currencyCode.toLowerCase();
+    var priceMismatch = transactionStatusResponse.amount !== order.totalGrossPrice.value;
+
+    return {
+        status: status,
+        currencyMismatch,
+        priceMismatch,
+        ccvTransactionReference,
+        transactionStatusResponse,
+        isAuthorized: status === CCV_CONSTANTS.STATUS.SUCCESS && !currencyMismatch && !priceMismatch
+    };
+};
+
+exports.handleAuthorizationResult = function (authResult, order) {
+    var { status, transactionStatusResponse, currencyMismatch, priceMismatch, isAuthorized, error } = authResult;
+
+    if (error) {
+        return new Status(Status.ERROR, `< CCV: error ${error}>`);
+    }
+
+    if (!order.custom.ccvTransactionReference) {
+        handleError(order);
+        return new Status(Status.ERROR, '< CCV: no transaction response >');
+    }
+
     if (status === CCV_CONSTANTS.STATUS.FAILED) {
         handleFailed(order);
-        return new Status(Status.ERROR, 'status=failed');
+        return new Status(Status.ERROR, `< CCV: status: failed; ccvFailureCode: ${transactionStatusResponse.failureCode} >`);
     }
 
     if (status === CCV_CONSTANTS.STATUS.MANUAL_INTERVENTION) {
-        handleManualIntervention(order, ccvTransactionReference);
-        return new Status(Status.ERROR, 'manual intervention required');
+        handleManualIntervention(order, order.custom.ccvTransactionReference);
+        return new Status(Status.ERROR, `< CCV: status: ${status} >`);
     }
 
-    // payment amount or currency mismatch
-    if (status === CCV_CONSTANTS.STATUS.SUCCESS &&
-        (transactionStatusResponse.amount !== order.totalGrossPrice.value || transactionStatusResponse.currency !== order.currencyCode.toLowerCase())) {
+    // paymentAmount or currency mismatch between SFCC and CCV
+    if (status === CCV_CONSTANTS.STATUS.SUCCESS && (priceMismatch || currencyMismatch)) {
         handlePriceOrCurrencyMismatch(order, transactionStatusResponse);
-        return new Status(Status.ERROR, 'price or currency mismatch');
+        return new Status(Status.ERROR, '< CCV: price or currency mismatch >');
     }
 
-    if (status === CCV_CONSTANTS.STATUS.SUCCESS) {
-        handleSuccess(order, paymentInstrument, transactionStatusResponse);
+    if (isAuthorized) {
+        handleSuccess(order);
         return new Status(Status.OK);
     }
 
-    return new Status(Status.ERROR, `<ccv: no action taken, status=${status}>`);
+    return new Status(Status.ERROR, `< CCV: no action taken, status=${status}>`);
 };
 
+/**
+ * Handler for orders with CCV payment status = failed
+ * @param {dw.order.Order} order order being processed
+ */
+function handleError(order) {
+    ccvLogger.info(`No CCV transaction id in order ${order.orderNo}. Failing order.`);
+    OrderMgr.failOrder(order);
+    order.addNote('CCV payment failed', 'No ccvTransactionReference found in order.');
+}
 /**
  * Handler for orders with CCV payment status = failed
  * @param {dw.order.Order} order order being processed
@@ -81,6 +120,7 @@ function handleFailed(order) {
  */
 function handleManualIntervention(order, ccvTransactionReference) {
     order.custom.ccvManualIntervention = true; // eslint-disable-line no-param-reassign
+
     ccvLogger.warn(`Manual intevention required for orderNo: ${order.orderNo}. CCV reference: ${ccvTransactionReference}`);
 }
 
@@ -93,26 +133,29 @@ function handlePriceOrCurrencyMismatch(order, transactionStatusResponse) {
     var msg = `Payment amount or currency mismatch: (${transactionStatusResponse.amount} | ${order.totalGrossPrice}) (${transactionStatusResponse.currency} | ${order.currencyCode.toLowerCase()}).`;
 
     if (Site.current.getCustomPreferenceValue('ccvAutoRefundEnabled')) {
-        refundCCVPayment({
+        var refundResult = refundCCVPayment({
             order: order,
             description: 'Price or currency mismatch - automatic refund/reversal'
         });
-        order.addNote('Automatic refund initiated', 'reason: price/currency mismatch');
+        if (refundResult) {
+            order.addNote('Automatic refund initiated', 'reason: price/currency mismatch');
+        }
     }
+
     order.custom.ccvPriceOrCurrencyMismatch = true; // eslint-disable-line no-param-reassign
     OrderMgr.failOrder(order);
-    order.addNote('Order failed by authorizeCCV', msg);
+    order.addNote('Order failed via CCV-handleAuthorizationResult', msg);
 
     ccvLogger.fatal(`${msg} Failing order ${order.orderNo}`);
 }
+
 /**
  * Handler for orders with CCV payment status = success
  * @param {dw.order.Order} order order being processed
- * @param {dw.order.OrderPaymentInstrument} paymentInstrument order payment instrument
- * @param {Object} transactionStatusResponse response from ccv checkTransactionInfo call
  */
-function handleSuccess(order, paymentInstrument) {
+function handleSuccess(order) {
     var orderTotal = order.totalGrossPrice;
+    var paymentInstrument = order.paymentInstruments[0];
 
     if (paymentInstrument.paymentTransaction.amount.valueOrNull === 0
         || paymentInstrument.paymentTransaction.amount.valueOrNull === null) {

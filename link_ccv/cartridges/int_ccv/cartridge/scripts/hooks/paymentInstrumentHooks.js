@@ -25,10 +25,12 @@ exports.afterPATCH = function (order, paymentInstrument, newPaymentInstrument) {
 };
 
 exports.authorize = function (order, orderPaymentInstrument) {
-    var { authorizeCCV } = require('*/cartridge/scripts/authorizeCCV');
+    var { authorizeCCV, handleAuthorizationResult } = require('*/cartridge/scripts/authorizeCCV');
 
     try {
-        return authorizeCCV(order, orderPaymentInstrument);
+        var authResult = authorizeCCV(order, orderPaymentInstrument);
+        var status = handleAuthorizationResult(authResult, order);
+        return status;
     } catch (error) {
         var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv_auth');
         ccvLogger.error(`Error authorizing payment: ${error}`);
@@ -37,10 +39,12 @@ exports.authorize = function (order, orderPaymentInstrument) {
 };
 
 exports.authorizeCreditCard = function (order, orderPaymentInstrument) {
-    var { authorizeCCV } = require('*/cartridge/scripts/authorizeCCV');
+    var { authorizeCCV, handleAuthorizationResult } = require('*/cartridge/scripts/authorizeCCV');
 
     try {
-        return authorizeCCV(order, orderPaymentInstrument);
+        var authResult = authorizeCCV(order, orderPaymentInstrument);
+        var status = handleAuthorizationResult(authResult, order);
+        return status;
     } catch (error) {
         var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv_auth');
         ccvLogger.error(`Error authorizing payment: ${error}`);

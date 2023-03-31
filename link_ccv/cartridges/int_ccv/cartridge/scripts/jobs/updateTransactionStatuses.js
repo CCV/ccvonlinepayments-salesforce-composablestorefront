@@ -2,7 +2,7 @@ var Status = require('dw/system/Status');
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
 var OrderMgr = require('dw/order/OrderMgr');
 var Order = require('dw/order/Order');
-var { authorizeCCV } = require('*/cartridge/scripts/authorizeCCV');
+var { authorizeCCV, handleAuthorizationResult } = require('*/cartridge/scripts/authorizeCCV');
 var Transaction = require('dw/system/Transaction');
 
 var jobStatus = new Status(Status.OK);
@@ -19,9 +19,11 @@ exports.execute = function () {
  */
 function checkOrderStatus(order) {
     try {
-        Transaction.wrap(() => {
-            var authStatus = authorizeCCV(order);
-            if (authStatus.status === dw.system.Status.OK) {
+        Transaction.wrap(function () {
+            var authResult = authorizeCCV(order);
+            var handlerResult = handleAuthorizationResult(authResult, order);
+
+            if (handlerResult.status === Status.OK) {
                 OrderMgr.placeOrder(order);
             }
         });
