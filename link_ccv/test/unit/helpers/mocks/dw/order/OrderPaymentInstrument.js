@@ -1,5 +1,5 @@
 var _super = require('./PaymentInstrument');
-
+var PaymentTransaction = require('./PaymentTransaction');
 var OrderPaymentInstrument = function () {};
 
 OrderPaymentInstrument.prototype = new _super();
@@ -14,9 +14,7 @@ OrderPaymentInstrument.prototype.isPermanentlyMasked = function () {};
 OrderPaymentInstrument.prototype.creditCardNumber = null;
 OrderPaymentInstrument.prototype.bankAccountNumber = null;
 OrderPaymentInstrument.prototype.bankAccountDriversLicense = null;
-OrderPaymentInstrument.prototype.paymentTransaction = {
-    setTransactionID: () => {}
-};
+OrderPaymentInstrument.prototype.paymentTransaction = new PaymentTransaction();
 OrderPaymentInstrument.prototype.capturedAmount = null;
 OrderPaymentInstrument.prototype.refundedAmount = null;
 

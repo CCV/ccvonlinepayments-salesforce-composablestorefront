@@ -120,6 +120,7 @@ Order.prototype.billingAddress = null;
 Order.prototype.deliveryItem = null;
 Order.prototype.deliveryItems = null;
 Order.prototype.returnCaseItem = null;
+Order.prototype.paymentInstruments = null;
 
 Order.PAYMENT_STATUS_PAID = 2;
 Order.PAYMENT_STATUS_UNPAID = 0;

@@ -1,10 +1,11 @@
 /* eslint-disable new-cap */
+/* eslint-disable no-unused-expressions */
 const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const { expect } = require('chai');
 
 const stubs = require('./helpers/mocks/stubs');
 
-const { authorizeCCV } = proxyquire('../../cartridges/int_ccv/cartridge/scripts/authorizeCCV', {
+const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges/int_ccv/cartridge/scripts/authorizeCCV', {
     'dw/order/Order': stubs.dw.OrderMock,
     'dw/order/OrderMgr': stubs.dw.OrderMgrMock,
     'dw/system/Transaction': stubs.dw.TransactionMock,
@@ -13,186 +14,228 @@ const { authorizeCCV } = proxyquire('../../cartridges/int_ccv/cartridge/scripts/
     'dw/system/Logger': stubs.dw.loggerMock,
     'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
     'dw/system/Site': stubs.dw.SiteMock,
-    '~/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpers
+    '~/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock
 });
-
 const Status = require('./helpers/mocks/dw/system/Status');
-const OrderPaymentInstrument = require('./helpers/mocks/dw/order/OrderPaymentInstrument');
 
-// var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
-
-describe('authorizeCCV', function () {
+describe('', function () {
     this.timeout(0); // todo: remove after done
+    let order;
+    let paymentInstrument;
 
-    var order;
-    var paymentInstrument;
-
-    before(() => {
-        stubs.init();
-    });
+    before(() => stubs.init());
     afterEach(() => stubs.reset());
     after(() => stubs.restore());
 
-    beforeEach(function () {
+    beforeEach(() => {
         order = new stubs.dw.OrderMock();
         order.currencyCode = 'EUR';
         order.totalGrossPrice = { value: 50.00 };
 
-        order.custom.ccvTransactionReference = '12356789';
-        paymentInstrument = new OrderPaymentInstrument();
+        paymentInstrument = new stubs.dw.OrderPaymentInstrumentMock();
+        order.custom.ccvTransactionReference = 'testTransactionRef';
         order.paymentInstruments = [paymentInstrument];
+        paymentInstrument.paymentTransaction = new stubs.dw.PaymentTransactionMock();
+        paymentInstrument.paymentTransaction.amount = new stubs.dw.MoneyMock();
+
+        stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+            amount: 50.00,
+            currency: 'eur',
+            method: 'card',
+            type: 'sale',
+            status: 'success'
+        });
+    });
+    context('#authorizeCCV:', function () {
+        it('should update the orderPaymentInstrument\'s paymenTransaction.transactionID', () => {
+            authorizeCCV(order);
+            expect(paymentInstrument.paymentTransaction.setTransactionID).to.have.been.calledOnceWith('testTransactionRef');
+        });
+
+        it('should update the orderPaymentInstrument\'s paymenTransaction.paymentProcessor', () => {
+            authorizeCCV(order);
+            expect(paymentInstrument.paymentTransaction.paymentProcessor).to.eql('CCV_DEFAULT');
+        });
+        it('should update the orderPaymentInstrument\'s paymenTransaction.type = AUTH for "authorise"', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'eur',
+                method: 'card',
+                type: 'authorise',
+                status: 'success'
+            });
+
+            authorizeCCV(order);
+            expect(order.paymentInstruments[0].paymentTransaction.type).to.eql('AUTH');
+        });
+        it('should update the orderPaymentInstrument\'s paymenTransaction.type = CAPTURE for "sale"', () => {
+            authorizeCCV(order);
+            expect(order.paymentInstruments[0].paymentTransaction.type).to.eql('CAPTURE');
+        });
+
+        it('should return { error } if ccvTransactionReference is missing from the order.', () => {
+            order.custom.ccvTransactionReference = null;
+            const result = authorizeCCV(order);
+            expect(typeof result.error).to.eql('string');
+        });
+
+        it('should return { error } if the checkCCVTransaction service fails.', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.throws(new Error('timeout'));
+
+            const result = authorizeCCV(order);
+            expect(typeof result.error).to.exist;
+            expect(typeof result.isAuthoirzed).to.eql('undefined');
+        });
+
+        it('should return { priceMismatch: true } if SFCC price is different than CCV price.', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 25.00,
+                currency: 'eur',
+                method: 'card',
+                type: 'authorise',
+                status: 'success'
+            });
+            const result = authorizeCCV(order);
+            expect(result.priceMismatch).to.be.true;
+            expect(result.isAuthorized).to.be.false;
+        });
+        it('should return { currencyMismatch: true } if SFCC currency is different than CCV currency.', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'usd',
+                method: 'card',
+                type: 'authorise',
+                status: 'success'
+            });
+            const result = authorizeCCV(order);
+            expect(result.currencyMismatch).to.be.true;
+            expect(result.isAuthorized).to.be.false;
+        });
+        it('should return { isAuthorized: true } if ccv status is succes and there is no price or currency mismatch.', () => {
+            const result = authorizeCCV(order);
+            expect(result.currencyMismatch).to.be.false;
+            expect(result.priceMismatch).to.be.false;
+            expect(result.error).to.be.undefined;
+            expect(result.isAuthorized).to.be.true;
+        });
     });
 
-    it('should return status.ERROR when transactionReference is missing', () => {
-        order.custom.ccvTransactionReference = null;
+    context('#handleAuthorizationResult:', function () {
+        it('should return status.ERROR and fail the order if ccvTransactionReference is missing from order', () => {
+            order.custom.ccvTransactionReference = null;
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnceWith(order);
+        });
 
-        var result = authorizeCCV((order, paymentInstrument));
-        expect(result).to.be.an.instanceof(Status);
-        expect(result.status).to.equal(1);
-    });
+        it('should return status.ERROR and fail the order if ccvStatus=failed', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'eur',
+                method: 'card',
+                type: 'sale',
+                status: 'failed'
+            });
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnceWith(order);
+        });
 
-    it('should fail the order on status=failed', () => {
-        order.custom.ccvTransactionReference = 'ccvRefFailed';
+        it('should return status.ERROR if ccvStatus=manualintervention', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'eur',
+                method: 'card',
+                type: 'sale',
+                status: 'manualintervention'
+            });
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(order.custom.ccvManualIntervention).to.be.true;
+            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.calledOnce;
+        });
 
-        var result = authorizeCCV(order, paymentInstrument);
-        expect(result).to.be.an.instanceof(Status);
-        expect(result.status).to.equal(1);
-        expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnceWith(order);
-    });
+        it('should return status.ERROR if there is price mismatch', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 55.00,
+                currency: 'eur',
+                method: 'card',
+                type: 'sale',
+                status: 'success'
+            });
+            stubs.CCVPaymentHelpersMock.refundCCVPayment.returns([{}]);
 
-    it('should fail the order if there is price mismatch', () => {
-        order.custom.ccvTransactionReference = 'ccvRefSuccess';
-        order.totalGrossPrice = { value: 49.00 };
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
+        });
 
-        var result = authorizeCCV(order, paymentInstrument);
-        expect(result).to.be.an.instanceof(Status);
-        expect(result.status).to.equal(1);
-        expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnceWith(order);
-        expect(order.custom.ccvPriceOrCurrencyMismatch).to.eql(true);
-    });
+        it('should return status.ERROR if there is currency mismatch', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 55.00,
+                currency: 'usd',
+                method: 'card',
+                type: 'sale',
+                status: 'success'
+            });
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
+        });
 
-    it('should fail the order if there is currency mismatch', () => {
-        order.custom.ccvTransactionReference = 'ccvRefSuccess';
-        order.currencyCode = 'USD';
+        it('should still fail the order if the refund request throws an error', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 55.00,
+                currency: 'usd',
+                method: 'card',
+                type: 'sale',
+                status: 'success'
+            });
+            stubs.CCVPaymentHelpersMock.refundCCVPayment.throws(new Error('timeout'));
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
+        });
 
-        var result = authorizeCCV(order, paymentInstrument);
-        expect(result).to.be.an.instanceof(Status);
-        expect(result.status).to.equal(1);
-        expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnceWith(order);
-        expect(order.custom.ccvPriceOrCurrencyMismatch).to.eql(true);
+        it('should return status.OK if the payment is authorized', () => {
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(0);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+        });
+
+        it('should update the paymentTransaction.amount if the payment is authorized', () => {
+            const result = authorizeCCV(order);
+            handleAuthorizationResult(result, order);
+            expect(paymentInstrument.paymentTransaction.setAmount).to.have.been.calledOnceWith({ value: result.transactionStatusResponse.amount });
+        });
+
+        it('should not fail the order if the status ccvStatus=pending', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'usd',
+                method: 'card',
+                type: 'sale',
+                status: 'pending'
+            });
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+        });
     });
 });
-
-
-// ===========================================================================================
-// ===========================================================================================
-// const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
-// const { stubs } = testHelpers;
-
-// class StatusMock {
-//     constructor(status, code, message) {
-//         this.status = status;
-//         this.code = code;
-//         this.message = message;
-//     }
-// }
-// StatusMock.OK = 0;
-// StatusMock.ERROR = 1;
-
-// const job = proxyquire('../../../../cartridges/bm_saferpay/cartridge/scripts/jobsteps/FailExpiredOrders', {
-//     'dw/order/Order': stubs.dw.OrderMock,
-//     'dw/order/OrderMgr': stubs.dw.OrderMgrMock,
-//     'dw/system/Transaction': stubs.dw.TransactionMock,
-//     'dw/system/Status': StatusMock,
-//     'dw/util/Calendar': stubs.dw.Calendar,
-//     '*/cartridge/scripts/payment/paymentService': stubs.paymentServiceMock,
-//     '*/cartridge/scripts/order/orderHelper': stubs.orderHelperMock,
-//     '*/cartridge/scripts/checkout/checkoutServicesService': stubs.checkoutServicesServiceMock,
-//     '*/cartridge/scripts/utils/logger': stubs.loggerMock,
-//     '*/cartridge/scripts/utils/date': stubs.dateMock,
-//     '*/cartridge/scripts/services/saferpayTransactionService': stubs.saferpayTransactionServiceMock
-// });
-
-// global.empty = stubs.sandbox.stub();
-
-// describe('bm_saferpay/jobsteps/FailExpiredOrders', () => {
-//     before(() => stubs.init());
-//     afterEach(() => stubs.reset());
-//     after(() => stubs.restore());
-//     beforeEach(() => global.empty.returns(false));
-
-//     it('skips the job is IsDisabled flag is set', () => {
-//         expect(job.Run({ IsDisabled: true })).to.have.property('status', StatusMock.OK);
-//         expect(stubs.dw.OrderMgrMock.processOrders).not.to.have.been.called();
-//     });
-
-//     it('returns error status when no parameters are passed', () => {
-//         global.empty.returns(true);
-//         expect(job.Run()).to.have.property('status', StatusMock.ERROR);
-//         expect(stubs.dw.OrderMgrMock.processOrders).not.to.have.been.called();
-//     });
-
-//     it('fails an order that has no saferpay transaction', () => {
-//         stubs.dw.OrderMgrMock.processOrders.callsFake(cb => cb('order'));
-//         stubs.dateMock.addHours.returns({ getTime: () => 'date-time' });
-//         stubs.saferpayTransactionServiceMock.cancelTransaction.returns({ raw: '' });
-//         stubs.paymentServiceMock.getPaymentTransaction.returns(null);
-
-//         expect(job.Run({ IsDisabled: false, ExpireAfterHours: 24 })).to.have.property('status', StatusMock.OK);
-//         expect(stubs.saferpayTransactionServiceMock.cancelTransaction).not.to.have.been.called();
-//         expect(stubs.orderHelperMock.failOrder).to.have.been.calledOnce()
-//             .and.to.have.been.calledWith('order');
-//         expect(stubs.dw.OrderMgrMock.processOrders).to.have.been.calledWith(sinon.match.func, sinon.match.string, sinon.match.number, 'date-time');
-//     });
-//     it('fails an order whose transaction is neither captured nor authorized', () => {
-//         const transactionId = faker.random.uuid();
-//         stubs.dw.OrderMgrMock.processOrders.callsFake(cb => cb('order'));
-//         stubs.dateMock.addHours.returns({ getTime: () => 'date-time' });
-//         stubs.saferpayTransactionServiceMock.cancelTransaction.returns({ raw: '' });
-//         stubs.paymentServiceMock.getPaymentTransaction.returns({ id: transactionId, isAuthorised: () => false, isCaptured: () => false });
-
-//         expect(job.Run({ IsDisabled: false, ExpireAfterHours: 24 })).to.have.property('status', StatusMock.OK);
-//         expect(stubs.saferpayTransactionServiceMock.cancelTransaction).to.have.been.calledOnce()
-//             .and.to.have.been.calledWithExactly({ transactionId: transactionId });
-//         expect(stubs.orderHelperMock.failOrder).to.have.been.calledOnce()
-//             .and.to.have.been.calledWith('order');
-//         expect(stubs.dw.OrderMgrMock.processOrders).to.have.been.calledWith(sinon.match.func, sinon.match.string, sinon.match.number, 'date-time');
-//     });
-//     it('fails an authorized transaction', () => {
-//         const transactionId = faker.random.uuid();
-//         stubs.dw.OrderMgrMock.processOrders.callsFake(cb => cb('order'));
-//         stubs.dateMock.addHours.returns({ getTime: () => 'date-time' });
-//         stubs.saferpayTransactionServiceMock.cancelTransaction.returns({ raw: '' });
-//         stubs.paymentServiceMock.getPaymentTransaction.returns({ id: transactionId, isAuthorised: () => true });
-
-//         expect(job.Run({ IsDisabled: false, ExpireAfterHours: 24 })).to.have.property('status', StatusMock.OK);
-//         expect(stubs.saferpayTransactionServiceMock.cancelTransaction).to.have.been.calledOnce()
-//             .and.to.have.been.calledWithExactly({ transactionId: transactionId });
-//         expect(stubs.orderHelperMock.failOrder).to.have.been.calledOnce()
-//             .and.to.have.been.calledWith('order');
-//         expect(stubs.dw.OrderMgrMock.processOrders).to.have.been.calledWith(sinon.match.func, sinon.match.string, sinon.match.number, 'date-time');
-//     });
-//     it('completes order for a captured transaction', () => {
-//         const transactionId = faker.random.uuid();
-//         stubs.dw.OrderMgrMock.processOrders.callsFake(cb => cb('order'));
-//         stubs.dateMock.addHours.returns({ getTime: () => 'date-time' });
-//         stubs.saferpayTransactionServiceMock.cancelTransaction.returns({ raw: '' });
-//         stubs.paymentServiceMock.getPaymentTransaction.returns({ id: transactionId, isAuthorised: () => false, isCaptured: () => true });
-
-//         expect(job.Run({ IsDisabled: false, ExpireAfterHours: 24 })).to.have.property('status', StatusMock.OK);
-//         expect(stubs.orderHelperMock.setPaymentStatus).to.have.been.calledOnce()
-//             .and.to.have.been.calledWith('order', stubs.dw.OrderMock.PAYMENT_STATUS_PAID);
-//         expect(stubs.checkoutServicesServiceMock.placeOrder).to.have.been.calledOnce()
-//             .and.to.have.been.calledWith('order');
-//         expect(stubs.checkoutServicesServiceMock.sendConfirmationEmail).to.have.been.calledOnce()
-//             .and.to.have.been.calledWith('order');
-//         expect(stubs.saferpayTransactionServiceMock.cancelTransaction).not.to.have.been.called();
-//         expect(stubs.orderHelperMock.failOrder).not.to.have.been.called();
-//         expect(stubs.dw.OrderMgrMock.processOrders).to.have.been.calledWith(sinon.match.func, sinon.match.string, sinon.match.number, 'date-time');
-//     });
-//     it('returns error status when something goes wrong', () => {
-//         stubs.dw.OrderMgrMock.processOrders.throws(new Error('BOOM'));
-//         expect(job.Run({ IsDisabled: false, ExpireAfterHours: 24 })).to.have.property('status', StatusMock.ERROR);
-//     });
-// });
-

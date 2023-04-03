@@ -4,7 +4,7 @@
   "description": "New overlay cartridge",
   "main": "index.js",
   "scripts": {
-    "test": "sgmf-scripts --test test/unit/**/*.js",
+    "test": "nyc sgmf-scripts --test test/unit/**/*.js",
     "lint": "sgmf-scripts --lint js && sgmf-scripts --lint css",
     "lint:fix": "sgmf-scripts --lint js --fix && sgmf-scripts --lint css --fix",
     "upload": "sgmf-scripts --upload -- ",
@@ -13,7 +13,7 @@
     "compile:scss": "sgmf-scripts --compile css"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.3.7",
     "css-loader": "^0.28.11",
     "eslint": "^3.2.2",
     "eslint-config-airbnb-base": "^5.0.1",
@@ -21,6 +21,7 @@
     "istanbul": "^0.4.4",
     "mocha": "^5.2.0",
     "node-sass": "^4.9.0",
+    "nyc": "^15.1.0",
     "postcss-loader": "^2.1.5",
     "proxyquire": "1.7.4",
     "sass-loader": "^7.0.3",
