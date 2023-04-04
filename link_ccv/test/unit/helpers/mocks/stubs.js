@@ -17,6 +17,8 @@ const URLUtils = require('./dw/web/URLUtils');
 const UUIDUtils = require('./dw/util/UUIDUtils');
 const Status = require('./dw/system/Status');
 const Money = require('./dw/value/Money');
+const StringUtils = require('./dw/util/StringUtils');
+const LocalServiceRegistry = require('./dw/svc/LocalServiceRegistry');
 const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const { CCV_CONSTANTS } = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/services/CCVPaymentHelpers', {
     'dw/svc/LocalServiceRegistry': {},
@@ -93,6 +95,20 @@ class MoneyMock extends Money {
     }
 }
 
+class StringUtilsMock extends StringUtils {
+    constructor() {
+        super();
+        return sandbox.createStubInstance(StringUtils);
+    }
+}
+
+class LocalServiceRegistryMock extends LocalServiceRegistry {
+    constructor() {
+        super();
+        return sandbox.createStubInstance(LocalServiceRegistry);
+    }
+}
+
 const CCVPaymentHelpersMock = {
     callCCVService: sandbox.stub(),
     CCV_CONSTANTS: CCV_CONSTANTS,
@@ -103,6 +119,10 @@ const CCVPaymentHelpersMock = {
     getRefundAmountRemaining: sandbox.stub()
 };
 
+const ocapiServiceMock = {
+    createOcapiService: sandbox.stub()
+};
+
 const customMock = sandbox.stub();
 const Site = {
     getCurrent: () => ({
@@ -110,14 +130,14 @@ const Site = {
             getCustom: customMock
         }),
         getID: () => 'siteID',
-        getCustomPreferenceValue: () => 'customPreference'
+        getCustomPreferenceValue: sandbox.stub()
     }),
     current: {
         getPreferences: () => ({
             getCustom: customMock
         }),
         getID: () => 'siteID',
-        getCustomPreferenceValue: () => 'customPreference'
+        getCustomPreferenceValue: sandbox.stub()
     }
 };
 
@@ -140,7 +160,7 @@ const dw = {
     basketMock: {
         getProductLineItems: sandbox.stub()
     },
-    basketMgrMock: {
+    BasketMgrMock: {
         getCurrentBasket: sandbox.stub()
     },
     TransactionMock: {
@@ -150,13 +170,12 @@ const dw = {
         wrap: sandbox.stub()
     },
     loggerMock: LoggerMock,
-    localServiceRegistryMock: {
-        createService: sandbox.stub()
-    },
+    LocalServiceRegistryMock,
     Calendar: sandbox.stub(),
     PaymentMgrMock: PaymentMgr,
     HookMgrMock: sandbox.stub(HookMgr),
-    SiteMock: sandbox.stub(Site)
+    SiteMock: sandbox.stub(Site),
+    StringUtilsMock
 };
 
 const initMocks = function () {
@@ -175,18 +194,15 @@ const initMocks = function () {
     Object.keys(dw.PaymentTransactionMock).map(i => dw.PaymentTransactionMock[i].reset());
     Object.keys(dw.HookMgrMock).map(i => dw.HookMgrMock[i].reset());
     Object.keys(dw.MoneyMock).map(i => dw.MoneyMock[i].reset());
+    Object.keys(dw.StringUtilsMock).map(i => dw.StringUtilsMock[i].reset());
+    Object.keys(dw.LocalServiceRegistryMock).map(i => dw.LocalServiceRegistryMock[i].reset());
     Object.keys(CCVPaymentHelpersMock).map(i => CCVPaymentHelpersMock[i].reset());
+    Object.keys(ocapiServiceMock).map(i => ocapiServiceMock[i].reset());
 
 
     // INITIALIZE
     dw.TransactionMock.wrap.callsFake(function (cb) {
         cb();
-    });
-    dw.localServiceRegistryMock.createService.callsFake(function () {
-        return {
-            createRequest: sandbox.stub,
-            parseResponse: sandbox.stub
-        };
     });
     dw.OrderMgrMock.failOrder.returns(dw.statusMock);
 };
@@ -194,6 +210,7 @@ const initMocks = function () {
 module.exports = {
     sandbox: sandbox,
     dw: dw,
+    ocapiServiceMock: ocapiServiceMock,
     CCVPaymentHelpersMock: CCVPaymentHelpersMock,
     reset: initMocks,
     init: () => {
