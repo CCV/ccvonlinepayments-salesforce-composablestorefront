@@ -1,6 +1,7 @@
 'use strict';
 
 var Status = require('dw/system/Status');
+var Order = require('dw/order/Order');
 
 /**
  * Hook fired after PATCH orders/_*_/payment_instruments/_*_
@@ -18,7 +19,7 @@ exports.afterPATCH = function (order, paymentInstrument, newPaymentInstrument) {
     // todo: store in vault
     if (!transactionReference
         || (paymentInstrument.custom.ccv_transaction_status === 'failed'
-        && order.status.value !== dw.order.Order.ORDER_STATUS_FAILED)) {
+        && order.status.value !== Order.ORDER_STATUS_FAILED)) {
         var OrderMgr = require('dw/order/OrderMgr');
         OrderMgr.failOrder(order, true);
     }

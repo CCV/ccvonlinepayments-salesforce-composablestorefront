@@ -121,6 +121,11 @@ const CCVPaymentHelpersMock = {
     getRefundAmountRemaining: sandbox.stub()
 };
 
+const authorizeCCVMock = {
+    authorizeCCV: sandbox.stub(),
+    handleAuthorizationResult: sandbox.stub()
+};
+
 const ocapiServiceMock = {
     createOcapiService: sandbox.stub()
 };
@@ -216,6 +221,7 @@ const initMocks = function () {
     Object.keys(dw.LocalServiceRegistryMock).map(i => dw.LocalServiceRegistryMock[i].reset());
     Object.keys(CCVPaymentHelpersMock).map(i => CCVPaymentHelpersMock[i].reset());
     Object.keys(ocapiServiceMock).map(i => ocapiServiceMock[i].reset());
+    Object.keys(authorizeCCVMock).map(i => authorizeCCVMock[i].reset());
 
 
     // INITIALIZE
@@ -230,6 +236,7 @@ module.exports = {
     dw: dw,
     ocapiServiceMock: ocapiServiceMock,
     CCVPaymentHelpersMock: CCVPaymentHelpersMock,
+    authorizeCCVMock,
     collectionsMock,
     reset: initMocks,
     init: () => {
