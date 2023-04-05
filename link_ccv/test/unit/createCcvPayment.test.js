@@ -1,4 +1,3 @@
-/* eslint-disable new-cap */
 /* eslint-disable no-unused-expressions */
 const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const { expect } = require('chai');

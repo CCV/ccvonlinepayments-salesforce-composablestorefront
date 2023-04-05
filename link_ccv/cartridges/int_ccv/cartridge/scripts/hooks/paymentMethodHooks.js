@@ -9,7 +9,7 @@ var Site = require('dw/system/Site');
  * @returns {dw.system.Status} status
  */
 exports.modifyGETResponse_v2 = function (basket, paymentMethodResultResponse) {
-    var collections = require('../util/collections');
+    var collections = require('*/cartridge/scripts/util/collections');
 
     var cache = CacheMgr.getCache('ccvPaymentMethodsCache');
     var paymentMethodsMap = cache.get(`${Site.current.ID}_methods`, fetchCCVPaymentMethods);
@@ -32,7 +32,7 @@ exports.modifyGETResponse_v2 = function (basket, paymentMethodResultResponse) {
  * @returns {Object} mapped object of CCV payment methods
  */
 function fetchCCVPaymentMethods() {
-    var { getCCVPaymentMethods } = require('../services/CCVPaymentHelpers');
+    var { getCCVPaymentMethods } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
     var ccvPaymentMethods = getCCVPaymentMethods();
     var paymentMethodsMap = {};
 

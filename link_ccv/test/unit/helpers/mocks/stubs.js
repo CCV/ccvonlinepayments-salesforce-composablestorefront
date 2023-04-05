@@ -19,6 +19,7 @@ const Status = require('./dw/system/Status');
 const Money = require('./dw/value/Money');
 const StringUtils = require('./dw/util/StringUtils');
 const LocalServiceRegistry = require('./dw/svc/LocalServiceRegistry');
+const ArrayList = require('./dw/util/ArrayList');
 const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const { CCV_CONSTANTS } = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/services/CCVPaymentHelpers', {
     'dw/svc/LocalServiceRegistry': {},
@@ -115,6 +116,7 @@ const CCVPaymentHelpersMock = {
     createCCVPayment: sandbox.stub(),
     checkCCVTransaction: sandbox.stub(),
     checkCCVTransactions: sandbox.stub(),
+    getCCVPaymentMethods: sandbox.stub(),
     refundCCVPayment: sandbox.stub(),
     getRefundAmountRemaining: sandbox.stub()
 };
@@ -141,7 +143,22 @@ const Site = {
     }
 };
 
+const CacheMgrMock = {
+    getCache() {
+        return {
+            get(entryId, generatorFunc) {
+                return generatorFunc();
+            }
+        };
+    }
+};
+
+const collectionsMock = {
+    map: (collection, callback) => collection.map(callback)
+};
+
 const dw = {
+    ArrayList,
     Status: Status,
     OrderMock: OrderMock,
     CustomObjectMgrMock: sandbox.stub(CustomObjectMgr),
@@ -175,7 +192,8 @@ const dw = {
     PaymentMgrMock: PaymentMgr,
     HookMgrMock: sandbox.stub(HookMgr),
     SiteMock: sandbox.stub(Site),
-    StringUtilsMock
+    StringUtilsMock,
+    CacheMgrMock
 };
 
 const initMocks = function () {
@@ -212,6 +230,7 @@ module.exports = {
     dw: dw,
     ocapiServiceMock: ocapiServiceMock,
     CCVPaymentHelpersMock: CCVPaymentHelpersMock,
+    collectionsMock,
     reset: initMocks,
     init: () => {
         sandbox.restore();
