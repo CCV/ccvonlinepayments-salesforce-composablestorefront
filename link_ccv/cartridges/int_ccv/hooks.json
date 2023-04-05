@@ -15,6 +15,10 @@
         {
             "name": "dw.order.payment.authorizeCreditCard",
             "script": "./cartridge/scripts/hooks/paymentInstrumentHooks.js"
+        },
+        {
+            "name": "dw.ocapi.shop.basket.payment_methods.modifyGETResponse_v2",
+            "script": "./cartridge/scripts/hooks/paymentMethodHooks.js"
         }
     ]
 }

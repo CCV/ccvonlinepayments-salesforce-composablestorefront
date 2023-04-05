@@ -109,6 +109,16 @@ function checkCCVTransactions(references) {
         path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?references=${references}`
     });
 }
+/**
+ * Returns CCV payment methods
+ * @returns {Object} response from service call
+ */
+function getCCVPaymentMethods() {
+    return callCCVService({
+        requestMethod: 'GET',
+        path: CCV_CONSTANTS.PATH.METHODS
+    });
+}
 
 /**
  * Refunds an existing payment.
@@ -190,6 +200,7 @@ module.exports = {
     createCCVPayment,
     checkCCVTransaction,
     checkCCVTransactions,
+    getCCVPaymentMethods,
     refundCCVPayment,
     getRefundAmountRemaining
 };

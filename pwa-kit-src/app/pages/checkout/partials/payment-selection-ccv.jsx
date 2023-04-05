@@ -160,7 +160,7 @@ const CCVMethodOptions = function ({paymentMethodId}) {
 
     switch (paymentMethodId) {
         case 'CCV_IDEAL': {
-            const options = JSON.parse(selectedMethodData.c_ccvOptions)
+            const options = selectedMethodData.c_ccvOptions
 
             const countryGroups = {}
             options.forEach((option) => {
@@ -211,7 +211,7 @@ const CCVMethodOptions = function ({paymentMethodId}) {
         }
 
         case 'CCV_GIROPAY': {
-            const options = JSON.parse(selectedMethodData.c_ccvOptions || '[]')
+            const options = selectedMethodData.c_ccvOptions
             const selectOptions = options.map((option) => {
                 return {value: option.issuerid, label: option.issuerdescription}
             })

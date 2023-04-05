@@ -26,7 +26,6 @@
         <processor-id>CCV_DEFAULT</processor-id>
         <custom-attributes>
             <custom-attribute attribute-id="ccvMethodId">ideal</custom-attribute>
-            <custom-attribute attribute-id="ccvOptions">[{"issuerdescription":"Issuer Simulation V3 - ING","issuerid":"INGBNL2A","grouptype":"country","group":"Nederland"},{"issuerdescription":"Issuer Simulation V3 - RABO","issuerid":"RABONL2U","grouptype":"country","group":"Nederland"}]</custom-attribute>
         </custom-attributes>
     </payment-method>
 
@@ -44,7 +43,6 @@
         <processor-id>CCV_DEFAULT</processor-id>
         <custom-attributes>
             <custom-attribute attribute-id="ccvMethodId">giropay</custom-attribute>
-            <custom-attribute attribute-id="ccvOptions">[{"issuerdescription":"CCVPay GiroPay Simulator","issuerid":"CCVXXX123456"}]</custom-attribute>
         </custom-attributes>
     </payment-method>
 

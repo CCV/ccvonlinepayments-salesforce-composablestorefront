@@ -65,7 +65,7 @@ export const PaymentSummaryCCV = ({selectedPayment}) => {
             const selectedMethodName = selectedPaymentData.name
 
             if (selectedPaymentData && selectedPaymentData.c_ccvOptions) {
-                const options = JSON.parse(selectedPaymentData?.c_ccvOptions || null)
+                const options = selectedPaymentData?.c_ccvOptions
                 const option =
                     options &&
                     options.find((option) => option.issuerid === selectedPayment.c_ccv_issuer_id)
