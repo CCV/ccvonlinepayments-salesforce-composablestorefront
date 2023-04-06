@@ -92,6 +92,9 @@ function createCCVPayment(params) {
  * @returns {Object} response from service call
  */
 function checkCCVTransaction(reference) {
+    if (!reference) {
+        throw new Error('Failed checking transaction: missing reference!');
+    }
     return callCCVService({
         requestMethod: 'GET',
         path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?reference=${reference}`
@@ -100,13 +103,16 @@ function checkCCVTransaction(reference) {
 
 /**
  * Checks the status of multiple CCV transactions
- * @param {string} references CCV transaction reference
+ * @param {Array} references CCV transaction references
  * @returns {Object} response from service call
  */
 function checkCCVTransactions(references) {
+    if (!references || references.length === 0) {
+        throw new Error('Failed checking transactions: missing references!');
+    }
     return callCCVService({
         requestMethod: 'GET',
-        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?references=${references}`
+        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?references=${references.join(',')}`
     });
 }
 /**
@@ -127,6 +133,7 @@ function getCCVPaymentMethods() {
 */
 function refundCCVPayment({ order, amount, description }) {
     var Transaction = require('dw/system/Transaction');
+    var PaymentTransaction = require('dw/order/PaymentTransaction');
 
     var ccvRefunds = JSON.parse(order.custom.ccvRefunds || '[]');
 
@@ -135,7 +142,7 @@ function refundCCVPayment({ order, amount, description }) {
         description: description
     };
 
-    var isReversal = order.paymentInstruments[0].paymentTransaction.type.value === dw.order.PaymentTransaction.TYPE_AUTH;
+    var isReversal = order.paymentInstruments[0].paymentTransaction.type.value === PaymentTransaction.TYPE_AUTH;
 
     if (amount && !isReversal) {
         // for partial refunds

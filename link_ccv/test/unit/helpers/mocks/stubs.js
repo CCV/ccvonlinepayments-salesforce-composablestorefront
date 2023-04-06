@@ -18,7 +18,6 @@ const UUIDUtils = require('./dw/util/UUIDUtils');
 const Status = require('./dw/system/Status');
 const Money = require('./dw/value/Money');
 const StringUtils = require('./dw/util/StringUtils');
-const LocalServiceRegistry = require('./dw/svc/LocalServiceRegistry');
 const ArrayList = require('./dw/util/ArrayList');
 const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const { CCV_CONSTANTS } = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/services/CCVPaymentHelpers', {
@@ -103,13 +102,6 @@ class StringUtilsMock extends StringUtils {
     }
 }
 
-class LocalServiceRegistryMock extends LocalServiceRegistry {
-    constructor() {
-        super();
-        return sandbox.createStubInstance(LocalServiceRegistry);
-    }
-}
-
 const CCVPaymentHelpersMock = {
     callCCVService: sandbox.stub(),
     CCV_CONSTANTS: CCV_CONSTANTS,
@@ -178,6 +170,7 @@ const dw = {
     PaymentTransactionMock,
     PaymentTransaction: PaymentTransaction,
     PaymentMethodMock,
+    Money,
     MoneyMock,
     basketMock: {
         getProductLineItems: sandbox.stub()
@@ -192,7 +185,9 @@ const dw = {
         wrap: sandbox.stub()
     },
     loggerMock: LoggerMock,
-    LocalServiceRegistryMock,
+    LocalServiceRegistryMock: {
+        createService: sandbox.stub()
+    },
     Calendar: sandbox.stub(),
     PaymentMgrMock: PaymentMgr,
     HookMgrMock: sandbox.stub(HookMgr),
@@ -218,7 +213,6 @@ const initMocks = function () {
     Object.keys(dw.HookMgrMock).map(i => dw.HookMgrMock[i].reset());
     Object.keys(dw.MoneyMock).map(i => dw.MoneyMock[i].reset());
     Object.keys(dw.StringUtilsMock).map(i => dw.StringUtilsMock[i].reset());
-    Object.keys(dw.LocalServiceRegistryMock).map(i => dw.LocalServiceRegistryMock[i].reset());
     Object.keys(CCVPaymentHelpersMock).map(i => CCVPaymentHelpersMock[i].reset());
     Object.keys(ocapiServiceMock).map(i => ocapiServiceMock[i].reset());
     Object.keys(authorizeCCVMock).map(i => authorizeCCVMock[i].reset());
@@ -228,6 +222,12 @@ const initMocks = function () {
     dw.TransactionMock.wrap.callsFake(function (cb) {
         cb();
     });
+    dw.LocalServiceRegistryMock.createService.callsFake(function () {
+        return {
+            createRequest: sandbox.stub,
+            parseResponse: sandbox.stub
+        };
+    });
     dw.OrderMgrMock.failOrder.returns(dw.statusMock);
 };
 
@@ -236,6 +236,7 @@ module.exports = {
     dw: dw,
     ocapiServiceMock: ocapiServiceMock,
     CCVPaymentHelpersMock: CCVPaymentHelpersMock,
+    CCV_CONSTANTS,
     authorizeCCVMock,
     collectionsMock,
     reset: initMocks,

@@ -182,22 +182,25 @@ describe('', function () {
 
     context('createCcvPayment - error handling for the 3 service calls: \n\t1. ocapi POST /orders\n\t2: CCV-create payment \n\t3: ocapi PATCH/orders/*/payment_instrument', function () {
         before('3 calls are made', () => {});
+        const testErrorMsg = 'timeout';
+
         it('should throw if call 1 fails', () => {
             stubs.ocapiServiceMock.createOcapiService
-            .onFirstCall().throws(new Error('timeout'));
+            .onFirstCall().throws(new Error(testErrorMsg));
 
-            expect(createCcvPayment.get.bind(httpParams)).to.throw();
+            expect(createCcvPayment.get.bind(this, httpParams)).to.throw(testErrorMsg);
         });
 
         it('should throw if call 1 is not OK', () => {
             stubs.ocapiServiceMock.createOcapiService
             .onFirstCall().returns({ call: () => {
                 return {
-                    ok: false
+                    ok: false,
+                    errorMessage: testErrorMsg
                 };
             } });
 
-            expect(createCcvPayment.get.bind(httpParams)).to.throw();
+            expect(createCcvPayment.get.bind(this, httpParams)).to.throw(testErrorMsg);
         });
 
 
@@ -225,7 +228,7 @@ describe('', function () {
                 };
             } });
 
-            expect(createCcvPayment.get.bind(httpParams)).to.throw();
+            expect(createCcvPayment.get.bind(this, httpParams)).to.throw('Transaction reference could not be saved to basket');
         });
     });
 });

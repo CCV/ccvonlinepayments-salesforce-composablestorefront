@@ -21,7 +21,7 @@ function checkRefundStatus(order) {
 
         var refundReferences = refunds.map(refund => refund.reference);
 
-        var transactionStatusResponse = checkCCVTransactions(refundReferences.join(','));
+        var transactionStatusResponse = checkCCVTransactions(refundReferences);
 
         // update existing references
         refunds.map(refund => {

@@ -130,7 +130,7 @@ describe('paymentMethodHooks', function () {
                 it(`should not add ccvOptions to the payment method (${ccvMethodId}) response if there are no options`, () => {
                     expect(method.c_ccvOptions).to.be.undefined;
                 });
-            } else if (!ccvMethodId) {
+            } else if (ccvMethodData && !ccvMethodId) {
                 it('should not add ccvOptions for payment methods without c_ccvMethodId', () => {
                     expect(ccvMethodData.c_ccvOptions).to.be.undefined;
                 });
