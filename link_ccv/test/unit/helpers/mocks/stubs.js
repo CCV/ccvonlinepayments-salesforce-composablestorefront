@@ -228,14 +228,22 @@ const initMocks = function () {
             parseResponse: sandbox.stub
         };
     });
+
     dw.OrderMgrMock.failOrder.returns(dw.statusMock);
 };
+
+const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/helpers/CCVOrderHelpers', {
+    '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock,
+    'dw/value/Money': dw.Money,
+    'dw/system/Transaction': dw.TransactionMock
+});
 
 module.exports = {
     sandbox: sandbox,
     dw: dw,
     ocapiServiceMock: ocapiServiceMock,
     CCVPaymentHelpersMock: CCVPaymentHelpersMock,
+    CCVOrderHelpers: CCVOrderHelpers,
     CCV_CONSTANTS,
     authorizeCCVMock,
     collectionsMock,
