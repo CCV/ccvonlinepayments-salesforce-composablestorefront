@@ -32,7 +32,7 @@ exports.modifyGETResponse_v2 = function (basket, paymentMethodResultResponse) {
  * @returns {Object} mapped object of CCV payment methods
  */
 function fetchCCVPaymentMethods() {
-    var { getCCVPaymentMethods } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
+    var { getCCVPaymentMethods } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var ccvPaymentMethods = getCCVPaymentMethods();
     var paymentMethodsMap = {};
 

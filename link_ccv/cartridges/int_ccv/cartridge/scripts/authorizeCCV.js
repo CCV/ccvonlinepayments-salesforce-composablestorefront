@@ -4,7 +4,7 @@ var OrderMgr = require('dw/order/OrderMgr');
 var PaymentTransaction = require('dw/order/PaymentTransaction');
 var Site = require('dw/system/Site');
 var PaymentMgr = require('dw/order/PaymentMgr');
-var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
+var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 
 /**
  * Authorizes an order with CCV payment, and updates order status accordingly.

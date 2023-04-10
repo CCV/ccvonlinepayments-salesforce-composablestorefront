@@ -9,13 +9,14 @@ const {
     checkCCVTransaction,
     checkCCVTransactions,
     refundCCVPayment,
-    getRefundAmountRemaining
+    getCCVPaymentMethods
 } = proxyquire('../../cartridges/int_ccv/cartridge/scripts/services/CCVPaymentHelpers', {
     'dw/svc/LocalServiceRegistry': stubs.dw.LocalServiceRegistryMock,
     'dw/util/StringUtils': stubs.dw.StringUtilsMock,
     'dw/system/Transaction': stubs.dw.TransactionMock,
     'dw/value/Money': stubs.dw.Money,
-    'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction
+    'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction,
+    '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpers
 });
 const Money = require('./helpers/mocks/dw/value/Money');
 const HTTPService = require('./helpers/mocks/dw/svc/HTTPFormService');
@@ -141,6 +142,20 @@ describe('ccvPaymentHelpers', function () {
         });
     });
 
+    context('#getCCVPaymentMethods:', function () {
+        it('should should be a GET request', () => {
+            stubs.dw.LocalServiceRegistryMock.createService.returns({ call(params) {
+                lastParams = params;
+                return {
+                    isOk: () => true,
+                    object: []
+                };
+            } });
+            getCCVPaymentMethods();
+            expect(lastParams.requestMethod).to.equal('GET');
+        });
+    });
+
     context('#checkCCVTransaction:', function () {
         it('should be a GET request', () => {
             stubs.dw.LocalServiceRegistryMock.createService.returns({ call(params) {
@@ -206,35 +221,6 @@ describe('ccvPaymentHelpers', function () {
 
             testRefs = [];
             expect(checkCCVTransactions.bind(this, testRefs)).to.throw('Failed checking transactions: missing references!');
-        });
-    });
-
-    context('#getRefundAmountRemaining:', function () {
-        it('should return the full order value if there are no prior refunds', () => {
-            const remainingRefund = getRefundAmountRemaining(order);
-            expect(remainingRefund.value).to.equal(order.totalGrossPrice.value);
-        });
-        it('should return an instance of Money', () => {
-            const remainingRefund = getRefundAmountRemaining(order);
-            expect(remainingRefund).to.be.an.instanceof(Money);
-        });
-        it('should return the same currency as the order', () => {
-            const remainingRefund = getRefundAmountRemaining(order);
-            expect(remainingRefund.currencyCode).to.equal(order.currencyCode);
-        });
-        it('should return the correct amount if there are pending refunds', () => {
-            order.custom.ccvRefunds = '[{ "amount": 10, "status": "pending" }]';
-            const remainingRefund1 = getRefundAmountRemaining(order);
-            expect(remainingRefund1.value).to.equal(order.totalGrossPrice.value - 10);
-
-            order.custom.ccvRefunds = '[{ "amount": 10, "status": "pending"}, {"amount": 15.15, "status": "pending" }]';
-            const remainingRefund2 = getRefundAmountRemaining(order);
-            expect(remainingRefund2.value).to.equal(order.totalGrossPrice.value - 25.15);
-        });
-        it('should not add failed refunds to the calculation', () => {
-            order.custom.ccvRefunds = '[{ "amount": 10, "status": "pending"}, {"amount": 15.15, "status": "failed" }]';
-            const remainingRefund2 = getRefundAmountRemaining(order);
-            expect(remainingRefund2.value).to.equal(order.totalGrossPrice.value - 10);
         });
     });
 });

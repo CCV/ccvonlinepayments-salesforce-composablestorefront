@@ -7,7 +7,7 @@ const paymentMethodHooks = proxyquire('../../cartridges/int_ccv/cartridge/script
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/CacheMgr': stubs.dw.CacheMgrMock,
     'dw/system/Status': stubs.dw.Status,
-    '~/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
+    '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
     '*/cartridge/scripts/util/collections': stubs.collectionsMock
 });
 

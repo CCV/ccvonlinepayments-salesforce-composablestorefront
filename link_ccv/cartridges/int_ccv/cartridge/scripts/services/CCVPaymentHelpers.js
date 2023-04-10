@@ -157,7 +157,9 @@ function refundCCVPayment({ order, amount, description }) {
         });
     } catch (error) {
         // refund requests can fail if, for example, we exceed the refundable amount
-        order.addNote('CCV: refund request failed', error);
+        Transaction.wrap(()=> {
+            order.addNote('CCV: refund request failed', error);
+        });
         return null;
     }
 
@@ -170,36 +172,12 @@ function refundCCVPayment({ order, amount, description }) {
         date: refundResponse.created,
         type: isReversal ? 'reversal' : 'refund'
     });
-    Transaction.wrap(()=> {
-        order.custom.ccvRefunds = JSON.stringify(ccvRefunds); // eslint-disable-line no-param-reassign
-        order.custom.ccvHasPendingRefunds = true; // eslint-disable-line no-param-reassign
-    });
+
+    var { updateOrderRefunds } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+    updateOrderRefunds(order, ccvRefunds);
 
     return ccvRefunds;
 }
-
-/**
- * Returns amount eligible for refund for the given order
- * @param {dw.order.Order} order SFCC order
- * @returns {number} refundable amount
- */
-function getRefundAmountRemaining(order) {
-    var Money = require('dw/value/Money');
-
-    var refunds = JSON.parse(order.custom.ccvRefunds || '[]');
-    var currencyCode = order.currencyCode;
-    var refundedTotalAmount = new Money(0, currencyCode);
-
-    refunds.forEach((refund) => {
-        if (refund.status !== CCV_CONSTANTS.STATUS.FAILED) {
-            refundedTotalAmount = refundedTotalAmount.add(new Money(refund.amount, currencyCode));
-        }
-    });
-
-    var refundAmountRemaining = order.totalGrossPrice.subtract(refundedTotalAmount);
-    return refundAmountRemaining;
-}
-
 
 module.exports = {
     callCCVService,
@@ -208,6 +186,5 @@ module.exports = {
     checkCCVTransaction,
     checkCCVTransactions,
     getCCVPaymentMethods,
-    refundCCVPayment,
-    getRefundAmountRemaining
+    refundCCVPayment
 };

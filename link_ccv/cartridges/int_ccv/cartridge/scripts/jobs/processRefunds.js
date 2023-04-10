@@ -2,7 +2,7 @@ var Status = require('dw/system/Status');
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv_refunds');
 var OrderMgr = require('dw/order/OrderMgr');
 var Transaction = require('dw/system/Transaction');
-var { CCV_CONSTANTS, checkCCVTransactions } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
+var { checkCCVTransactions } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 
 exports.execute = function () {
     OrderMgr.processOrders(checkRefundStatus, 'custom.ccvHasPendingRefunds=true');
@@ -11,13 +11,22 @@ exports.execute = function () {
 };
 
 /**
- * Checks the CCV transaction status for each order and updates the order status if needed
+ * Updates the CCV refund status on orders with pending refunds
  * @param {dw.order.Order} order order
  */
 function checkRefundStatus(order) {
     ccvLogger.info(`Processing refund for order ${order.orderNo}`);
     try {
         var refunds = JSON.parse(order.custom.ccvRefunds || '[]');
+
+        if (!refunds || refunds.length === 0) {
+            ccvLogger.warn(`No refunds found in order ${order.orderNo}.`);
+            Transaction.wrap(() => {
+                order.custom.ccvHasPendingRefunds = false; // eslint-disable-line no-param-reassign
+                order.addNote('Refund error', 'Order was marked to have pending CCV refunds, but ccvRefunds was empty.');
+            });
+            return;
+        }
 
         var refundReferences = refunds.map(refund => refund.reference);
 
@@ -35,14 +44,10 @@ function checkRefundStatus(order) {
             return refund;
         });
 
-        var hasPendingRefunds = refunds.some(refund => refund.status === CCV_CONSTANTS.STATUS.PENDING || refund.status === CCV_CONSTANTS.STATUS.MANUAL_INTERVENTION);
-
-        Transaction.wrap(() => {
-            order.custom.ccvRefunds = JSON.stringify(refunds); // eslint-disable-line no-param-reassign
-            order.custom.ccvHasPendingRefunds = hasPendingRefunds; // eslint-disable-line no-param-reassign
-        });
+        var { updateOrderRefunds } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+        updateOrderRefunds(order, refunds);
     } catch (error) {
-        ccvLogger.error(`Error updating status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
+        ccvLogger.error(`Error updating CCV refund status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
     }
 }
 

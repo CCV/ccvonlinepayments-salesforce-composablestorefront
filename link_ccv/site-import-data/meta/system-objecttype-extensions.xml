@@ -37,27 +37,33 @@
                 <min-length>0</min-length>
             </attribute-definition>
             <attribute-definition attribute-id="ccvRefunds">
-                <type>string</type>
+                <type>text</type>
                 <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
+                <externally-managed-flag>true</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
             <attribute-definition attribute-id="ccvHasPendingRefunds">
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
+                <externally-managed-flag>true</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
             <attribute-definition attribute-id="ccvManualIntervention">
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvManualInterventionRefund">
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
             <attribute-definition attribute-id="ccvPriceOrCurrencyMismatch">
                 <type>boolean</type>
                 <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
+                <externally-managed-flag>true</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
         </custom-attribute-definitions>
@@ -69,6 +75,7 @@
                 <attribute attribute-id="ccvRefunds"/>
                 <attribute attribute-id="ccvHasPendingRefunds"/>
                 <attribute attribute-id="ccvManualIntervention"/>
+                <attribute attribute-id="ccvManualInterventionRefund"/>
                 <attribute attribute-id="ccvPriceOrCurrencyMismatch"/>
             </attribute-group>
         </group-definitions>

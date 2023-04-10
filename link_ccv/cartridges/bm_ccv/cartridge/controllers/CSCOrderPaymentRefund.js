@@ -24,7 +24,7 @@ var isRefundAllowed = function (order) {
 };
 
 exports.Start = function () {
-    var { getRefundAmountRemaining } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+    var { getRefundAmountRemaining } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
     var orderNo = request.httpParameterMap.get('order_no').stringValue;
     var order = OrderMgr.getOrder(orderNo);
     var refunds = JSON.parse(order.custom.ccvRefunds || '[]');
@@ -47,7 +47,8 @@ exports.Start = function () {
 
 exports.Refund = function () {
     var Money = require('dw/value/Money');
-    var { getRefundAmountRemaining, refundCCVPayment } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+    var { getRefundAmountRemaining } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+    var { refundCCVPayment } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var orderNo = request.httpParameterMap.get('orderNo').stringValue;
     var isReversal = request.httpParameterMap.get('reversal').stringValue;
     var order = OrderMgr.getOrder(orderNo);
@@ -76,6 +77,8 @@ exports.Refund = function () {
             amount: isReversal ? null : refundAmount.value,
             description: `CSC ${isReversal ? 'reversal' : 'refund'}`
         });
+
+        if (!ccvRefunds) throw new Error('Error creating the refund request.');
 
         viewParams.order = order;
         viewParams.refunds = ccvRefunds;

@@ -9,7 +9,7 @@ const createCcvPayment = proxyquire('../../cartridges/int_ccv/cartridge/scripts/
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/order/BasketMgr': stubs.dw.BasketMgrMock,
     'dw/system/Logger': stubs.dw.loggerMock,
-    '~/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
+    '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
     '*/cartridge/scripts/services/ocapiService.js': stubs.ocapiServiceMock
 });
 

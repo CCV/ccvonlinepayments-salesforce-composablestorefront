@@ -15,7 +15,7 @@ var languageMap = {
 
 
 exports.get = function (httpParams) {
-    var { createCCVPayment, CCV_CONSTANTS } = require('~/cartridge/scripts/services/CCVPaymentHelpers');
+    var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var ocapiService = require('*/cartridge/scripts/services/ocapiService.js');
     var currentBasket = BasketMgr.getCurrentBasket();
     var basketId = currentBasket.UUID;

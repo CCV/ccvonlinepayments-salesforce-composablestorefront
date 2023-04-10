@@ -6,7 +6,7 @@ const stubs = require('./helpers/mocks/stubs');
 const paymentInstrumentHooks = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hooks/paymentInstrumentHooks', {
     'dw/system/Status': stubs.dw.Status,
     'dw/order/OrderMgr': stubs.dw.OrderMgrMock,
-    '~/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
+    '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
     'dw/system/Logger': stubs.dw.loggerMock,
     '*/cartridge/scripts/authorizeCCV': stubs.authorizeCCVMock,
     'dw/order/Order': stubs.dw.OrderMock
