@@ -13,7 +13,7 @@ const createCcvPayment = proxyquire('../../cartridges/int_ccv/cartridge/scripts/
     '*/cartridge/scripts/services/ocapiService.js': stubs.ocapiServiceMock
 });
 
-describe('', function () {
+describe('CreateCCVPayment custom endpoint', function () {
     this.timeout(0); // todo: remove after done
     const httpParams = { c_returnUrl: ['pwa-test.com'] };
     let order;

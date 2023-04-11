@@ -136,6 +136,7 @@ const Site = {
             getCustom: customMock
         }),
         getID: () => 'siteID',
+        id: 'siteID',
         getCustomPreferenceValue: sandbox.stub()
     }
 };

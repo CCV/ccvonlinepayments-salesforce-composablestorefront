@@ -1,6 +1,7 @@
 'use strict';
 var OrderMgr = require('dw/order/OrderMgr');
 var Order = require('dw/order/Order');
+var Site = require('dw/system/Site');
 
 exports.get = function () {
     var orderRef = request.httpParameters.ref && request.httpParameters.ref[0];
@@ -39,7 +40,7 @@ exports.get = function () {
     };
 
     var patchOrderPaymentInstrumentResponse = ocapiService.createOcapiService().call({
-        requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/orders/${order.orderNo}/payment_instruments/${orderPaymentInstrument.UUID}`,
+        requestPath: `https://${request.httpHost}/s/${Site.current.ID}/dw/shop/v23_1/orders/${order.orderNo}/payment_instruments/${orderPaymentInstrument.UUID}`,
         requestMethod: 'PATCH',
         requestBody: paymentInstrumentPatchBody
     });
