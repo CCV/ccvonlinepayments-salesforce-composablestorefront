@@ -52,7 +52,9 @@ describe('Check Transaction Status custom endpoint', function () {
         stubs.ocapiServiceMock.createOcapiService.returns({
             call: (args) => {
                 ocapiParams = args;
-                orderPaymentInstrument.custom.ccv_transaction_status = 'success';
+                orderPaymentInstrument.paymentTransaction = {
+                    custom: { ccv_transaction_status: 'success' }
+                };
                 return {
                     ok: true,
                     object: {}
@@ -95,8 +97,21 @@ describe('Check Transaction Status custom endpoint', function () {
             const result = checkTransactionStatus.get();
             expect(result.status).to.eql('success');
         });
-        it('should return errorMsg if a ccv_failure_code was saved in the payment instrument', () => {
-            orderPaymentInstrument.custom.ccv_failure_code = 'error_code';
+        it('should return errorMsg if a ccv_failure_code was saved in the payment instrument\'s transaction', () => {
+            stubs.ocapiServiceMock.createOcapiService.returns({
+                call: (args) => {
+                    ocapiParams = args;
+                    orderPaymentInstrument.paymentTransaction = {
+                        custom: {
+                            ccv_transaction_status: 'failed',
+                            ccv_failure_code: 'error_code'
+                        }
+                    };
+                    return {
+                        ok: true,
+                        object: {}
+                    };
+                } });
             const result = checkTransactionStatus.get();
 
             expect(result.errorMsg).to.eql('error_code');
@@ -110,12 +125,6 @@ describe('Check Transaction Status custom endpoint', function () {
     });
 
     context('Error handling', function () {
-        it('should return errorMsg if a ccv_failure_code was saved in the payment instrument', () => {
-            orderPaymentInstrument.custom.ccv_failure_code = 'error_code';
-            const result = checkTransactionStatus.get();
-
-            expect(result.errorMsg).to.eql('error_code');
-        });
         it('should return customPaymentError if there is price or currency mismatch', () => {
             order.custom.ccvPriceOrCurrencyMismatch = true;
             const result = checkTransactionStatus.get();

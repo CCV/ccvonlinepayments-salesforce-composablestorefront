@@ -31,8 +31,8 @@ exports.authorizeCCV = function (order, orderPaymentInstrument) {
     var status = transactionStatusResponse.status;
     var paymentInstrument = orderPaymentInstrument || order.paymentInstruments[0];
 
-    paymentInstrument.custom.ccv_transaction_status = status;
-    paymentInstrument.custom.ccv_failure_code = transactionStatusResponse.failureCode || null;
+    paymentInstrument.paymentTransaction.custom.ccv_transaction_status = status;
+    paymentInstrument.paymentTransaction.custom.ccv_failure_code = transactionStatusResponse.failureCode || null;
 
     if (!paymentInstrument.paymentTransaction.transactionID) {
         var paymentProcessor = PaymentMgr.getPaymentMethod(paymentInstrument.getPaymentMethod()).getPaymentProcessor();

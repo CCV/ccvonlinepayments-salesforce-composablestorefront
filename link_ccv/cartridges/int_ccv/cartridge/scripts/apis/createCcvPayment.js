@@ -104,12 +104,14 @@ exports.get = function (httpParams) {
     }
 
     var paymentResponse = {};
+
     try {
         paymentResponse = createCCVPayment({
             requestBody: requestBody
         });
     } catch (error) {
         var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
+        paymentResponse.error = error;
         ccvLogger.error(`Failed creating a CCV payment request: ${error}`);
     }
 
@@ -126,10 +128,10 @@ exports.get = function (httpParams) {
                 number: paymentInstrument.creditCardNumber,
                 expiration_month: paymentInstrument.creditCardExpirationMonth,
                 expiration_year: paymentInstrument.creditCardExpirationYear
-            } : undefined
+            } : undefined,
+            c_ccv_failure_code: (paymentResponse.error && paymentResponse.error.message) || undefined
         }
     });
-
     if (!updatePaymentInstrumentResponse.ok) {
         throw new Error('Transaction reference could not be saved to basket.');
     }

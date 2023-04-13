@@ -15,13 +15,24 @@ exports.afterPATCH = function (order, paymentInstrument, newPaymentInstrument) {
     }
 
     var transactionReference = order.custom.ccvTransactionReference;
-
+    var ccvTransactionStatus = paymentInstrument.paymentTransaction && paymentInstrument.paymentTransaction.custom.ccv_transaction_status;
     // todo: store in vault
-    if (!transactionReference
-        || (paymentInstrument.custom.ccv_transaction_status === 'failed'
-        && order.status.value !== Order.ORDER_STATUS_FAILED)) {
-        var OrderMgr = require('dw/order/OrderMgr');
-        OrderMgr.failOrder(order, true);
+    if (!transactionReference || ccvTransactionStatus === 'failed') {
+        if (order.status.value !== Order.ORDER_STATUS_FAILED) {
+            var OrderMgr = require('dw/order/OrderMgr');
+            OrderMgr.failOrder(order, true);
+        }
+
+        var ccvFailureCode = newPaymentInstrument.c_ccv_failure_code
+        || (paymentInstrument.paymentTransaction && paymentInstrument.paymentTransaction.custom.ccv_failure_code);
+        var ccvStatus = paymentInstrument.paymentTransaction && paymentInstrument.paymentTransaction.custom.ccv_transaction_status;
+
+        order.addNote('Order failed',
+        `Failed via order.payment_instrument.afterPATCH hook.
+        CCV reference: ${transactionReference}
+        CCV status: ${ccvStatus }
+        CCV error: ${ccvFailureCode}
+        `);
     }
 };
 

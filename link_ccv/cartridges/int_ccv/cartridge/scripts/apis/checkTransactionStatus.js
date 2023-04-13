@@ -48,10 +48,11 @@ exports.get = function () {
     if (!patchOrderPaymentInstrumentResponse.ok) {
         throw new Error(`CCV: error authorizing payment: ${patchOrderPaymentInstrumentResponse.errorMessage}`);
     }
-
+    var ccvStatus = orderPaymentInstrument.paymentTransaction && orderPaymentInstrument.paymentTransaction.custom.ccv_transaction_status;
+    var ccvFailureCode = orderPaymentInstrument.paymentTransaction && orderPaymentInstrument.paymentTransaction.custom.ccv_failure_code;
     var result = {
-        status: orderPaymentInstrument.custom.ccv_transaction_status,
-        errorMsg: orderPaymentInstrument.custom.ccv_failure_code,
+        status: ccvStatus,
+        errorMsg: ccvFailureCode,
         customPaymentError: order.custom.ccvPriceOrCurrencyMismatch && 'price_or_currency_mismatch'
     };
 

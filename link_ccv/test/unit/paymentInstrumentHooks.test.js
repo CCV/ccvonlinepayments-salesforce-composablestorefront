@@ -25,7 +25,8 @@ describe('paymentInstrumentHooks', function () {
     beforeEach(() => {
         order = {
             status: { value: stubs.dw.OrderMock.ORDER_STATUS_CREATED },
-            custom: {}
+            custom: {},
+            addNote: () => {}
         };
         newPaymentInstrument = {};
         orderPaymentInstrument = {
@@ -92,7 +93,7 @@ describe('paymentInstrumentHooks', function () {
         it('should fail the order if the payment instrument\'s ccv_transaction_status is "failed" and the order status is not FAILED', () => {
             const testRef = 'ccvTestTransactionRef';
             newPaymentInstrument = { c_ccvTransactionReference: testRef };
-            orderPaymentInstrument.custom.ccv_transaction_status = 'failed';
+            orderPaymentInstrument.paymentTransaction = { custom: { ccv_transaction_status: 'failed' } };
 
             paymentInstrumentHooks.afterPATCH(order, orderPaymentInstrument, newPaymentInstrument);
 
