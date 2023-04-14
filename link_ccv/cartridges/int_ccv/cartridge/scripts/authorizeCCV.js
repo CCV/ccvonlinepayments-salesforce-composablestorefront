@@ -5,15 +5,19 @@ var PaymentTransaction = require('dw/order/PaymentTransaction');
 var Site = require('dw/system/Site');
 var PaymentMgr = require('dw/order/PaymentMgr');
 var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+var HookMgr = require('dw/system/HookMgr');
+
+var authContext;
 
 /**
  * Authorizes an order with CCV payment, and updates order status accordingly.
  * Must be called in a transactional context.
  * @param {dw.order.Order} order order being processed
  * @param {dw.order.OrderPaymentInstrument|undefined} orderPaymentInstrument order payment instrument (optional)
+ * @param {string<storefront|job>} context context of execution
  * @returns {Object} authorization status object
  */
-exports.authorizeCCV = function (order, orderPaymentInstrument) {
+exports.authorizeCCV = function (order, orderPaymentInstrument, context) {
     var ccvTransactionReference = order.custom.ccvTransactionReference;
     var transactionStatusResponse;
 
@@ -53,11 +57,20 @@ exports.authorizeCCV = function (order, orderPaymentInstrument) {
         priceMismatch,
         ccvTransactionReference,
         transactionStatusResponse,
+        context,
         isAuthorized: status === CCV_CONSTANTS.STATUS.SUCCESS && !currencyMismatch && !priceMismatch
     };
 };
 
+/**
+ *
+ * @param {Object} authResult authorization result object
+ * @param {dw.order.Order} order order
+ * @returns {dw.system.Status} Status.OK if auth is successful, otherwise Status.ERROR
+ */
 exports.handleAuthorizationResult = function (authResult, order) {
+    authContext = authResult.context;
+
     var { status, transactionStatusResponse, currencyMismatch, priceMismatch, isAuthorized, error } = authResult;
 
     if (error) {
@@ -83,6 +96,11 @@ exports.handleAuthorizationResult = function (authResult, order) {
 
     if (isAuthorized) {
         handleSuccess(order);
+        HookMgr.callHook('ccv.order.update.afterOrderAuthorized', 'afterOrderAuthorized', {
+            order,
+            context: authContext
+        });
+
         return new Status(Status.OK);
     }
 
@@ -95,18 +113,28 @@ exports.handleAuthorizationResult = function (authResult, order) {
  */
 function handleError(order) {
     ccvLogger.info(`No CCV transaction id in order ${order.orderNo}. Failing order.`);
-    OrderMgr.failOrder(order);
-    order.addNote('CCV payment failed', 'No ccvTransactionReference found in order.');
+
+    failOrderWithHook({
+        order,
+        noteTitle: 'CCV payment failed',
+        noteMsg: 'No ccvTransactionReference found in order.'
+    });
+    // OrderMgr.failOrder(order);
+    // order.addNote('CCV payment failed', 'No ccvTransactionReference found in order.');
 }
 /**
  * Handler for orders with CCV payment status = failed
  * @param {dw.order.Order} order order being processed
+ * @param {string} context context where
  */
 function handleFailed(order) {
     ccvLogger.info(`Failed transaction in order ${order.orderNo}. Failing order.`);
 
-    OrderMgr.failOrder(order);
-    order.addNote('CCV payment failed', 'transaction status: failed');
+    failOrderWithHook({
+        order,
+        noteTitle: 'CCV payment failed',
+        noteMsg: 'transaction status: failed'
+    });
 }
 
 /**
@@ -143,8 +171,15 @@ function handlePriceOrCurrencyMismatch(order, transactionStatusResponse) {
     }
 
     order.custom.ccvPriceOrCurrencyMismatch = true; // eslint-disable-line no-param-reassign
-    OrderMgr.failOrder(order);
-    order.addNote('Order failed via CCV-handleAuthorizationResult', msg);
+
+    failOrderWithHook({
+        order,
+        noteTitle: 'Order failed via CCV-handleAuthorizationResult',
+        noteMsg: msg
+    });
+
+    // OrderMgr.failOrder(order);
+    // order.addNote('Order failed via CCV-handleAuthorizationResult', msg);
 
     ccvLogger.fatal(`${msg} Failing order ${order.orderNo}`);
 }
@@ -163,4 +198,20 @@ function handleSuccess(order) {
     }
 
     ccvLogger.info(`Successful transaction: orderNo: ${order.orderNo}`);
+}
+/**
+ * Fails the order and calls a hook
+ * @param {Object} obj object
+ * @param {dw.order.Order} obj.order order
+ * @param {string} obj.noteTitle order note title
+ * @param {string} obj.noteMsg order note message
+ * @param {string} obj.context context where the hook was called - storefront or job
+ * @param {Object} obj.details additional details
+ *
+ */
+function failOrderWithHook({ order, noteTitle, noteMsg }) {
+    OrderMgr.failOrder(order);
+    order.addNote(noteTitle, noteMsg);
+
+    HookMgr.callHook('ccv.order.update.afterOrderFailed', 'afterOrderFailed', { order, context: authContext });
 }

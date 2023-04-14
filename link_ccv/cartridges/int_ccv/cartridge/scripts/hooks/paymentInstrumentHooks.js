@@ -40,7 +40,7 @@ exports.authorize = function (order, orderPaymentInstrument) {
     var { authorizeCCV, handleAuthorizationResult } = require('*/cartridge/scripts/authorizeCCV');
 
     try {
-        var authResult = authorizeCCV(order, orderPaymentInstrument);
+        var authResult = authorizeCCV(order, orderPaymentInstrument, 'storefront');
         var status = handleAuthorizationResult(authResult, order);
         return status;
     } catch (error) {
@@ -54,7 +54,7 @@ exports.authorizeCreditCard = function (order, orderPaymentInstrument) {
     var { authorizeCCV, handleAuthorizationResult } = require('*/cartridge/scripts/authorizeCCV');
 
     try {
-        var authResult = authorizeCCV(order, orderPaymentInstrument);
+        var authResult = authorizeCCV(order, orderPaymentInstrument, 'storefront');
         var status = handleAuthorizationResult(authResult, order);
         return status;
     } catch (error) {

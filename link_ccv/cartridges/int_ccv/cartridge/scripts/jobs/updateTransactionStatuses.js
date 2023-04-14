@@ -20,7 +20,7 @@ exports.execute = function () {
 function checkOrderStatus(order) {
     try {
         Transaction.wrap(function () {
-            var authResult = authorizeCCV(order);
+            var authResult = authorizeCCV(order, null, 'job');
             var handlerResult = handleAuthorizationResult(authResult, order);
 
             if (handlerResult.status === Status.OK) {

@@ -13,6 +13,7 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
     'dw/system/Logger': stubs.dw.loggerMock,
     'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
     'dw/system/Site': stubs.dw.SiteMock,
+    'dw/system/HookMgr': stubs.dw.HookMgrMock,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock
 });
 const Status = require('./helpers/mocks/dw/system/Status');
@@ -117,6 +118,11 @@ describe('', function () {
             expect(result.error).to.be.undefined;
             expect(result.isAuthorized).to.be.true;
         });
+        it('should set context if it\'s passed as param', () => {
+            const result = authorizeCCV(order, null, 'job');
+            expect(result.context).to.eql('job');
+            expect(result.isAuthorized).to.be.true;
+        });
     });
 
     context('#handleAuthorizationResult:', function () {
@@ -192,7 +198,7 @@ describe('', function () {
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
         });
 
-        it('should still fail the order if the refund request throws an error', () => {
+        it('should still fail the order on price mismatch if the refund request throws an error', () => {
             stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
                 amount: 55.00,
                 currency: 'usd',
@@ -235,6 +241,36 @@ describe('', function () {
             expect(handleResult).to.be.an.instanceof(Status);
             expect(handleResult.status).to.equal(1);
             expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+        });
+
+        it('should call ccv.order.update.afterOrderAuthorized hook with correct params after successful auth', () => {
+            const result = authorizeCCV(order, null, 'job');
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(0);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+            expect(stubs.dw.HookMgrMock.callHook).to.have.been.calledOnceWith(
+                'ccv.order.update.afterOrderAuthorized',
+                'afterOrderAuthorized',
+                { order, context: 'job' }
+            );
+        });
+
+        it('should call ccv.order.update.afterOrderFailed hook with correct params after failed order', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'usd',
+                method: 'card',
+                type: 'sale',
+                status: 'failed'
+            });
+            const result = authorizeCCV(order, null, 'job');
+            handleAuthorizationResult(result, order);
+            expect(stubs.dw.HookMgrMock.callHook).to.have.been.calledOnceWith(
+                'ccv.order.update.afterOrderFailed',
+                'afterOrderFailed',
+                { order, context: 'job' }
+            );
         });
     });
 });
