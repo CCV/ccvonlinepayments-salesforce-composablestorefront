@@ -20,7 +20,6 @@ import {
     Divider
 } from '@chakra-ui/react'
 import {useCheckout} from '../util/checkout-context'
-import usePaymentForms from '../util/usePaymentForms'
 import {ToggleCard, ToggleCardEdit, ToggleCardSummary} from '../../../components/toggle-card'
 import CCVPaymentSelection from './payment-selection-ccv'
 import ShippingAddressSelection from './shipping-address-selection'
@@ -28,6 +27,20 @@ import AddressDisplay from '../../../components/address-display'
 import {PromoCode, usePromoCode} from '../../../components/promo-code'
 import {PaymentSummaryCCV} from '../util/ccv-utils/ccv-utils'
 import {CCVPaymentProvider} from '../util/ccv-utils/ccv-context'
+import {useCCVPayment} from '../util/ccv-utils/ccv-context'
+
+const CCVPayment = ({paymentError, setPaymentError}) => {
+    return (
+        <CCVPaymentProvider>
+            <Payment paymentError={paymentError} setPaymentError={setPaymentError} />
+        </CCVPaymentProvider>
+    )
+}
+
+CCVPayment.propTypes = {
+    paymentError: PropTypes.string,
+    setPaymentError: PropTypes.func
+}
 
 const Payment = ({paymentError, setPaymentError}) => {
     const {formatMessage} = useIntl()
@@ -49,14 +62,13 @@ const Payment = ({paymentError, setPaymentError}) => {
         billingSameAsShipping,
         setBillingSameAsShipping,
         reviewOrder
-    } = usePaymentForms()
+    } = useCCVPayment().paymentForms
 
     const {removePromoCode, ...promoCodeProps} = usePromoCode()
 
     const paymentErrorRef = useRef()
 
     // focus on payment error
-    // TODO: fix conflict with scroll handler in checkout/index.js
     useEffect(() => {
         if (paymentError && paymentErrorRef.current) {
             paymentErrorRef.current.scrollIntoView({behavior: 'smooth', block: 'start'})
@@ -94,7 +106,7 @@ const Payment = ({paymentError, setPaymentError}) => {
     }, [])
 
     return (
-        <CCVPaymentProvider form={paymentMethodForm}>
+        <>
             <CCVPaymentError msg={paymentError} innerRef={paymentErrorRef} />
 
             <ToggleCard
@@ -225,7 +237,7 @@ const Payment = ({paymentError, setPaymentError}) => {
                     </Stack>
                 </ToggleCardSummary>
             </ToggleCard>
-        </CCVPaymentProvider>
+        </>
     )
 }
 
@@ -272,4 +284,4 @@ CCVPaymentError.propTypes = {
     innerRef: PropTypes.object
 }
 
-export default Payment
+export default CCVPayment

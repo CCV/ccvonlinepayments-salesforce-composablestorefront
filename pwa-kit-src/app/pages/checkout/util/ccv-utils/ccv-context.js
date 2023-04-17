@@ -3,12 +3,19 @@ import PropTypes from 'prop-types'
 import {useCCVPaymentMethodsMap} from './ccv-utils'
 import {useCheckout} from '../checkout-context'
 const CCVPaymentContext = React.createContext()
-import {useForm} from 'react-hook-form'
+import usePaymentFormsCCV from '../usePaymentFormsCCV'
 
 /** Can only be used inside checkout context */
-export const CCVPaymentProvider = ({form, children}) => {
+export const CCVPaymentProvider = ({children}) => {
+    const {
+        paymentMethodForm,
+        billingAddressForm,
+        billingSameAsShipping,
+        setBillingSameAsShipping,
+        reviewOrder
+    } = usePaymentFormsCCV()
+
     const {customer} = useCheckout()
-    form = form || useForm()
 
     const hasSavedCards = customer?.paymentInstruments?.length > 0
     const paymentMethodsMap = useCCVPaymentMethodsMap()
@@ -16,17 +23,25 @@ export const CCVPaymentProvider = ({form, children}) => {
     const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
 
     const onPaymentIdChange = (value) => {
-        console.log(form.getValues())
+        console.log(paymentMethodForm.getValues())
         if (value && isEditingPayment) {
             togglePaymentEdit()
         }
-        form.reset({paymentInstrumentId: value})
+        paymentMethodForm.reset({
+            paymentInstrumentId: value,
+            paymentMethodId: paymentMethodForm.getValues('paymentMethodId')
+        })
     }
 
     const togglePaymentEdit = () => {
-        form.reset({paymentInstrumentId: ''})
+        paymentMethodForm.reset({
+            paymentInstrumentId: '',
+            paymentMethodId: paymentMethodForm.getValues('paymentMethodId')
+        })
+        paymentMethodForm.setValue('paymentInstrumentId', '')
+
         setIsEditingPayment(!isEditingPayment)
-        form.trigger()
+        paymentMethodForm.trigger()
     }
 
     const onPaymentMethodChange = () => {
@@ -38,7 +53,14 @@ export const CCVPaymentProvider = ({form, children}) => {
     return (
         <CCVPaymentContext.Provider
             value={{
-                form,
+                paymentForms: {
+                    paymentMethodForm,
+                    billingAddressForm,
+                    billingSameAsShipping,
+                    setBillingSameAsShipping,
+                    reviewOrder
+                },
+                form: paymentMethodForm,
                 hasSavedCards,
                 isEditingPayment,
                 setIsEditingPayment,

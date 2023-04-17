@@ -311,61 +311,6 @@ export const CheckoutProvider = ({children}) => {
                     customer.addSavedPaymentInstrument(paymentInstrument)
                 }
             },
-            /**
-             * Applies the given payment instrument to the basket.
-             * @see {@link https://salesforcecommercecloud.github.io/commerce-sdk-isomorphic/modules/shoppercustomers.html#orderpaymentinstrument}
-             * @param {Object} payment
-             */
-            async setPaymentCCV(payment) {
-                const {paymentInstrumentId, paymentMethodId, ccvIssuerID, ccvMethodId} = payment
-
-                if (paymentInstrumentId) {
-                    // Customer selected a saved card
-                    await basket.setPaymentInstrument({
-                        customerPaymentInstrumentId: paymentInstrumentId
-                    })
-                    return
-                }
-
-                const paymentInstrument = {
-                    paymentMethodId
-                }
-
-                if (ccvIssuerID) {
-                    paymentInstrument.c_ccv_issuer_id = ccvIssuerID
-                }
-
-                if (ccvMethodId) {
-                    paymentInstrument.c_ccv_method_id = ccvMethodId
-                }
-
-                // adding new credit card
-                if (payment.number) {
-                    const [expirationMonth, expirationYear] = payment.expiry.split('/')
-
-                    paymentInstrument.paymentCard = {
-                        holder: payment.holder,
-                        number: payment.number.replace(/ /g, ''),
-                        cardType: getPaymentInstrumentCardType(payment.cardType),
-                        expirationMonth: parseInt(expirationMonth),
-                        expirationYear: parseInt(expirationYear),
-
-                        // TODO: These fields are required for saving the card to the customer's
-                        // account. Im not sure what they are for or how to get them, so for now
-                        // we're just passing some values to make it work. Need to investigate.
-                        issueNumber: '',
-                        validFromMonth: 1,
-                        validFromYear: 2020
-                    }
-                }
-
-                await basket.setPaymentInstrument(paymentInstrument)
-
-                // Save the payment instrument to the customer's account if they are registered
-                if (!state.isGuestCheckout && !payment.id && payment.number) {
-                    customer.addSavedPaymentInstrument(paymentInstrument)
-                }
-            },
 
             /**
              * Removes the currently applied payment instrument from the basket. Multiple payment

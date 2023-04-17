@@ -1,26 +1,23 @@
-/*
- * Copyright (c) 2021, salesforce.com, inc.
- * All rights reserved.
- * SPDX-License-Identifier: BSD-3-Clause
- * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
- */
 import {useEffect, useState} from 'react'
 import {useForm} from 'react-hook-form'
 import {useCheckout} from '../util/checkout-context'
+import {getPaymentInstrumentCardType} from '../../../utils/cc-utils'
 
 /**
  * A hook for managing and coordinating the billing address and payment method forms.
  * @returns {Object}
  */
-const usePaymentForms = () => {
+const usePaymentFormsCCV = () => {
     const {
         selectedPayment,
         selectedBillingAddress,
         selectedShippingAddress,
-        setPayment,
         setBillingAddress,
         isBillingSameAsShipping,
-        goToNextStep
+        goToNextStep,
+        customer,
+        basket,
+        isGuestCheckout
     } = useCheckout()
 
     // This local state value manages the 'checked' state of the billing address form's
@@ -53,7 +50,7 @@ const usePaymentForms = () => {
         // we ensure that the any applied payment is removed before showing the
         // the payment form.
         if (!selectedPayment) {
-            await setPayment(payment)
+            await setPaymentCCV(payment)
         }
 
         // Once the payment is applied to the basket, we submit the billing address.
@@ -83,6 +80,62 @@ const usePaymentForms = () => {
         return paymentMethodForm.handleSubmit(submitPaymentMethodForm)()
     }
 
+    /**
+     * Applies the given payment instrument to the basket.
+     * @see {@link https://salesforcecommercecloud.github.io/commerce-sdk-isomorphic/modules/shoppercustomers.html#orderpaymentinstrument}
+     * @param {Object} payment
+     */
+    async function setPaymentCCV(payment) {
+        const {paymentInstrumentId, paymentMethodId, ccvIssuerID, ccvMethodId} = payment
+
+        if (paymentInstrumentId) {
+            // Customer selected a saved card
+            await basket.setPaymentInstrument({
+                customerPaymentInstrumentId: paymentInstrumentId
+            })
+            return
+        }
+
+        const paymentInstrument = {
+            paymentMethodId
+        }
+
+        if (ccvIssuerID) {
+            paymentInstrument.c_ccv_issuer_id = ccvIssuerID
+        }
+
+        if (ccvMethodId) {
+            paymentInstrument.c_ccv_method_id = ccvMethodId
+        }
+
+        // adding new credit card
+        if (payment.number) {
+            const [expirationMonth, expirationYear] = payment.expiry.split('/')
+
+            paymentInstrument.paymentCard = {
+                holder: payment.holder,
+                number: payment.number.replace(/ /g, ''),
+                cardType: getPaymentInstrumentCardType(payment.cardType),
+                expirationMonth: parseInt(expirationMonth),
+                expirationYear: parseInt(expirationYear),
+
+                // TODO: These fields are required for saving the card to the customer's
+                // account. Im not sure what they are for or how to get them, so for now
+                // we're just passing some values to make it work. Need to investigate.
+                issueNumber: '',
+                validFromMonth: 1,
+                validFromYear: 2020
+            }
+        }
+
+        await basket.setPaymentInstrument(paymentInstrument)
+
+        // Save the payment instrument to the customer's account if they are registered
+        if (!isGuestCheckout && !payment.id && payment.number) {
+            customer.addSavedPaymentInstrument(paymentInstrument)
+        }
+    }
+
     return {
         paymentMethodForm,
         billingAddressForm,
@@ -92,4 +145,4 @@ const usePaymentForms = () => {
     }
 }
 
-export default usePaymentForms
+export default usePaymentFormsCCV

@@ -45,13 +45,6 @@ const PaymentSelection = ({form, setPaymentError}) => {
         }
     }, [form.errors])
 
-    const test = (e) => {
-        e.preventDefault()
-        // console.log(paymentMethods)
-        console.log(form.getValues())
-        console.log(form)
-    }
-
     return (
         <form>
             <FormControl
@@ -107,7 +100,6 @@ const PaymentSelection = ({form, setPaymentError}) => {
                                 })
                             }}
                         />
-                        <button onClick={test}>test</button>
                     </Box>
                 </Stack>
             </FormControl>
@@ -123,7 +115,7 @@ PaymentSelection.propTypes = {
 
 const CCVPaymentMethodRadio = function ({paymentMethod}) {
     const {form} = useCCVPayment()
-    const currentSelectedMethodId = form.getValues('paymentMethodId')
+    const currentSelectedMethodId = form.watch('paymentMethodId')
 
     return (
         <Box border="1px solid" borderColor="gray.100" rounded="base">
@@ -338,8 +330,7 @@ CCVMethodOptions.propTypes = {
 
 CCVPaymentMethodRadio.propTypes = {
     /** Currently selected payment method ID */
-    paymentMethod: PropTypes.object,
-    currentSelectedMethodId: PropTypes.string
+    paymentMethod: PropTypes.object
 }
 
 export default PaymentSelection
