@@ -20,7 +20,7 @@ import useCCVApi from './util/ccv-utils/useCCVApi'
 import {useLocation} from 'react-router-dom'
 
 const Checkout = () => {
-    const {globalError, setGlobalError, step} = useCheckout()
+    const {globalError, step} = useCheckout()
     const [isLoading, setIsLoading] = useState(false)
     const ccv = useCCVApi()
     const {formatMessage} = useIntl()
@@ -39,11 +39,8 @@ const Checkout = () => {
         try {
             setIsLoading(true)
             setPaymentError('')
-            setGlobalError(undefined)
             // create redirect session via ccv api
             const createRedirectSessionResponse = await ccv.createRedirectSession()
-            console.log(createRedirectSessionResponse)
-            // const placeOrderResponse = await placeOrder()
             localStorage.setItem(
                 'newOrderData',
                 JSON.stringify(createRedirectSessionResponse.order)
@@ -57,11 +54,8 @@ const Checkout = () => {
                 id: 'checkout.message.generic_error',
                 defaultMessage: 'An unexpected error occurred during checkout.'
             })
-            if (error.message === 'missing_reference') {
-                setPaymentError('missing_reference')
-            } else {
-                setGlobalError(message)
-            }
+
+            setPaymentError(message)
         }
     }
 

@@ -29,7 +29,7 @@ import {PaymentMethodIcons} from '../util/ccv-utils/ccv-utils'
 import Field from '../../../components/field'
 import {useCCVPayment} from '../util/ccv-utils/ccv-context'
 
-const PaymentSelection = ({form, setPaymentError}) => {
+const PaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
     const {paymentMethods} = useCheckout()
 
@@ -67,7 +67,6 @@ const PaymentSelection = ({form, setPaymentError}) => {
                                         console.log(e)
                                         onChange(e)
                                         onPaymentMethodChange(e)
-                                        setPaymentError('')
                                     }}
                                 >
                                     {/* dynamic payment methods */}
@@ -109,8 +108,7 @@ const PaymentSelection = ({form, setPaymentError}) => {
 
 PaymentSelection.propTypes = {
     /** The form object returnd from `useForm` */
-    form: PropTypes.object,
-    setPaymentError: PropTypes.func
+    form: PropTypes.object
 }
 
 const CCVPaymentMethodRadio = function ({paymentMethod}) {

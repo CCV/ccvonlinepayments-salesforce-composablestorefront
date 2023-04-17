@@ -6,7 +6,7 @@ const CCVPaymentContext = React.createContext()
 import usePaymentFormsCCV from '../usePaymentFormsCCV'
 
 /** Can only be used inside checkout context */
-export const CCVPaymentProvider = ({children}) => {
+export const CCVPaymentProvider = ({children, paymentError, setPaymentError}) => {
     const {
         paymentMethodForm,
         billingAddressForm,
@@ -48,6 +48,7 @@ export const CCVPaymentProvider = ({children}) => {
         if (isEditingPayment) {
             togglePaymentEdit()
         }
+        setPaymentError('')
     }
 
     return (
@@ -67,7 +68,9 @@ export const CCVPaymentProvider = ({children}) => {
                 paymentMethodsMap,
                 onPaymentIdChange,
                 togglePaymentEdit,
-                onPaymentMethodChange
+                onPaymentMethodChange,
+                paymentError,
+                setPaymentError
             }}
         >
             {children}
@@ -75,7 +78,11 @@ export const CCVPaymentProvider = ({children}) => {
     )
 }
 
-CCVPaymentProvider.propTypes = {children: PropTypes.any, form: PropTypes.object}
+CCVPaymentProvider.propTypes = {
+    children: PropTypes.any,
+    paymentError: PropTypes.string,
+    setPaymentError: PropTypes.func
+}
 
 export const useCCVPayment = () => {
     return React.useContext(CCVPaymentContext)

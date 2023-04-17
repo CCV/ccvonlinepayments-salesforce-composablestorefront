@@ -177,16 +177,11 @@ export const CheckoutProvider = ({children}) => {
             },
 
             setCheckoutStep(step) {
-                mergeState({globalError: undefined})
                 mergeState({step})
             },
 
             setIsGuestCheckout(isGuestCheckout) {
                 mergeState({isGuestCheckout})
-            },
-
-            setGlobalError(msg) {
-                mergeState({globalError: msg})
             },
 
             // Async functions

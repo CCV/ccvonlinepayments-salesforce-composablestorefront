@@ -31,8 +31,8 @@ import {useCCVPayment} from '../util/ccv-utils/ccv-context'
 
 const CCVPayment = ({paymentError, setPaymentError}) => {
     return (
-        <CCVPaymentProvider>
-            <Payment paymentError={paymentError} setPaymentError={setPaymentError} />
+        <CCVPaymentProvider paymentError={paymentError} setPaymentError={setPaymentError}>
+            <Payment />
         </CCVPaymentProvider>
     )
 }
@@ -42,7 +42,7 @@ CCVPayment.propTypes = {
     setPaymentError: PropTypes.func
 }
 
-const Payment = ({paymentError, setPaymentError}) => {
+const Payment = () => {
     const {formatMessage} = useIntl()
 
     const {
@@ -57,12 +57,16 @@ const Payment = ({paymentError, setPaymentError}) => {
     } = useCheckout()
 
     const {
-        paymentMethodForm,
-        billingAddressForm,
-        billingSameAsShipping,
-        setBillingSameAsShipping,
-        reviewOrder
-    } = useCCVPayment().paymentForms
+        paymentForms: {
+            paymentMethodForm,
+            billingAddressForm,
+            billingSameAsShipping,
+            setBillingSameAsShipping,
+            reviewOrder
+        },
+        paymentError,
+        setPaymentError
+    } = useCCVPayment()
 
     const {removePromoCode, ...promoCodeProps} = usePromoCode()
 
@@ -134,11 +138,7 @@ const Payment = ({paymentError, setPaymentError}) => {
 
                     <Stack spacing={6}>
                         {!selectedPayment ? (
-                            <CCVPaymentSelection
-                                form={paymentMethodForm}
-                                setPaymentError={setPaymentError}
-                                hideSubmitButton
-                            />
+                            <CCVPaymentSelection form={paymentMethodForm} hideSubmitButton />
                         ) : (
                             <Stack spacing={3}>
                                 <Heading as="h3" fontSize="md">
@@ -240,12 +240,9 @@ const Payment = ({paymentError, setPaymentError}) => {
         </>
     )
 }
-
 Payment.propTypes = {
-    paymentError: PropTypes.string,
-    setPaymentError: PropTypes.func
+    paymentError: PropTypes.string
 }
-
 const CCVPaymentError = ({msg, innerRef}) => {
     if (!msg) return null
 
