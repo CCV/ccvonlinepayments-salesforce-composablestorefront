@@ -22,8 +22,6 @@ const Money = require('./helpers/mocks/dw/value/Money');
 const HTTPService = require('./helpers/mocks/dw/svc/HTTPFormService');
 
 describe('ccvPaymentHelpers', function () {
-    this.timeout(0); // todo: remove after done
-
     let order;
     let amount;
     let description = 'some description';
@@ -226,8 +224,6 @@ describe('ccvPaymentHelpers', function () {
 });
 
 describe('ccvPaymentHelpers', function () {
-    this.timeout(0); // todo: remove after done
-
     let svc;
 
     before(() => stubs.init());

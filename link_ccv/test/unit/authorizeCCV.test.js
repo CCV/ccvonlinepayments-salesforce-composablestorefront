@@ -19,7 +19,6 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
 const Status = require('./helpers/mocks/dw/system/Status');
 
 describe('', function () {
-    this.timeout(0); // todo: remove after done
     let order;
     let paymentInstrument;
 

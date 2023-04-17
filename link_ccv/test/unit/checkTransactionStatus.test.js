@@ -13,7 +13,6 @@ const checkTransactionStatus = proxyquire('../../cartridges/int_ccv/cartridge/sc
 const Order = require('./helpers/mocks/dw/order/Order');
 
 describe('Check Transaction Status custom endpoint', function () {
-    this.timeout(0); // todo: remove after done
     let order;
     let orderPaymentInstrument;
     let createPaymentResponse;

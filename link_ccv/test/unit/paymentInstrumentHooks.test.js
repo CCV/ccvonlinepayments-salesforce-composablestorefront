@@ -14,7 +14,6 @@ const paymentInstrumentHooks = proxyquire('../../cartridges/int_ccv/cartridge/sc
 const Status = require('./helpers/mocks/dw/system/Status');
 
 describe('paymentInstrumentHooks', function () {
-    this.timeout(0); // todo: remove after done
     let order;
     let orderPaymentInstrument;
     let newPaymentInstrument;

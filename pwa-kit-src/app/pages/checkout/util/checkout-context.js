@@ -317,31 +317,6 @@ export const CheckoutProvider = ({children}) => {
              * @param {Object} payment
              */
             async setPaymentCCV(payment) {
-                /**
-                 * ADD NEW CARD
-                 * {
-                    "paymentInstrumentId": "",
-                    "number": "4111 1111 1111 1111",
-                    "holder": "George Georgeson",
-                    "expiry": "12/25",
-                    "securityCode": "111",
-                    "cardType": "visa",
-                    "paymentMethodId": "CCV_CREDIT_CARD"
-                }
-
-                USE EXISTING CARD
-                {
-                    "paymentInstrumentId": "2a418714c94d942b7d27ec2294",
-                    "paymentMethodId": "CCV_CREDIT_CARD"
-                }
-
-                USE CCV METHOD
-                {
-                    "ccvOption": "INGBNL2A",
-                    "paymentMethodId": "CCV_IDEAL"
-                }
-
-                */
                 const {paymentInstrumentId, paymentMethodId, ccvIssuerID, ccvMethodId} = payment
 
                 if (paymentInstrumentId) {

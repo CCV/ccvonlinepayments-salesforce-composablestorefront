@@ -12,8 +12,6 @@ const { CCV_CONSTANTS } = stubs.CCVPaymentHelpersMock;
 const { SUCCESS, FAILED, PENDING, MANUAL_INTERVENTION } = CCV_CONSTANTS.STATUS;
 
 describe('CCVOrderHelpers', function () {
-    this.timeout(0); // todo: remove after done
-
     let order;
 
     before(() => stubs.init());

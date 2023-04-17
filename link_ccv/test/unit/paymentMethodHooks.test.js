@@ -12,8 +12,6 @@ const paymentMethodHooks = proxyquire('../../cartridges/int_ccv/cartridge/script
 });
 
 describe('paymentMethodHooks', function () {
-    this.timeout(0); // todo: remove after done
-
     const paymentMethodResultResponse = {
         applicablePaymentMethods: [{
             id: 'CCV_CREDIT_CARD',

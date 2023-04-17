@@ -16,7 +16,7 @@ exports.afterPATCH = function (order, paymentInstrument, newPaymentInstrument) {
 
     var transactionReference = order.custom.ccvTransactionReference;
     var ccvTransactionStatus = paymentInstrument.paymentTransaction && paymentInstrument.paymentTransaction.custom.ccv_transaction_status;
-    // todo: store in vault
+
     if (!transactionReference || ccvTransactionStatus === 'failed') {
         if (order.status.value !== Order.ORDER_STATUS_FAILED) {
             var OrderMgr = require('dw/order/OrderMgr');
