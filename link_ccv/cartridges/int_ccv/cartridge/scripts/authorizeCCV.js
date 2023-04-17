@@ -94,6 +94,17 @@ exports.handleAuthorizationResult = function (authResult, order) {
         return new Status(Status.ERROR, '< CCV: price or currency mismatch >');
     }
 
+    if (transactionStatusResponse.details && transactionStatusResponse.details.vaultAccessToken) {
+        var collections = require('*/cartridge/scripts/util/collections');
+        var paymentInstrument = collections.find(order.customer.profile.wallet.paymentInstruments, instrument => {
+            return transactionStatusResponse.details.maskedPan.endsWith(instrument.creditCardNumberLastDigits);
+        });
+
+        if (paymentInstrument) {
+            paymentInstrument.custom.ccvVaultAccessToken = transactionStatusResponse.details.vaultAccessToken;
+        }
+    }
+
     if (isAuthorized) {
         handleSuccess(order);
         HookMgr.callHook('ccv.order.update.afterOrderAuthorized', 'afterOrderAuthorized', {

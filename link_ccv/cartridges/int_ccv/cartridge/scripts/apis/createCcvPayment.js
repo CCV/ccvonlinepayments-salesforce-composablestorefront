@@ -71,10 +71,10 @@ exports.get = function (httpParams) {
 
     // CREDIT CARD
     if (selectedMethodCCVId === 'card') {
-        if (paymentInstrument.creditCardToken) {
+        if (paymentInstrument.custom.ccvVaultAccessToken) {
             // vault payment
             requestBody.details = {
-                vaultAccessToken: paymentInstrument.creditCardToken
+                vaultAccessToken: paymentInstrument.custom.ccvVaultAccessToken
             };
         } else if (paymentInstrument.creditCardNumber) {
             // new inline credit card payment
@@ -85,10 +85,12 @@ exports.get = function (httpParams) {
                 cardholderFirstName: firstName,
                 cardholderLastName: lastName || firstName
             };
-            if (customer.registered && customer.authenticated && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
+            if (customer.registered
+                && customer.authenticated
+                && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
                 // a vaultAccessToken will be returned in the checkTransactionInfo response
                 // we will add it to the customer's payment instrument in the UpdateStatuses job
-                // requestBody.storeInVault = 'yes';
+                requestBody.storeInVault = 'yes';
             }
         }
 
@@ -116,7 +118,6 @@ exports.get = function (httpParams) {
     }
 
     // ============= 3. SAVE CCV DATA TO ORDER PAYMENT INSTRUMENT =============
-
     var updatePaymentInstrumentResponse = ocapiService.createOcapiService().call({
         requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/orders/${order.orderNo}/payment_instruments/${paymentInstrument.UUID}?skip_authorization=true`,
         requestMethod: 'PATCH',

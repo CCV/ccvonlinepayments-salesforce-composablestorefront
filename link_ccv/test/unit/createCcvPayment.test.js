@@ -14,7 +14,6 @@ const createCcvPayment = proxyquire('../../cartridges/int_ccv/cartridge/scripts/
 });
 
 describe('CreateCCVPayment custom endpoint', function () {
-    this.timeout(0); // todo: remove after done
     const httpParams = { c_returnUrl: ['pwa-test.com'] };
     let order;
     let createPaymentResponse;
@@ -101,10 +100,10 @@ describe('CreateCCVPayment custom endpoint', function () {
     context('createCcvPayment -  payment methods', function () {
         context('Card', function () {
             it('if credit card token is provided, request should include it as vaultAccessToken and no other card data', () => {
-                order.paymentInstruments[0].creditCardToken = 'testToken';
+                order.paymentInstruments[0].custom.ccvVaultAccessToken = 'testToken';
                 createCcvPayment.get(httpParams);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
-                expect(paymentRequest.requestBody.details.vaultAccessToken).to.eql(order.paymentInstruments[0].creditCardToken);
+                expect(paymentRequest.requestBody.details.vaultAccessToken).to.eql(order.paymentInstruments[0].custom.ccvVaultAccessToken);
                 expect(paymentRequest.requestBody.details.pan).to.be.undefined;
                 expect(paymentRequest.requestBody.details.expiryDate).to.be.undefined;
                 expect(paymentRequest.requestBody.details.cardholderFirstName).to.be.undefined;
