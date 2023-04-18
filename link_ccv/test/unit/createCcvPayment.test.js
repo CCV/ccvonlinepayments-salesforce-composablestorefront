@@ -95,6 +95,12 @@ describe('CreateCCVPayment custom endpoint', function () {
             const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
             expect(paymentRequest.requestBody.language).to.eql('eng');
         });
+
+        it('should throw an error if no basket is found in the current session', () => {
+            stubs.dw.BasketMgrMock.getCurrentBasket.returns(null);
+
+            expect(createCcvPayment.get.bind(null, httpParams)).to.throw('No basket found.');
+        });
     });
 
     context('createCcvPayment -  payment methods', function () {

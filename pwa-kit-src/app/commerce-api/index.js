@@ -13,7 +13,7 @@ import OcapiShopperOrders from './ocapi-shopper-orders'
 import {getTenantId, isError, isTokenValid} from './utils'
 import Auth from './auth'
 import EinsteinAPI from './einstein'
-import OcapiCCV from '../commerce-api/ocapi-ccv'
+import OcapiCCV from '../pages/checkout/util/ccv-utils/ocapi-ccv'
 
 /**
  * The configuration details for the connecting to the API.

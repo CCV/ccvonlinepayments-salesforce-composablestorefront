@@ -5,7 +5,7 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 import React, {useEffect, useState} from 'react'
-import {FormattedMessage, useIntl} from 'react-intl'
+import {FormattedMessage} from 'react-intl'
 import {Alert, AlertIcon, Box, Button, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
 import {CheckoutProvider, useCheckout} from './util/checkout-context'
 import ContactInfo from './partials/contact-info'
@@ -17,16 +17,14 @@ import CCVPayment from './partials/payment-ccv'
 import CheckoutSkeleton from './partials/checkout-skeleton'
 import OrderSummary from '../../components/order-summary'
 import useCCVApi from './util/ccv-utils/useCCVApi'
-import {useLocation} from 'react-router-dom'
+import {CCVPaymentProvider, useCCVPayment} from './util/ccv-utils/ccv-context'
 
 const Checkout = () => {
     const {globalError, step} = useCheckout()
     const [isLoading, setIsLoading] = useState(false)
     const ccv = useCCVApi()
-    const {formatMessage} = useIntl()
-    const location = useLocation()
 
-    const [paymentError, setPaymentError] = useState(location.state?.paymentErrorMsg || '')
+    const {paymentError, setPaymentError} = useCCVPayment()
 
     // Scroll to the top when we get a global error
     useEffect(() => {
@@ -35,29 +33,7 @@ const Checkout = () => {
         }
     }, [globalError, step])
 
-    const submitOrder = async () => {
-        try {
-            setIsLoading(true)
-            setPaymentError('')
-            // create redirect session via ccv api
-            const createRedirectSessionResponse = await ccv.createRedirectSession()
-            localStorage.setItem(
-                'newOrderData',
-                JSON.stringify(createRedirectSessionResponse.order)
-            )
-
-            // redirect to hosted payment page
-            window.location.href = createRedirectSessionResponse.payUrl
-        } catch (error) {
-            setIsLoading(false)
-            const message = formatMessage({
-                id: 'checkout.message.generic_error',
-                defaultMessage: 'An unexpected error occurred during checkout.'
-            })
-
-            setPaymentError(message)
-        }
-    }
+    const submitOrder = async () => ccv.submitOrderCCV(setIsLoading, setPaymentError)
 
     return (
         <Box background="gray.50" flex="1">
@@ -80,10 +56,7 @@ const Checkout = () => {
                             <ContactInfo />
                             <ShippingAddress />
                             <ShippingOptions />
-                            <CCVPayment
-                                paymentError={paymentError}
-                                setPaymentError={setPaymentError}
-                            />
+                            <CCVPayment />
 
                             {step === 4 && (
                                 <Box pt={3} display={{base: 'none', lg: 'block'}}>
@@ -158,7 +131,9 @@ const CheckoutContainer = () => {
 
     return (
         <CheckoutProvider>
-            <Checkout />
+            <CCVPaymentProvider>
+                <Checkout />
+            </CCVPaymentProvider>
         </CheckoutProvider>
     )
 }

@@ -1,4 +1,4 @@
-import {checkRequiredParameters, createOcapiFetch} from './utils'
+import {checkRequiredParameters, createOcapiFetch} from '../../../../commerce-api/utils'
 
 class OcapiCCV {
     constructor(config) {

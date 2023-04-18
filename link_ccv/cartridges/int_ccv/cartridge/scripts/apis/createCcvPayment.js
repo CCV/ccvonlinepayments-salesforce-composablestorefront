@@ -18,6 +18,10 @@ exports.get = function (httpParams) {
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var ocapiService = require('*/cartridge/scripts/services/ocapiService.js');
     var currentBasket = BasketMgr.getCurrentBasket();
+
+    if (!currentBasket) {
+        throw new Error('No basket found.');
+    }
     var basketId = currentBasket.UUID;
 
     // ============= 1. CREATE ORDER =============

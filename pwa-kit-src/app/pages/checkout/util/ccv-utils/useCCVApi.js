@@ -4,7 +4,7 @@ import {useIntl} from 'react-intl'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()
-    const {locale} = useIntl()
+    const {locale, formatMessage} = useIntl()
 
     return {
         async createRedirectSession() {
@@ -32,6 +32,29 @@ const useCCVApi = () => {
             }
 
             return paymentTransaction.c_result
+        },
+        async submitOrderCCV(setIsLoading, setPaymentError) {
+            try {
+                setIsLoading(true)
+                setPaymentError('')
+                // create redirect session via ccv api
+                const createRedirectSessionResponse = await this.createRedirectSession()
+                localStorage.setItem(
+                    'newOrderData',
+                    JSON.stringify(createRedirectSessionResponse.order)
+                )
+
+                // redirect to hosted payment page
+                window.location.href = createRedirectSessionResponse.payUrl
+            } catch (error) {
+                setIsLoading(false)
+                const message = formatMessage({
+                    id: 'checkout.message.generic_error',
+                    defaultMessage: 'An unexpected error occurred during checkout.'
+                })
+
+                setPaymentError(message)
+            }
         }
     }
 }

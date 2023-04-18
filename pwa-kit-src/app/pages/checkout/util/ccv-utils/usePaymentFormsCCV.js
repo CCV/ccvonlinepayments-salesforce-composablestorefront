@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react'
 import {useForm} from 'react-hook-form'
-import {useCheckout} from '../util/checkout-context'
-import {getPaymentInstrumentCardType} from '../../../utils/cc-utils'
+import {useCheckout} from '../checkout-context'
+import {getPaymentInstrumentCardType} from '../../../../utils/cc-utils'
 
 /**
  * A hook for managing and coordinating the billing address and payment method forms.

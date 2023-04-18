@@ -26,23 +26,9 @@ import ShippingAddressSelection from './shipping-address-selection'
 import AddressDisplay from '../../../components/address-display'
 import {PromoCode, usePromoCode} from '../../../components/promo-code'
 import {PaymentSummaryCCV} from '../util/ccv-utils/ccv-utils'
-import {CCVPaymentProvider} from '../util/ccv-utils/ccv-context'
 import {useCCVPayment} from '../util/ccv-utils/ccv-context'
 
-const CCVPayment = ({paymentError, setPaymentError}) => {
-    return (
-        <CCVPaymentProvider paymentError={paymentError} setPaymentError={setPaymentError}>
-            <Payment />
-        </CCVPaymentProvider>
-    )
-}
-
-CCVPayment.propTypes = {
-    paymentError: PropTypes.string,
-    setPaymentError: PropTypes.func
-}
-
-const Payment = () => {
+const CCVPayment = () => {
     const {formatMessage} = useIntl()
 
     const {
@@ -75,14 +61,14 @@ const Payment = () => {
     // focus on payment error
     useEffect(() => {
         if (paymentError && paymentErrorRef.current) {
-            paymentErrorRef.current.scrollIntoView({behavior: 'smooth', block: 'start'})
+            paymentErrorRef.current.scrollIntoView({behavior: 'smooth', block: 'center'})
         }
     }, [paymentError, paymentErrorRef])
 
     useEffect(async () => {
         if (paymentError && selectedPayment?.paymentCard) {
             // delete customer payment instrument if there was an error and the basket was reopened
-            // because the PAN will be masked
+            // because the PAN will be masked and unusable
             await removePaymentAndResetForm()
             setCheckoutStep(checkoutSteps.Payment)
         }
@@ -240,9 +226,7 @@ const Payment = () => {
         </>
     )
 }
-Payment.propTypes = {
-    paymentError: PropTypes.string
-}
+
 const CCVPaymentError = ({msg, innerRef}) => {
     if (!msg) return null
 

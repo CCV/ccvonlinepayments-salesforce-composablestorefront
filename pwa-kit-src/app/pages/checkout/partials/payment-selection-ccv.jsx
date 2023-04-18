@@ -193,9 +193,7 @@ const CCVMethodOptions = function ({paymentMethodId}) {
                             )
                         })}
                     </Controller>
-                    <FormErrorMessage marginTop={0} marginBottom={4}>
-                        {form.errors.ccvIssuerID?.message}
-                    </FormErrorMessage>
+                    <FormErrorMessage>{form.errors.ccvIssuerID?.message}</FormErrorMessage>
                 </FormControl>
             )
         }
