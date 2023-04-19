@@ -67,13 +67,6 @@ import MastercardSymbol from '../../assets/svg/cc-mastercard.svg'
 import PaypalSymbol from '../../assets/svg/paypal.svg'
 import SocialPinterestSymbol from '../../assets/svg/social-pinterest.svg'
 import VisaSymbol from '../../assets/svg/cc-visa.svg'
-import IdealSymbol from '../../assets/svg/ideal-logo.svg'
-import BancontactSymbol from '../../assets/svg/bancontact-logo.svg'
-import GiropaySymbol from '../../assets/svg/giropay-logo.svg'
-import SofortSymbol from '../../assets/svg/sofort-logo.svg'
-import EPSSymbol from '../../assets/svg/eps-logo.svg'
-import PayconiqSymbol from '../../assets/svg/payconiq-logo.svg'
-import MaestroSymbol from '../../assets/svg/maestro-logo.svg'
 
 // TODO: We're hardcoding the `viewBox` for these imported SVGs temporarily as the
 // SVG loader plugin is not properly providing us the symbol data on the client side.
@@ -86,13 +79,6 @@ MastercardSymbol.viewBox = MastercardSymbol.viewBox || '0 0 38 22'
 PaypalSymbol.viewBox = PaypalSymbol.viewBox || '0 0 80 20'
 SocialPinterestSymbol.viewBox = SocialPinterestSymbol.viewBox || '0 0 21 20'
 VisaSymbol.viewBox = VisaSymbol.viewBox || '0 0 38 22'
-IdealSymbol.viewBox = IdealSymbol.viewBox || '0 0 306.1 269.8'
-BancontactSymbol.viewBox = BancontactSymbol.viewBox || '0 0 326.1 230.5'
-GiropaySymbol.viewBox = GiropaySymbol.viewBox || '0 0 38 22'
-SofortSymbol.viewBox = SofortSymbol.viewBox || '0 0 746.1 286.2'
-EPSSymbol.viewBox = EPSSymbol.viewBox || '0 0 889 577'
-PayconiqSymbol.viewBox = PayconiqSymbol.viewBox || '0 0 326 230.5'
-MaestroSymbol.viewBox = MaestroSymbol.viewBox || '0 0 125 120'
 
 /**
  * A helper for creating a Chakra-wrapped icon from our own SVG imports via sprite sheet.
@@ -172,10 +158,3 @@ export const VisibilityOffIcon = icon('visibility-off')
 export const HeartIcon = icon('heart')
 export const HeartSolidIcon = icon('heart-solid')
 export const CloseIcon = icon('close')
-export const IdealIcon = icon('ideal-logo', {viewBox: IdealSymbol.viewBox})
-export const BanContactIcon = icon('bancontact-logo', {viewBox: BancontactSymbol.viewBox})
-export const GiropayIcon = icon('giropay-logo', {viewBox: GiropaySymbol.viewBox})
-export const SofortIcon = icon('sofort-logo', {viewBox: SofortSymbol.viewBox})
-export const EPSIcon = icon('eps-logo', {viewBox: EPSSymbol.viewBox})
-export const PayconiqIcon = icon('payconiq-logo', {viewBox: PayconiqSymbol.viewBox})
-export const MaestroIcon = icon('maestro-logo', {viewBox: MaestroSymbol.viewBox})
