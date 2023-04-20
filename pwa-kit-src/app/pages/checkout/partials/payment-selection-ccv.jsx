@@ -37,7 +37,7 @@ const PaymentSelection = ({form}) => {
     form = form || useForm()
 
     const {onPaymentMethodChange} = useCCVPayment()
-
+    const currentSelectedMethodId = form.watch('paymentMethodId')
     // focus form on error
     useEffect(() => {
         if (Object.keys(form.errors).length > 0) {
@@ -78,6 +78,10 @@ const PaymentSelection = ({form}) => {
                                                         <CCVPaymentMethodRadio
                                                             key={paymentMethod.id}
                                                             paymentMethod={paymentMethod}
+                                                            isSelected={
+                                                                currentSelectedMethodId ===
+                                                                paymentMethod.id
+                                                            }
                                                         />
                                                     )
                                                 }
@@ -111,9 +115,8 @@ PaymentSelection.propTypes = {
     form: PropTypes.object
 }
 
-const CCVPaymentMethodRadio = function ({paymentMethod}) {
+const CCVPaymentMethodRadio = function ({paymentMethod, isSelected}) {
     const {form} = useCCVPayment()
-    const currentSelectedMethodId = form.watch('paymentMethodId')
 
     return (
         <Box border="1px solid" borderColor="gray.100" rounded="base">
@@ -127,9 +130,9 @@ const CCVPaymentMethodRadio = function ({paymentMethod}) {
                     </Stack>
                 </Radio>
             </Box>
-            {currentSelectedMethodId === paymentMethod.id && (
+            {isSelected && (
                 <>
-                    <CCVMethodOptions paymentMethodId={currentSelectedMethodId} />
+                    <CCVMethodOptions paymentMethodId={paymentMethod.id} />
                     <input
                         type="hidden"
                         name="ccvMethodId"
@@ -326,7 +329,8 @@ CCVMethodOptions.propTypes = {
 
 CCVPaymentMethodRadio.propTypes = {
     /** Currently selected payment method ID */
-    paymentMethod: PropTypes.object
+    paymentMethod: PropTypes.object,
+    isSelected: PropTypes.bool
 }
 
 export default PaymentSelection

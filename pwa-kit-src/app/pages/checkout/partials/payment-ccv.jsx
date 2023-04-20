@@ -84,7 +84,7 @@ const CCVPayment = () => {
         setIsRemovingPayment(true)
         try {
             await removePayment()
-            paymentMethodForm.reset({paymentInstrumentId: ''})
+            paymentMethodForm.reset({paymentInstrumentId: '', paymentMethodId: ''})
         } catch (error) {
             console.log(error)
         }
