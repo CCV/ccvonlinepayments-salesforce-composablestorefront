@@ -46,9 +46,9 @@
         </custom-attributes>
     </payment-method>
 
-    <payment-method method-id="CCV_CREDIT_CARD_HPP">
-        <name xml:lang="x-default">Credit card HPP</name>
-        <description xml:lang="x-default">Credit card hosted payment page</description>
+    <payment-method method-id="CCV_CREDIT_CARD_INLINE">
+        <name xml:lang="x-default">Credit card inline</name>
+        <description xml:lang="x-default">Credit card</description>
         <enabled-flag>true</enabled-flag>
         <processor-id>CCV_DEFAULT</processor-id>
         <custom-attributes>

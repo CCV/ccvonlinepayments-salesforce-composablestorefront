@@ -8,29 +8,11 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
-            <attribute-definition attribute-id="basketReferenceId">
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="ccvVaultAccessToken">
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
         </custom-attribute-definitions>
     </type-extension>
     <type-extension type-id="Order">
         <custom-attribute-definitions>
             <attribute-definition attribute-id="ccvTransactionReference">
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="basketReferenceId">
                 <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -71,7 +53,6 @@
             <attribute-group group-id="ccv">
                 <display-name xml:lang="x-default">CCV</display-name>
                 <attribute attribute-id="ccvTransactionReference"/>
-                <attribute attribute-id="basketReferenceId"/>
                 <attribute attribute-id="ccvRefunds"/>
                 <attribute attribute-id="ccvHasPendingRefunds"/>
                 <attribute attribute-id="ccvManualIntervention"/>

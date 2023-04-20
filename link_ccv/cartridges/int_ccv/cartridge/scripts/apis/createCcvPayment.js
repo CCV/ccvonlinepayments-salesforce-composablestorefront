@@ -122,6 +122,12 @@ exports.get = function (httpParams) {
     }
 
     // ============= 3. SAVE CCV DATA TO ORDER PAYMENT INSTRUMENT =============
+    // masking the token from the order payment instrument because there is no way to hide it in BM
+    // and we don't need it after this point anyway
+    var maskedToken = requestBody.details.vaultAccessToken
+        ? requestBody.details.vaultAccessToken.replace(/./g, '*')
+        : undefined;
+
     var updatePaymentInstrumentResponse = ocapiService.createOcapiService().call({
         requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/orders/${order.orderNo}/payment_instruments/${paymentInstrument.UUID}?skip_authorization=true`,
         requestMethod: 'PATCH',
@@ -134,7 +140,8 @@ exports.get = function (httpParams) {
                 expiration_month: paymentInstrument.creditCardExpirationMonth,
                 expiration_year: paymentInstrument.creditCardExpirationYear
             } : undefined,
-            c_ccv_failure_code: (paymentResponse.error && paymentResponse.error.message) || undefined
+            c_ccv_failure_code: (paymentResponse.error && paymentResponse.error.message) || undefined,
+            c_ccvVaultAccessToken: maskedToken
         }
     });
     if (!updatePaymentInstrumentResponse.ok) {

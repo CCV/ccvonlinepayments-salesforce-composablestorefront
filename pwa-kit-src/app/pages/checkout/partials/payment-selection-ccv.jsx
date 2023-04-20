@@ -238,7 +238,7 @@ const CCVMethodOptions = function ({paymentMethodId}) {
             )
         }
 
-        case 'CCV_CREDIT_CARD': {
+        case 'CCV_CREDIT_CARD_INLINE': {
             const {onPaymentIdChange, togglePaymentEdit, isEditingPayment, hasSavedCards} =
                 useCCVPayment()
             return (

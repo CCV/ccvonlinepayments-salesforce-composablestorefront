@@ -1,0 +1,1 @@
+<img src="${URLUtils.staticURL('ccv-logo.svg')}">

@@ -36,7 +36,7 @@ export const useCCVPaymentMethodsMap = () => {
 
 export const PaymentSummaryCCV = ({selectedPayment}) => {
     switch (selectedPayment.paymentMethodId) {
-        case 'CCV_CREDIT_CARD': {
+        case 'CCV_CREDIT_CARD_INLINE': {
             const CardIcon = getCreditCardIcon(selectedPayment?.paymentCard?.cardType)
             return (
                 <Box>
@@ -100,14 +100,14 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
         CCV_IDEAL: <IdealIcon width="auto" height={iconHeight} />,
         CCV_BANCONTACT: <BanContactIcon width="auto" height={iconHeight} />,
         CCV_GIROPAY: <GiropayIcon width="auto" height={iconHeight} />,
-        CCV_CREDIT_CARD: (
+        CCV_CREDIT_CARD_INLINE: (
             <>
                 <VisaIcon width="auto" height={iconHeight} />
                 <MastercardIcon width="auto" height={iconHeight} />
                 <AmexIcon width="auto" height={iconHeight} />
             </>
         ),
-        CCV_CREDIT_CARD_HPP: (
+        CCV_CREDIT_CARD: (
             <>
                 <VisaIcon width="auto" height={iconHeight} />
                 <MastercardIcon width="auto" height={iconHeight} />

@@ -235,17 +235,22 @@ const CCVPaymentError = ({msg, innerRef}) => {
 
     if (msg === 'card_refused') {
         formattedMsg = formatMessage({
-            defaultMessage: 'The payment could not be completed - card refused.',
+            defaultMessage: 'The payment could not be authorized - card refused.',
             id: `checkout_payment.ccv_payment_error_card_refused`
         })
     } else if (msg === 'insufficient_funds') {
         formattedMsg = formatMessage({
-            defaultMessage: 'The payment could not be completed - insufficient funds.',
+            defaultMessage: 'The payment could not be authorized - insufficient funds.',
             id: `checkout_payment.ccv_payment_error_insufficient_funds`
+        })
+    } else if (msg === 'cancelled') {
+        formattedMsg = formatMessage({
+            defaultMessage: 'The payment could not be authorized - payment cancelled.',
+            id: `checkout_payment.ccv_payment_error_cancelled`
         })
     } else {
         formattedMsg = formatMessage({
-            defaultMessage: 'The payment could not be completed successfully.',
+            defaultMessage: 'The payment could not be authorized successfully.',
             id: `checkout_payment.ccv_payment_error_default`
         })
     }
