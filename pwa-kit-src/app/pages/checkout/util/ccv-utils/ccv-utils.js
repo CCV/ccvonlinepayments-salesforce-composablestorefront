@@ -13,7 +13,7 @@ import {
     EPSIcon,
     PayconiqIcon,
     MaestroIcon
-} from '../ccv-utils/ccv-icons'
+} from '../../../../components/icons'
 
 import {Box, Stack, Text} from '@chakra-ui/react'
 import {getCreditCardIcon} from '../../../../utils/cc-utils'

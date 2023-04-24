@@ -9,7 +9,7 @@ var LocalServiceRegistry = require('dw/svc/LocalServiceRegistry');
 function createOcapiService() {
     return LocalServiceRegistry.createService('ocapi.service', {
         createRequest: function (service, params) {
-            service.addHeader('Authorization', 'Bearer ' + getBearerTokenFromRequest());
+            service.addHeader('Authorization', getBearerTokenFromRequest());
             service.addHeader('Content-Type', 'application/json');
             service.setRequestMethod(params.requestMethod);
             service.setURL(params.requestPath);
@@ -35,8 +35,6 @@ function getBearerTokenFromRequest() {
     if (!bearer || !bearer.includes('Bearer')) {
         throw new Error('No bearer token found in request');
     }
-    // strip bearer keyword
-    bearer = bearer.replace('Bearer ', '');
     return bearer;
 }
 
