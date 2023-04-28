@@ -19,14 +19,14 @@ import {
     Text,
     Divider
 } from '@chakra-ui/react'
-import {useCheckout} from '../util/checkout-context'
-import {ToggleCard, ToggleCardEdit, ToggleCardSummary} from '../../../components/toggle-card'
+import {useCheckout} from '../../../../app/pages/checkout/util/checkout-context'
+import {ToggleCard, ToggleCardEdit, ToggleCardSummary} from '../../../../app/components/toggle-card'
 import CCVPaymentSelection from './payment-selection-ccv'
-import ShippingAddressSelection from './shipping-address-selection'
-import AddressDisplay from '../../../components/address-display'
-import {PromoCode, usePromoCode} from '../../../components/promo-code'
-import {PaymentSummaryCCV} from '../util/ccv-utils/ccv-utils'
-import {useCCVPayment} from '../util/ccv-utils/ccv-context'
+import ShippingAddressSelection from '../../../../app/pages/checkout/partials/shipping-address-selection'
+import AddressDisplay from '../../../../app/components/address-display'
+import {PromoCode, usePromoCode} from '../../../../app/components/promo-code'
+import {PaymentSummaryCCV} from '../util/ccv-utils'
+import {useCCVPayment} from '../util/ccv-context'
 
 const CCVPayment = () => {
     const {formatMessage} = useIntl()

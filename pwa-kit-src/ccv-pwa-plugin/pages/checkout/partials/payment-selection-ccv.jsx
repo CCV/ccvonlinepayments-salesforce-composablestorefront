@@ -22,12 +22,13 @@ import {
     Spacer
 } from '@chakra-ui/react'
 import {useForm, Controller} from 'react-hook-form'
-import {useCheckout} from '../util/checkout-context'
-import CreditCardFields from '../../../components/forms/credit-card-fields'
-import CCRadioGroup from './cc-radio-group'
-import {PaymentMethodIcons} from '../util/ccv-utils/ccv-utils'
-import Field from '../../../components/field'
-import {useCCVPayment} from '../util/ccv-utils/ccv-context'
+import {useCheckout} from '../../../../app/pages/checkout/util/checkout-context'
+import CreditCardFields from '../../../../app/components/forms/credit-card-fields'
+import CCRadioGroup from '../../../../app/pages/checkout/partials/cc-radio-group'
+
+import {PaymentMethodIcons} from '../util/ccv-utils'
+import Field from '../../../../app/components/field'
+import {useCCVPayment} from '../util/ccv-context'
 
 const PaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()

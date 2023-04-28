@@ -1,7 +1,7 @@
-import {useCommerceAPI} from '../../../../commerce-api/contexts'
+import {useCommerceAPI} from '../../../../app/commerce-api/contexts'
 import {getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
-import useBasket from '../../../../commerce-api/hooks/useBasket'
+import useBasket from '../../../../app/commerce-api/hooks/useBasket'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()

@@ -15,9 +15,13 @@ import useCustomer from '../../commerce-api/hooks/useCustomer'
 import useBasket from '../../commerce-api/hooks/useBasket'
 import CheckoutSkeleton from './partials/checkout-skeleton'
 import OrderSummary from '../../components/order-summary'
-import CCVPayment from './partials/payment-ccv'
-import useCCVApi from './util/ccv-utils/useCCVApi'
-import {CCVPaymentProvider, useCCVPayment} from './util/ccv-utils/ccv-context'
+
+import CCVPayment from '../../../ccv-pwa-plugin/pages/checkout/partials/payment-ccv'
+import useCCVApi from '../../../ccv-pwa-plugin/pages/checkout/util/useCCVApi'
+import {
+    CCVPaymentProvider,
+    useCCVPayment
+} from '../../../ccv-pwa-plugin/pages/checkout/util/ccv-context'
 
 const Checkout = () => {
     const {globalError, step} = useCheckout()

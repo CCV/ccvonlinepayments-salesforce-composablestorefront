@@ -1,6 +1,7 @@
 import React, {useMemo} from 'react'
 import PropTypes from 'prop-types'
-import {useCheckout} from '../checkout-context'
+import {useCheckout} from '../../../../app/pages/checkout/util/checkout-context'
+
 import {
     AmexIcon,
     MastercardIcon,
@@ -13,10 +14,10 @@ import {
     EPSIcon,
     PayconiqIcon,
     MaestroIcon
-} from '../../../../components/icons'
+} from '../../../../app/components/icons'
 
 import {Box, Stack, Text} from '@chakra-ui/react'
-import {getCreditCardIcon} from '../../../../utils/cc-utils'
+import {getCreditCardIcon} from '../../../../app/utils/cc-utils'
 /**
  * Returns a map of applicable payment methods keyed by payment method ID
  * @returns {Object} map of applicable payment methods

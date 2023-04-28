@@ -1,5 +1,6 @@
-import {checkRequiredParameters, createOcapiFetch} from '../../../../commerce-api/utils'
-import {camelCaseKeysToUnderscore} from '../../../../commerce-api/utils'
+import {checkRequiredParameters, createOcapiFetch} from '../../../../app/commerce-api/utils'
+import {camelCaseKeysToUnderscore} from '../../../../app/commerce-api/utils'
+
 class OcapiCCV {
     constructor(config) {
         this.fetch = createOcapiFetch(config)

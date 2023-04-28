@@ -1,9 +1,9 @@
 import React, {useEffect, useContext} from 'react'
-import useNavigation from '../../hooks/use-navigation'
-import CheckoutSkeleton from './partials/checkout-skeleton'
-import useCCVApi from './util/ccv-utils/useCCVApi'
+import useNavigation from '../../../app/hooks/use-navigation'
+import CheckoutSkeleton from '../../../app/pages/checkout/partials/checkout-skeleton'
+import useCCVApi from '../checkout/util/useCCVApi'
 import {Box, Text} from '@chakra-ui/react'
-import {BasketContext} from '../../commerce-api/contexts'
+import {BasketContext} from '../../../app/commerce-api/contexts'
 
 const CheckoutRedirect = () => {
     const navigate = useNavigation()
