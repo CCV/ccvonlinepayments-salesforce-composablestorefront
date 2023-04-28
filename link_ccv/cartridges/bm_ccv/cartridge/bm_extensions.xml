@@ -3,15 +3,10 @@
 <!-- ==  CSC EXTENSIONS     		                              == -->
 <!-- =============================================================== -->
 <extensions xmlns="http://www.demandware.com/xml/bmmodules/2007-12-11" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.demandware.com/xml/bmmodules/2007-12-11 bmext.xsd">
-    <menuitem id="order" site="true" type="CSC">
-        <name xml:lang="x-default" >CSC Order</name>
-        <short_description xml:lang="x-default">Customer Service Center Order</short_description>
-        <description xml:lang="x-default">Customer Service Center Order</description>
-    </menuitem>
     <menuaction id="order_payment_refund" menupath="order" type="CSC" site="true" position="1">
-        <name xml:lang="x-default">Refund payment</name>
-        <short_description xml:lang="x-default">Refund payment</short_description>
-        <description xml:lang="x-default">Refund payment</description>
+        <name xml:lang="x-default">Refund CCV payment</name>
+        <short_description xml:lang="x-default">Refund CCV payment</short_description>
+        <description xml:lang="x-default">Refund CCV payment</description>
         <exec pipeline="CSCOrderPaymentRefund" node="Start"/>
         <sub-pipelines>
             <pipeline name="CSCOrderPaymentRefund" />

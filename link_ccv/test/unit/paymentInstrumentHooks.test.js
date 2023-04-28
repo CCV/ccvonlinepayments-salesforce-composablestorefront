@@ -79,16 +79,6 @@ describe('paymentInstrumentHooks', function () {
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
         });
 
-        it('should save the ccv reference to the order', () => {
-            const testRef = 'ccvTestTransactionRef';
-            newPaymentInstrument = { c_ccvTransactionReference: testRef };
-
-            paymentInstrumentHooks.afterPATCH(order, orderPaymentInstrument, newPaymentInstrument);
-
-            expect(order.custom.ccvTransactionReference).to.eql(testRef);
-            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
-        });
-
         it('should fail the order if the payment instrument\'s ccv_transaction_status is "failed" and the order status is not FAILED', () => {
             const testRef = 'ccvTestTransactionRef';
             newPaymentInstrument = { c_ccvTransactionReference: testRef };

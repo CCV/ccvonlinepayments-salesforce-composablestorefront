@@ -1,25 +1,29 @@
 import {useCommerceAPI} from '../../../../commerce-api/contexts'
 import {getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
+import useBasket from '../../../../commerce-api/hooks/useBasket'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()
     const {locale, formatMessage} = useIntl()
+    const basket = useBasket()
 
     return {
-        async createRedirectSession() {
-            const paymentSession = await api.ccvPayment.createRedirectSession({
-                // headers: {_sfdc_customer_id: api.auth.usid},
+        // based on useBasket#createOrder
+        async createOrder() {
+            const response = await api.ccvPayment.createOrder({
+                headers: {_sfdc_customer_id: api.auth.usid},
+                body: {basketId: basket.basketId},
                 parameters: {
-                    returnUrl: `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
+                    ccvReturnUrl: `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
                 }
             })
-            const result = paymentSession?.c_result
-            if (!result || result.errorMsg || !result.payUrl) {
-                throw new Error(result.errorMsg || 'Error creating payment redirect.')
+
+            if (response.fault || (response.title && response.type && response.detail)) {
+                throw new Error(response.title)
             }
 
-            return result
+            return response
         },
         async checkTransactionStatus({parameters}) {
             const paymentTransaction = await api.ccvPayment.checkTransactionStatus({
@@ -34,18 +38,15 @@ const useCCVApi = () => {
             return paymentTransaction.c_result
         },
         async submitOrderCCV(setIsLoading, setPaymentError) {
+            setIsLoading(true)
+            setPaymentError(null)
+
             try {
-                setIsLoading(true)
-                setPaymentError('')
-                // create redirect session via ccv api
-                const createRedirectSessionResponse = await this.createRedirectSession()
-                localStorage.setItem(
-                    'newOrderData',
-                    JSON.stringify(createRedirectSessionResponse.order)
-                )
+                const orderResponse = await this.createOrder()
+                localStorage.setItem('newOrderData', JSON.stringify(orderResponse))
 
                 // redirect to hosted payment page
-                window.location.href = createRedirectSessionResponse.payUrl
+                window.location.href = orderResponse.c_ccvPayUrl
             } catch (error) {
                 setIsLoading(false)
                 const message = formatMessage({

@@ -1,8 +1,10 @@
 'use strict';
 /* eslint-disable camelcase */ // custom properties can't be camelcase due to PWA implementation of ocapi calls
-var BasketMgr = require('dw/order/BasketMgr');
+
+var Status = require('dw/system/Status');
 var Site = require('dw/system/Site');
-var OrderMgr = require('dw/order/OrderMgr');
+var PaymentMgr = require('dw/order/PaymentMgr');
+var PaymentTransaction = require('dw/order/PaymentTransaction');
 
 var languageMap = {
     nl: 'nld',
@@ -13,34 +15,18 @@ var languageMap = {
     es: 'spa'
 };
 
-
-exports.get = function (httpParams) {
+/**
+ * Hook fired after creating an order via OCAPI.
+ * Here we create a payment request in CCV, and return the payUrl to the clientSide
+ * @param {Object} order - the database object
+ * @returns {dw.system.Status} status
+ */
+exports.afterPOST = function (order) {
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
-    var ocapiService = require('*/cartridge/scripts/services/ocapiService.js');
-    var currentBasket = BasketMgr.getCurrentBasket();
 
-    if (!currentBasket) {
-        throw new Error('No basket found.');
-    }
-    var basketId = currentBasket.UUID;
+    var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
 
-    // ============= 1. CREATE ORDER =============
-    var orderResponse = ocapiService.createOcapiService().call({
-        requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/orders`,
-        requestMethod: 'POST',
-        requestBody: {
-            basket_id: basketId
-        }
-    });
-
-    if (!orderResponse.ok) {
-        throw new Error(orderResponse.errorMessage);
-    }
-
-    var order = OrderMgr.getOrder(orderResponse.object.order_no);
-
-    // ============= 2. CREATE CCV PAYMENT REQUEST =============
-    var returnUrl = httpParams.c_returnUrl && httpParams.c_returnUrl.pop();
+    // ============= CREATE CCV PAYMENT REQUEST =============
     var requestLanguage = request.locale.split('_')[0];
     var orderDescription = order.allProductLineItems.toArray()
         .map(pli => pli.quantity + ' ' + pli.productName)
@@ -55,6 +41,7 @@ exports.get = function (httpParams) {
     // DEFAULT
     var requestBody = {
         amount: order.totalGrossPrice.value,
+        // amount: 8.01,
         currency: order.currencyCode.toLowerCase(),
         method: selectedMethodCCVId,
         returnUrl: `${returnUrl}?ref=${order.orderNo}&token=${order.orderToken}`,
@@ -63,7 +50,6 @@ exports.get = function (httpParams) {
         language: languageMap[requestLanguage],
         details: {}
     };
-
 
     if ((selectedMethodCCVId === 'ideal') && ccv_issuer_id) {
         requestBody.issuer = ccv_issuer_id;
@@ -98,7 +84,7 @@ exports.get = function (httpParams) {
             }
         }
 
-        if (!Site.current.getCustomPreferenceValue('ccvCardsAutoCaptureEnabled')) {
+        if (Site.current.getCustomPreferenceValue('ccvCardsAuthoriseEnabled')) {
             // if we don't specify a transactionType in the request, 'sale' wil be used by default
             requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
         }
@@ -118,45 +104,30 @@ exports.get = function (httpParams) {
     } catch (error) {
         var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
         paymentResponse.error = error;
+        paymentInstrument.custom.ccv_failure_code = (paymentResponse.error && paymentResponse.error.message) || undefined;
         ccvLogger.error(`Failed creating a CCV payment request: ${error}`);
+
+        return new Status(Status.ERROR);
     }
 
-    // ============= 3. SAVE CCV DATA TO ORDER PAYMENT INSTRUMENT =============
-    // masking the token from the order payment instrument because there is no way to hide it in BM
-    // and we don't need it after this point anyway
-    var maskedToken = requestBody.details.vaultAccessToken
-        ? requestBody.details.vaultAccessToken.replace(/./g, '*')
-        : undefined;
+    // ============= set CCV properties =============
+    order.custom.ccvTransactionReference = paymentResponse.reference; // eslint-disable-line no-param-reassign
+    order.custom.ccvPayUrl = paymentResponse.payUrl; // eslint-disable-line no-param-reassign
 
-    var updatePaymentInstrumentResponse = ocapiService.createOcapiService().call({
-        requestPath: `https://${request.httpHost}/s/${dw.system.Site.current.ID}/dw/shop/v23_1/orders/${order.orderNo}/payment_instruments/${paymentInstrument.UUID}?skip_authorization=true`,
-        requestMethod: 'PATCH',
-        requestBody: {
-            payment_method_id: paymentInstrument.paymentMethod,
-            c_ccvTransactionReference: paymentResponse.reference,
-            payment_card: paymentInstrument.creditCardNumber ?
-            { card_type: paymentInstrument.creditCardType,
-                number: paymentInstrument.creditCardNumber,
-                expiration_month: paymentInstrument.creditCardExpirationMonth,
-                expiration_year: paymentInstrument.creditCardExpirationYear
-            } : undefined,
-            c_ccv_failure_code: (paymentResponse.error && paymentResponse.error.message) || undefined,
-            c_ccvVaultAccessToken: maskedToken
-        }
-    });
-    if (!updatePaymentInstrumentResponse.ok) {
-        throw new Error('Transaction reference could not be saved to basket.');
+    var paymentProcessor = PaymentMgr.getPaymentMethod(paymentInstrument.getPaymentMethod()).getPaymentProcessor();
+
+    paymentInstrument.paymentTransaction.setTransactionID(paymentResponse.reference);
+    paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
+    paymentInstrument.paymentTransaction.setType(
+        requestBody.transactionType === CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE // eslint-disable-line no-param-reassign
+        ? PaymentTransaction.TYPE_AUTH
+        : PaymentTransaction.TYPE_CAPTURE
+    );
+
+    if (paymentInstrument.custom.ccvVaultAccessToken) {
+        paymentInstrument.custom.ccvVaultAccessToken = '****';
     }
 
-    if (!order.custom.ccvTransactionReference) {
-        // we don't throw an error here because we want special handling for this case
-        // on client-side - we have to remove payment instruments with masked data from
-        // the reopened basket
-        return { errorMsg: 'missing_reference' };
-    }
-
-    return {
-        payUrl: paymentResponse.payUrl,
-        order: orderResponse.object
-    };
+    return new Status(Status.OK);
 };
+

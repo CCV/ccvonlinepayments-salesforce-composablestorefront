@@ -1,9 +1,7 @@
 var Status = require('dw/system/Status');
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
 var OrderMgr = require('dw/order/OrderMgr');
-var PaymentTransaction = require('dw/order/PaymentTransaction');
 var Site = require('dw/system/Site');
-var PaymentMgr = require('dw/order/PaymentMgr');
 var { CCV_CONSTANTS, checkCCVTransaction, refundCCVPayment } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 var HookMgr = require('dw/system/HookMgr');
 
@@ -37,16 +35,6 @@ exports.authorizeCCV = function (order, orderPaymentInstrument, context) {
 
     paymentInstrument.paymentTransaction.custom.ccv_transaction_status = status;
     paymentInstrument.paymentTransaction.custom.ccv_failure_code = transactionStatusResponse.failureCode || null;
-
-    if (!paymentInstrument.paymentTransaction.transactionID) {
-        var paymentProcessor = PaymentMgr.getPaymentMethod(paymentInstrument.getPaymentMethod()).getPaymentProcessor();
-
-        paymentInstrument.paymentTransaction.setTransactionID(ccvTransactionReference);
-        paymentInstrument.paymentTransaction.paymentProcessor = paymentProcessor;
-        paymentInstrument.paymentTransaction.type = transactionStatusResponse.type === CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE // eslint-disable-line no-param-reassign
-            ? PaymentTransaction.TYPE_AUTH
-            : PaymentTransaction.TYPE_CAPTURE;
-    }
 
     var currencyMismatch = transactionStatusResponse.currency !== order.currencyCode.toLowerCase();
     var priceMismatch = transactionStatusResponse.amount !== order.totalGrossPrice.value;

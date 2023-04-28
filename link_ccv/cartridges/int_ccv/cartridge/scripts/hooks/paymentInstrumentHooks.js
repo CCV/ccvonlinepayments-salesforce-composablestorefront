@@ -10,10 +10,6 @@ var Order = require('dw/order/Order');
  * @param {Object} newPaymentInstrument - new payment attributes from ocapi request
  */
 exports.afterPATCH = function (order, paymentInstrument, newPaymentInstrument) {
-    if (newPaymentInstrument.c_ccvTransactionReference) {
-        order.custom.ccvTransactionReference = newPaymentInstrument.c_ccvTransactionReference; // eslint-disable-line no-param-reassign
-    }
-
     var transactionReference = order.custom.ccvTransactionReference;
     var ccvTransactionStatus = paymentInstrument.paymentTransaction && paymentInstrument.paymentTransaction.custom.ccv_transaction_status;
 

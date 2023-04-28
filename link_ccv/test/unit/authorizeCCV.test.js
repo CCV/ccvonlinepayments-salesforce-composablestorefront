@@ -8,10 +8,8 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
     'dw/order/Order': stubs.dw.OrderMock,
     'dw/order/OrderMgr': stubs.dw.OrderMgrMock,
     'dw/system/Transaction': stubs.dw.TransactionMock,
-    'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction,
     'dw/system/Status': stubs.dw.Status,
     'dw/system/Logger': stubs.dw.loggerMock,
-    'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/HookMgr': stubs.dw.HookMgrMock,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock
@@ -44,34 +42,11 @@ describe('', function () {
             type: 'sale',
             status: 'success'
         });
+
+        stubs.dw.SiteMock.current.getCustomPreferenceValue
+        .withArgs('ccvAutoRefundEnabled').returns(false);
     });
     context('#authorizeCCV:', function () {
-        it('should update the orderPaymentInstrument\'s paymenTransaction.transactionID', () => {
-            authorizeCCV(order);
-            expect(paymentInstrument.paymentTransaction.setTransactionID).to.have.been.calledOnceWith('testTransactionRef');
-        });
-
-        it('should update the orderPaymentInstrument\'s paymenTransaction.paymentProcessor', () => {
-            authorizeCCV(order);
-            expect(paymentInstrument.paymentTransaction.paymentProcessor).to.eql('CCV_DEFAULT');
-        });
-        it('should update the orderPaymentInstrument\'s paymenTransaction.type = AUTH for "authorise"', () => {
-            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
-                amount: 50.00,
-                currency: 'eur',
-                method: 'card',
-                type: 'authorise',
-                status: 'success'
-            });
-
-            authorizeCCV(order);
-            expect(order.paymentInstruments[0].paymentTransaction.type).to.eql('AUTH');
-        });
-        it('should update the orderPaymentInstrument\'s paymenTransaction.type = CAPTURE for "sale"', () => {
-            authorizeCCV(order);
-            expect(order.paymentInstruments[0].paymentTransaction.type).to.eql('CAPTURE');
-        });
-
         it('should return { error } if ccvTransactionReference is missing from the order.', () => {
             order.custom.ccvTransactionReference = null;
             const result = authorizeCCV(order);
@@ -197,7 +172,48 @@ describe('', function () {
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
         });
 
+        it('should create refund if autoRefund site pref is enabled', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 55.00,
+                currency: 'usd',
+                method: 'card',
+                type: 'sale',
+                status: 'success'
+            });
+            stubs.dw.SiteMock.current.getCustomPreferenceValue
+            .withArgs('ccvAutoRefundEnabled').returns(true);
+
+            stubs.CCVPaymentHelpersMock.refundCCVPayment.returns({});
+
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(stubs.CCVPaymentHelpersMock.refundCCVPayment).to.have.been.calledOnce;
+        });
+
+        it('should not create refund if autoRefund site pref is disabled', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 55.00,
+                currency: 'usd',
+                method: 'card',
+                type: 'sale',
+                status: 'success'
+            });
+            stubs.dw.SiteMock.current.getCustomPreferenceValue
+            .withArgs('ccvAutoRefundEnabled').returns(false);
+
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(1);
+            expect(stubs.CCVPaymentHelpersMock.refundCCVPayment).to.not.have.been.called;
+        });
+
         it('should still fail the order on price mismatch if the refund request throws an error', () => {
+            stubs.dw.SiteMock.current.getCustomPreferenceValue
+            .withArgs('ccvAutoRefundEnabled').returns(true);
+
             stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
                 amount: 55.00,
                 currency: 'usd',
@@ -208,6 +224,8 @@ describe('', function () {
             stubs.CCVPaymentHelpersMock.refundCCVPayment.throws(new Error('timeout'));
             const result = authorizeCCV(order);
             const handleResult = handleAuthorizationResult(result, order);
+
+            expect(stubs.CCVPaymentHelpersMock.refundCCVPayment).to.have.been.calledOnce;
             expect(handleResult).to.be.an.instanceof(Status);
             expect(handleResult.status).to.equal(1);
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;

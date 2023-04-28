@@ -190,7 +190,7 @@ const dw = {
         createService: sandbox.stub()
     },
     Calendar: sandbox.stub(),
-    PaymentMgrMock: PaymentMgr,
+    PaymentMgrMock: sandbox.stub(PaymentMgr),
     HookMgrMock: sandbox.stub(HookMgr),
     SiteMock: sandbox.stub(Site),
     StringUtilsMock,
@@ -211,6 +211,7 @@ const initMocks = function () {
     Object.keys(dw.PaymentMethodMock).map(i => dw.PaymentMethodMock[i].reset());
     Object.keys(dw.PaymentProcessorMock).map(i => dw.PaymentProcessorMock[i].reset());
     Object.keys(dw.PaymentTransactionMock).map(i => dw.PaymentTransactionMock[i].reset());
+    Object.keys(dw.PaymentMgrMock).map(i => dw.PaymentMgrMock[i].reset());
     Object.keys(dw.HookMgrMock).map(i => dw.HookMgrMock[i].reset());
     Object.keys(dw.MoneyMock).map(i => dw.MoneyMock[i].reset());
     Object.keys(dw.StringUtilsMock).map(i => dw.StringUtilsMock[i].reset());

@@ -3,21 +3,24 @@ const proxyquire = require('proxyquire').noCallThru().noPreserveCache();
 const { expect } = require('chai');
 
 const stubs = require('./helpers/mocks/stubs');
+const Status = require('./helpers/mocks/dw/system/Status');
 
-const createCcvPayment = proxyquire('../../cartridges/int_ccv/cartridge/scripts/apis/createCcvPayment', {
+const orderHooks = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hooks/orderHooks', {
     'dw/order/OrderMgr': stubs.dw.OrderMgrMock,
     'dw/system/Site': stubs.dw.SiteMock,
-    'dw/order/BasketMgr': stubs.dw.BasketMgrMock,
     'dw/system/Logger': stubs.dw.loggerMock,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
-    '*/cartridge/scripts/services/ocapiService.js': stubs.ocapiServiceMock
+    'dw/system/Status': stubs.dw.Status,
+    'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
+    'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction
+
 });
 
-describe('CreateCCVPayment custom endpoint', function () {
-    const httpParams = { c_returnUrl: ['pwa-test.com'] };
+describe('orderHooks', function () {
     let order;
     let createPaymentResponse;
-
+    let paymentInstrument;
+    const CCV_PAYMENT_PROCESSOR = 'CCV_DEFAULT';
     before(() => stubs.init());
     afterEach(() => stubs.reset());
     after(() => stubs.restore());
@@ -27,13 +30,23 @@ describe('CreateCCVPayment custom endpoint', function () {
             allProductLineItems: { toArray: () => [{
                 productName: 'Line Item 1', quantity: 1
             }] },
-            paymentInstruments: [{ custom: { ccv_method_id: 'card', paymentMethod: 'CCV_CREDIT_CARD_HPP' }, UUID: 'd3132131dsas' }],
+            paymentInstruments: [
+                {
+                    custom: { ccv_method_id: 'card' },
+                    paymentMethod: 'CCV_CREDIT_CARD',
+                    UUID: 'd3132131dsas',
+                    getPaymentMethod: () => null,
+                    paymentTransaction: new stubs.dw.PaymentTransactionMock()
+                }
+            ],
             totalGrossPrice: { value: 25.75 },
             currencyCode: 'EUR',
             orderNo: '00001',
             orderToken: 'orderToken',
             custom: {}
         };
+
+        paymentInstrument = order.paymentInstruments[0];
 
         createPaymentResponse = {
             amount: 25.75,
@@ -42,74 +55,94 @@ describe('CreateCCVPayment custom endpoint', function () {
             type: 'sale',
             status: 'pending',
             payUrl: 'examplepayurl.com?ref=123123123123',
-            reference: '123123123123'
+            reference: 'CCVTransactionReference'
         };
 
-        global.request = { httpHost: 'sandbox.test', locale: 'en_UK' };
+        global.request = {
+            httpHost: 'sandbox.test',
+            locale: 'en_UK',
+            httpParameters: { ccvReturnUrl: ['pwa-test.com'] }
+        };
         global.dw = { system: { Site: { current: { ID: 'test-site' } } } };
         global.customer = { registered: false };
-        stubs.ocapiServiceMock.createOcapiService
-        .onFirstCall().returns({ call: () => {
-            return {
-                ok: true,
-                object: {
-                    order_no: '00001'
-                }
-            };
-        } })
-        .onSecondCall().returns({ call: (args) => {
-            order.custom.ccvTransactionReference = args.requestBody.c_ccvTransactionReference;
-            return {
-                ok: true,
-                object: {}
-            };
-        } });
 
         stubs.dw.BasketMgrMock.getCurrentBasket.returns({ UUID: '12345678abcd' });
         stubs.dw.OrderMgrMock.getOrder.returns(order);
-        stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAutoCaptureEnabled').returns(false);
-
+        stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
+        stubs.dw.PaymentMgrMock.getPaymentMethod.returns({ getPaymentProcessor: () => CCV_PAYMENT_PROCESSOR });
         stubs.CCVPaymentHelpersMock.createCCVPayment.returns(createPaymentResponse);
     });
 
-    context('createCcvPayment', function () {
-        it('should return {payUrl} if all calls are successful', () => {
-            const result = createCcvPayment.get(httpParams);
-            expect(result.payUrl).to.equal(createPaymentResponse.payUrl);
+    context('afterPOST', function () {
+        it('should save payUrl to the order', () => {
+            orderHooks.afterPOST(order);
+            expect(order.custom.ccvPayUrl).to.equal(createPaymentResponse.payUrl);
         });
 
-        it('should return {order} if all calls are successful', () => {
-            const result = createCcvPayment.get(httpParams);
-            expect(result.order.order_no).to.equal(order.orderNo);
+        it('should return Status.OK if createCCVPayment call is successful', () => {
+            const result = orderHooks.afterPOST(order);
+            expect(result).to.be.an.instanceof(Status);
+            expect(result.status).to.equal(0);
+        });
+
+        it('should return Status.ERROR if createCCVPayment call fails', () => {
+            stubs.CCVPaymentHelpersMock.createCCVPayment.throws();
+
+            const result = orderHooks.afterPOST(order);
+            expect(result).to.be.an.instanceof(Status);
+            expect(result.status).to.equal(1);
         });
 
         it('returnUrl should contain orderNo and orderToken', () => {
-            createCcvPayment.get(httpParams);
+            orderHooks.afterPOST(order);
             const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
             expect(paymentRequest.requestBody.returnUrl).to.have.string(order.orderNo)
             .and.to.have.string(order.orderToken);
         });
 
         it('should map to the correct language code in request', () => {
-            createCcvPayment.get(httpParams);
+            orderHooks.afterPOST(order);
             const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
             expect(paymentRequest.requestBody.language).to.eql('eng');
         });
 
-        it('should throw an error if no basket is found in the current session', () => {
-            stubs.dw.BasketMgrMock.getCurrentBasket.returns(null);
 
-            expect(createCcvPayment.get.bind(null, httpParams)).to.throw('No basket found.');
+        it('should update the orderPaymentInstrument\'s paymenTransaction.transactionID', () => {
+            orderHooks.afterPOST(order);
+
+            expect(paymentInstrument.paymentTransaction.setTransactionID).to.have.been.calledOnceWith(createPaymentResponse.reference);
+        });
+
+        it('should update the orderPaymentInstrument\'s paymenTransaction.paymentProcessor', () => {
+            orderHooks.afterPOST(order);
+
+            expect(paymentInstrument.paymentTransaction.setPaymentProcessor).to.have.been.calledOnceWith(CCV_PAYMENT_PROCESSOR);
+        });
+
+        it('should update the orderPaymentInstrument\'s paymenTransaction.type = AUTH for "authorise" payment type', () => {
+            stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(true);
+
+            orderHooks.afterPOST(order);
+
+            expect(paymentInstrument.paymentTransaction.setType).to.have.been.calledOnceWith('AUTH');
+        });
+
+        it('should update the orderPaymentInstrument\'s paymenTransaction.type = CAPTURE for "sale" payment type', () => {
+            stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
+
+            orderHooks.afterPOST(order);
+
+            expect(paymentInstrument.paymentTransaction.setType).to.have.been.calledOnceWith('CAPTURE');
         });
     });
 
-    context('createCcvPayment -  payment methods', function () {
+    context('createCcvPayment request', function () {
         context('Card', function () {
             it('if credit card token is provided, request should include it as vaultAccessToken and no other card data', () => {
                 order.paymentInstruments[0].custom.ccvVaultAccessToken = 'testToken';
-                createCcvPayment.get(httpParams);
+                orderHooks.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
-                expect(paymentRequest.requestBody.details.vaultAccessToken).to.eql(order.paymentInstruments[0].custom.ccvVaultAccessToken);
+                expect(paymentRequest.requestBody.details.vaultAccessToken).to.be.string;
                 expect(paymentRequest.requestBody.details.pan).to.be.undefined;
                 expect(paymentRequest.requestBody.details.expiryDate).to.be.undefined;
                 expect(paymentRequest.requestBody.details.cardholderFirstName).to.be.undefined;
@@ -122,7 +155,7 @@ describe('CreateCCVPayment custom endpoint', function () {
                 order.paymentInstruments[0].creditCardExpirationYear = 25;
                 order.paymentInstruments[0].creditCardHolder = 'John Doe';
 
-                createCcvPayment.get(httpParams);
+                orderHooks.afterPOST(order);
 
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.details.vaultAccessToken).to.be.undefined;
@@ -132,34 +165,35 @@ describe('CreateCCVPayment custom endpoint', function () {
                 expect(paymentRequest.requestBody.details.cardholderLastName).to.eql('Doe');
             });
 
-            it('the request\'s transactionType should be set to "authorise" if credit card auto capture is disabled', () => {
-                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAutoCaptureEnabled').returns(false);
+            it('the request\'s transactionType should be set to "authorise" if authorise cards site pref is enabled', () => {
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(true);
 
-                createCcvPayment.get(httpParams);
+                orderHooks.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.transactionType).to.eql(stubs.CCVPaymentHelpersMock.CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE);
             });
-            it('the request\'s transactionType should be set not be set if credit card auto capture is enabled', () => {
-                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAutoCaptureEnabled').returns(true);
+            it('the request\'s transactionType should be set not be set if authorise cards site pref is disabled', () => {
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
 
-                createCcvPayment.get(httpParams);
+                orderHooks.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.transactionType).to.be.undefined;
             });
         });
+
         context('iDEAL', function () {
             it('request should include issuer id', () => {
                 order.paymentInstruments[0].custom = { ccv_method_id: 'ideal', ccv_issuer_id: 'issuer_id_test' };
-                createCcvPayment.get(httpParams);
+                orderHooks.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.issuer).to.eql('issuer_id_test');
             });
 
             it('the request\'s transactionType should never be set to "authorise" for non-card payment methods', () => {
-                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAutoCaptureEnabled').returns(false);
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
                 order.paymentInstruments[0].custom = { ccv_method_id: 'ideal', ccv_issuer_id: 'issuer_id_test' };
 
-                createCcvPayment.get(httpParams);
+                orderHooks.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.transactionType).to.be.undefined;
             });
@@ -168,7 +202,7 @@ describe('CreateCCVPayment custom endpoint', function () {
         context('Giropay', function () {
             it('request should include bic', () => {
                 order.paymentInstruments[0].custom = { ccv_method_id: 'giropay', ccv_issuer_id: 'issuer_id_test' };
-                createCcvPayment.get(httpParams);
+                orderHooks.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.details.bic).to.eql('issuer_id_test');
             });
@@ -178,62 +212,10 @@ describe('CreateCCVPayment custom endpoint', function () {
             it('request should include brand=bcmc', () => {
                 order.paymentInstruments[0].custom = { ccv_method_id: 'card' };
                 order.paymentInstruments[0].paymentMethod = 'CCV_BANCONTACT';
-                createCcvPayment.get(httpParams);
+                orderHooks.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.brand).to.eql('bcmc');
             });
-        });
-    });
-
-    context('createCcvPayment - error handling for the 3 service calls: \n\t1. ocapi POST /orders\n\t2: CCV-create payment \n\t3: ocapi PATCH/orders/*/payment_instrument', function () {
-        before('3 calls are made', () => {});
-        const testErrorMsg = 'timeout';
-
-        it('should throw if call 1 fails', () => {
-            stubs.ocapiServiceMock.createOcapiService
-            .onFirstCall().throws(new Error(testErrorMsg));
-
-            expect(createCcvPayment.get.bind(this, httpParams)).to.throw(testErrorMsg);
-        });
-
-        it('should throw if call 1 is not OK', () => {
-            stubs.ocapiServiceMock.createOcapiService
-            .onFirstCall().returns({ call: () => {
-                return {
-                    ok: false,
-                    errorMessage: testErrorMsg
-                };
-            } });
-
-            expect(createCcvPayment.get.bind(this, httpParams)).to.throw(testErrorMsg);
-        });
-
-
-        it('if call 2 fails, we should still call 3', () => {
-            stubs.CCVPaymentHelpersMock.createCCVPayment.throws(new Error('timeout'));
-            createCcvPayment.get(httpParams);
-
-            expect(stubs.ocapiServiceMock.createOcapiService).to.have.been.calledTwice;
-        });
-
-        it('if call 2 failed, but call 3 succeeded, we should not throw but return an error msg ', () => {
-            stubs.CCVPaymentHelpersMock.createCCVPayment.throws(new Error('timeout'));
-            const result = createCcvPayment.get(httpParams);
-
-            expect(result.errorMsg).to.eql('missing_reference');
-        });
-
-        it('should throw if call 3 is not OK', () => {
-            stubs.ocapiServiceMock.createOcapiService
-            .onSecondCall().returns({ call: (args) => {
-                order.custom.ccvTransactionReference = args.requestBody.c_ccvTransactionReference;
-                return {
-                    ok: false,
-                    object: {}
-                };
-            } });
-
-            expect(createCcvPayment.get.bind(this, httpParams)).to.throw('Transaction reference could not be saved to basket');
         });
     });
 });

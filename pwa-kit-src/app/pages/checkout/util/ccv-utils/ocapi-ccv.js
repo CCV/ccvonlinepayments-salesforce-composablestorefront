@@ -1,25 +1,29 @@
 import {checkRequiredParameters, createOcapiFetch} from '../../../../commerce-api/utils'
-
+import {camelCaseKeysToUnderscore} from '../../../../commerce-api/utils'
 class OcapiCCV {
     constructor(config) {
         this.fetch = createOcapiFetch(config)
     }
 
-    async createRedirectSession(...args) {
-        const required = ['returnUrl']
+    // based on ocapper-shopper-orders#createOrder
+    async createOrder(...args) {
+        const required = ['body', 'ccvReturnUrl']
         let requiredParametersError = checkRequiredParameters(args[0], required)
         if (requiredParametersError) {
             return requiredParametersError
         }
-        let {
-            parameters: {returnUrl}
+
+        const {
+            parameters: {ccvReturnUrl},
+            body
         } = args[0]
 
-        return this.fetch(
-            `custom_objects/CustomApi/create-ccv-payment?c_returnUrl=${returnUrl}`,
-            'GET',
+        return await this.fetch(
+            `orders?ccvReturnUrl=${ccvReturnUrl}`,
+            'POST',
             args,
-            'createPaymentSession'
+            'createOrder',
+            camelCaseKeysToUnderscore(body)
         )
     }
 
