@@ -160,13 +160,13 @@ export const HeartSolidIcon = icon('heart-solid')
 export const CloseIcon = icon('close')
 
 // ==================== CCV ICONS ====================
-import IdealSymbol from '../../assets/svg/ideal-logo.svg'
-import BancontactSymbol from '../../assets/svg/bancontact-logo.svg'
-import GiropaySymbol from '../../assets/svg/giropay-logo.svg'
-import SofortSymbol from '../../assets/svg/sofort-logo.svg'
-import EPSSymbol from '../../assets/svg/eps-logo.svg'
-import PayconiqSymbol from '../../assets/svg/payconiq-logo.svg'
-import MaestroSymbol from '../../assets/svg/maestro-logo.svg'
+import IdealSymbol from '../../../ccv-pwa-plugin/assets/svg/ideal-logo.svg'
+import BancontactSymbol from '../../../ccv-pwa-plugin/assets/svg/bancontact-logo.svg'
+import GiropaySymbol from '../../../ccv-pwa-plugin/assets/svg/giropay-logo.svg'
+import SofortSymbol from '../../../ccv-pwa-plugin/assets/svg/sofort-logo.svg'
+import EPSSymbol from '../../../ccv-pwa-plugin/assets/svg/eps-logo.svg'
+import PayconiqSymbol from '../../../ccv-pwa-plugin/assets/svg/payconiq-logo.svg'
+import MaestroSymbol from '../../../ccv-pwa-plugin/assets/svg/maestro-logo.svg'
 
 AmexSymbol.viewBox = AmexSymbol.viewBox || '0 0 38 22'
 MastercardSymbol.viewBox = MastercardSymbol.viewBox || '0 0 38 22'
