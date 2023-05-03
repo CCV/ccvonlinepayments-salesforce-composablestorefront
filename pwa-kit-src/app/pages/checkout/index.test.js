@@ -17,12 +17,12 @@ import {
     ocapiBasketWithItem,
     ocapiOrderResponse,
     mockShippingMethods,
-    mockPaymentMethods,
     mockedGuestCustomer,
     mockedRegisteredCustomer,
     mockedCustomerProductLists,
     productsResponse
 } from '../../commerce-api/mock-data'
+import {mockPaymentMethodsCCV} from '../../../ccv-pwa-plugin/mock-data/mock-data-ccv'
 import mockConfig from '../../../config/mocks/default'
 
 jest.setTimeout(60000)
@@ -102,7 +102,7 @@ beforeEach(() => {
 
         // mock available payment methods
         rest.get('*/baskets/:basketId/payment_methods', (req, res, ctx) => {
-            return res(ctx.json(mockPaymentMethods))
+            return res(ctx.json(mockPaymentMethodsCCV))
         }),
 
         // mock product details
@@ -218,7 +218,7 @@ test('Can proceed through checkout steps as guest', async () => {
                         _type: 'payment_card'
                     },
                     payment_instrument_id: '875cae2724408c9a3eb45715ba',
-                    payment_method_id: 'CREDIT_CARD',
+                    payment_method_id: 'CCV_CREDIT_CARD_INLINE',
                     _type: 'order_payment_instrument'
                 }
             ]
@@ -229,7 +229,8 @@ test('Can proceed through checkout steps as guest', async () => {
         rest.post('*/orders', (req, res, ctx) => {
             currentBasket = {
                 ...ocapiOrderResponse,
-                customer_info: {...ocapiOrderResponse.customer_info, email: 'test@test.com'}
+                customer_info: {...ocapiOrderResponse.customer_info, email: 'test@test.com'},
+                c_ccvPayUrl: 'ccvPayUrl.com/testRedirect'
             }
             return res(ctx.json(currentBasket))
         })
@@ -297,7 +298,10 @@ test('Can proceed through checkout steps as guest', async () => {
     // Wait for next step to render
     await waitFor(() => {
         expect(screen.getByTestId('sf-toggle-card-step-3-content')).not.toBeEmptyDOMElement()
+        expect(screen.getByText('Credit card inline')).not.toBeEmptyDOMElement()
     })
+
+    user.click(screen.getByText('Credit card inline'))
 
     // Applied shipping method should be displayed in previous step summary
     expect(screen.getByText('Default Shipping Method')).toBeInTheDocument()
@@ -332,11 +336,19 @@ test('Can proceed through checkout steps as guest', async () => {
     expect(step3Content.getByText('123 Main St')).toBeInTheDocument()
     expect(step3Content.getByText('Tampa, FL 33610')).toBeInTheDocument()
     expect(step3Content.getByText('US')).toBeInTheDocument()
+
+    // redefine window.location as a workaround for jsdom not allowing editing of window.location.href
+    const locationTemp = global.window.location
+    delete global.window.location
+    global.window.location = {...locationTemp}
+
     // Place the order
     user.click(placeOrderBtn)
 
-    // Should now be on our mocked confirmation route/page
-    expect(await screen.findByText(/success/i)).toBeInTheDocument()
+    // should redirect to CCV pay url
+    await waitFor(() => {
+        expect(window.location.href).toEqual('ccvPayUrl.com/testRedirect')
+    })
 })
 
 test('Can proceed through checkout as registered customer', async () => {
@@ -423,7 +435,7 @@ test('Can proceed through checkout as registered customer', async () => {
                         validFromYear: 2020
                     },
                     payment_instrument_id: 'testcard1',
-                    payment_method_id: 'CREDIT_CARD',
+                    payment_method_id: 'CCV_CREDIT_CARD_INLINE',
                     _type: 'order_payment_instrument'
                 }
             ]
@@ -439,7 +451,8 @@ test('Can proceed through checkout as registered customer', async () => {
         rest.post('*/orders', (req, res, ctx) => {
             currentBasket = {
                 ...ocapiOrderResponse,
-                customer_info: {...ocapiOrderResponse.customer_info, email: 'customer@test.com'}
+                customer_info: {...ocapiOrderResponse.customer_info, email: 'customer@test.com'},
+                c_ccvPayUrl: 'ccvPayUrl.com/testRedirect'
             }
             return res(ctx.json(currentBasket))
         })
@@ -500,10 +513,14 @@ test('Can proceed through checkout as registered customer', async () => {
     // Wait for next step to render
     await waitFor(() => {
         expect(screen.getByTestId('sf-toggle-card-step-3-content')).not.toBeEmptyDOMElement()
+        expect(screen.getByText('Credit card inline')).toBeInTheDocument()
     })
 
     // Applied shipping method should be displayed in previous step summary
     expect(screen.getByText('Default Shipping Method')).toBeInTheDocument()
+
+    // select inline credit card option
+    user.click(screen.getByText('Credit card inline'))
 
     // Select a saved card
     user.click(screen.getByDisplayValue('testcard1'))
@@ -531,7 +548,7 @@ test('Can proceed through checkout as registered customer', async () => {
     user.click(placeOrderBtn)
 
     await waitFor(() => {
-        expect(window.location.pathname).toEqual('/uk/en-GB/checkout/confirmation')
+        expect(window.location.href).toEqual('ccvPayUrl.com/testRedirect')
     })
 })
 

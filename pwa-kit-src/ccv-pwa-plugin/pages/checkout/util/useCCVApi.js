@@ -30,7 +30,7 @@ const useCCVApi = () => {
                 // eslint-disable-next-line prettier/prettier
                 parameters: parameters
             })
-            console.log(paymentTransaction)
+
             if (!paymentTransaction?.c_result) {
                 throw new Error('Error checking transaction status.')
             }

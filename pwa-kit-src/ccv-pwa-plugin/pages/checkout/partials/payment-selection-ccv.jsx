@@ -65,7 +65,6 @@ const PaymentSelection = ({form}) => {
                             render={({onChange}) => (
                                 <RadioGroup
                                     onChange={(e) => {
-                                        console.log(e)
                                         onChange(e)
                                         onPaymentMethodChange(e)
                                     }}

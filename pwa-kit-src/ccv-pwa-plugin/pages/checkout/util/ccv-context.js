@@ -27,7 +27,6 @@ export const CCVPaymentProvider = ({children}) => {
     const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
 
     const onPaymentIdChange = (value) => {
-        console.log(paymentMethodForm.getValues())
         if (value && isEditingPayment) {
             togglePaymentEdit()
         }
