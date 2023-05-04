@@ -10,6 +10,7 @@ const orderHooks = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hooks/
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/Logger': stubs.dw.loggerMock,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
+    '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpers,
     'dw/system/Status': stubs.dw.Status,
     'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
     'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction
@@ -43,7 +44,31 @@ describe('orderHooks', function () {
             currencyCode: 'EUR',
             orderNo: '00001',
             orderToken: 'orderToken',
-            custom: {}
+            custom: {},
+            customerEmail: 'tester_email@test.com',
+
+            billingAddress: {
+                address1: 'Test Address 1',
+                city: 'CityTest',
+                stateCode: '',
+                postalCode: '1245',
+                countryCode: { value: 'BE' },
+                address2: '',
+                phone: '1234-1234-522',
+                custom: { phone_country: '024' }
+            },
+            shipments: [{
+                shippingAddress: {
+                    address1: 'Test Address 1',
+                    city: 'CityTest',
+                    stateCode: '',
+                    postalCode: '1245',
+                    countryCode: { value: 'BE' },
+                    address2: '',
+                    phone: '1234-1234-522',
+                    custom: { phone_country: '024' }
+                }
+            }]
         };
 
         paymentInstrument = order.paymentInstruments[0];
@@ -77,12 +102,6 @@ describe('orderHooks', function () {
         it('should save payUrl to the order', () => {
             orderHooks.afterPOST(order);
             expect(order.custom.ccvPayUrl).to.equal(createPaymentResponse.payUrl);
-        });
-
-        it('should return Status.OK if createCCVPayment call is successful', () => {
-            const result = orderHooks.afterPOST(order);
-            expect(result).to.be.an.instanceof(Status);
-            expect(result.status).to.equal(0);
         });
 
         it('should return Status.ERROR if createCCVPayment call fails', () => {

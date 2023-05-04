@@ -74,12 +74,12 @@
         </custom-attributes>
     </payment-method>
 
-    <payment-method method-id="CCV_EPS">
-        <name xml:lang="x-default">EPS</name>
+    <payment-method method-id="CCV_LANDING_PAGE">
+        <name xml:lang="x-default">Landing page</name>
         <enabled-flag>true</enabled-flag>
         <processor-id>CCV_DEFAULT</processor-id>
         <custom-attributes>
-            <custom-attribute attribute-id="ccvMethodId">eps</custom-attribute>
+            <custom-attribute attribute-id="ccvMethodId">landingpage</custom-attribute>
         </custom-attributes>
     </payment-method>
 

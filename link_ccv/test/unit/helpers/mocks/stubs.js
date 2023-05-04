@@ -236,6 +236,7 @@ const initMocks = function () {
 
 const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/helpers/CCVOrderHelpers', {
     '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock,
+    'dw/system/Site': dw.SiteMock,
     'dw/value/Money': dw.Money,
     'dw/system/Transaction': dw.TransactionMock
 });

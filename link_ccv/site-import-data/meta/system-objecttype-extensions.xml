@@ -10,6 +10,25 @@
             </attribute-definition>
         </custom-attribute-definitions>
     </type-extension>
+
+    <type-extension type-id="CustomerAddress">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="phone_country">
+                <display-name xml:lang="x-default">Phone country code</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="CCV">
+                <display-name xml:lang="x-default">CCV</display-name>
+                <attribute attribute-id="phone_country"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
     <type-extension type-id="Order">
         <custom-attribute-definitions>
             <attribute-definition attribute-id="ccvTransactionReference">
@@ -65,6 +84,23 @@
                 <attribute attribute-id="ccvManualIntervention"/>
                 <attribute attribute-id="ccvManualInterventionRefund"/>
                 <attribute attribute-id="ccvPriceOrCurrencyMismatch"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="OrderAddress">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="phone_country">
+                <display-name xml:lang="x-default">Phone country code</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="CCV">
+                <display-name xml:lang="x-default">CCV attributes</display-name>
             </attribute-group>
         </group-definitions>
     </type-extension>
@@ -211,6 +247,15 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="ccvScaReadyEnabled">
+                <display-name xml:lang="x-default">scaReady enabled</display-name>
+                <description xml:lang="x-default">If enabled CCV will validate the SCA fields sent on the createPayment request, and throw an error if some field is missing or malformed.</description>
+                <type>boolean</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="CCV">
@@ -218,6 +263,7 @@
                 <attribute attribute-id="ccvCardsAuthoriseEnabled"/>
                 <attribute attribute-id="ccvStoreCardsInVaultEnabled"/>
                 <attribute attribute-id="ccvAutoRefundEnabled"/>
+                <attribute attribute-id="ccvScaReadyEnabled"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

@@ -4,7 +4,9 @@ const stubs = require('./helpers/mocks/stubs');
 
 const {
     getRefundAmountRemaining,
-    updateOrderRefunds
+    updateOrderRefunds,
+    getSCAFields
+
 } = stubs.CCVOrderHelpers;
 
 const Money = require('./helpers/mocks/dw/value/Money');
@@ -38,7 +40,31 @@ describe('CCVOrderHelpers', function () {
             },
             addNote: () => null,
             currencyCode: 'EUR',
-            totalGrossPrice: new Money(45, 'EUR')
+            totalGrossPrice: new Money(45, 'EUR'),
+            customerEmail: 'tester_email@test.com',
+
+            billingAddress: {
+                address1: 'Test Address 1',
+                city: 'CityTest',
+                stateCode: '',
+                postalCode: '1245',
+                countryCode: { value: 'BE' },
+                address2: '',
+                phone: '1234-1234-522',
+                custom: { phone_country: '024' }
+            },
+            shipments: [{
+                shippingAddress: {
+                    address1: 'Shipping Test Address 1',
+                    city: 'Shipping CityTest',
+                    stateCode: '',
+                    postalCode: '3333',
+                    countryCode: { value: 'NL' },
+                    address2: '',
+                    phone: '1234-313131',
+                    custom: { phone_country: '024' }
+                }
+            }]
         };
 
         stubs.dw.LocalServiceRegistryMock.createService.returns({ call(params) {
@@ -156,6 +182,54 @@ describe('CCVOrderHelpers', function () {
             updateOrderRefunds(order, newRefunds);
             expect(order.custom.ccvHasPendingRefunds).to.be.false;
             expect(order.custom.ccvManualInterventionRefund).to.be.true;
+        });
+    });
+
+    context('#getSCAFields:', function () {
+        it('return all billing and shipping fields', () => {
+            const fields = getSCAFields(order);
+
+            const billingAddress = order.billingAddress;
+            const shippingAddress = order.shipments[0].shippingAddress;
+            expect(fields.billingAddress).to.eql(billingAddress.address1);
+            expect(fields.billingCity).to.eql(billingAddress.city);
+            expect(fields.billingState).to.eql(billingAddress.stateCode);
+            expect(fields.billingPostalCode).to.eql(billingAddress.postalCode);
+            expect(fields.billingCountry).to.eql(billingAddress.countryCode.value);
+            expect(fields.billingHouseExtension).to.eql(billingAddress.address2 || '');
+            expect(fields.billingPhoneNumber).to.eql(billingAddress.phone.replace(/\D/g, ''));
+            expect(fields.billingPhoneCountry).to.eql(billingAddress.custom.phone_country);
+            expect(fields.billingEmail).to.eql(order.customerEmail);
+            expect(fields.shippingAddress).to.eql(shippingAddress.address1);
+            expect(fields.shippingCity).to.eql(shippingAddress.city);
+            expect(fields.shippingState).to.eql(shippingAddress.stateCode);
+            expect(fields.shippingPostalCode).to.eql(shippingAddress.postalCode);
+            expect(fields.shippingCountry).to.eql(shippingAddress.countryCode.value);
+            expect(fields.shippingPhoneCountry).to.eql(shippingAddress.custom.phone_country);
+            expect(fields.shippingPhoneNumber).to.eql(shippingAddress.phone.replace(/\D/g, ''));
+            expect(fields.shippingHouseExtension).to.eql(shippingAddress.address2 || '');
+            expect(fields.shippingEmail).to.eql(order.customerEmail);
+        });
+
+        it('should set scaReady to "yes" if ccvScaReadyEnabled site preference is enabled', () => {
+            stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvScaReadyEnabled').returns(true);
+
+            const fields = getSCAFields(order);
+            expect(fields.scaReady).to.eql('yes');
+        });
+        it('should set scaReady to "no" if ccvScaReadyEnabled site preference is enabled', () => {
+            stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvScaReadyEnabled').returns(false);
+
+            const fields = getSCAFields(order);
+            expect(fields.scaReady).to.eql('no');
+        });
+        it('should set phone_country to "00" if it is not provided in the order', () => {
+            order.billingAddress.custom.phone_country = null;
+            order.shipments[0].shippingAddress.custom.phone_country = null;
+            const fields = getSCAFields(order);
+            expect(fields.billingPhoneCountry).to.eql('00');
+            expect(fields.shippingPhoneCountry).to.eql('00');
+
         });
     });
 });

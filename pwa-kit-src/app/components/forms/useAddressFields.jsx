@@ -12,6 +12,7 @@ const messages = defineMessages({
     required: {defaultMessage: 'Required', id: 'use_address_fields.error.required'},
     firstName: {defaultMessage: 'First Name', id: 'use_address_fields.label.first_name'},
     lastName: {defaultMessage: 'Last Name', id: 'use_address_fields.label.last_name'},
+    phoneCountry: {defaultMessage: 'Phone Country', id: 'use_address_fields.label.phone_country'},
     phone: {defaultMessage: 'Phone', id: 'use_address_fields.label.phone'},
     country: {defaultMessage: 'Country', id: 'use_address_fields.label.country'},
     address: {defaultMessage: 'Address', id: 'use_address_fields.label.address'},
@@ -66,6 +67,27 @@ export default function useAddressFields({form: {watch, control, errors}, prefix
                 })
             },
             error: errors[`${prefix}lastName`],
+            control
+        },
+        phoneCountry: {
+            name: `${prefix}c_phone_country`,
+            label: formatMessage(messages.phoneCountry),
+            defaultValue: '',
+            type: 'tel',
+            inputProps: ({onChange}) => ({
+                inputMode: 'numeric',
+                maxLength: 4,
+                onChange(evt) {
+                    onChange(evt.target.value.replace(/[^0-9 ]+/, ''))
+                }
+            }),
+            rules: {
+                required: formatMessage({
+                    defaultMessage: 'Please select your phone country code.',
+                    id: 'use_address_fields.error.please_select_your_phone_country'
+                })
+            },
+            error: errors[`${prefix}phoneCountry`],
             control
         },
         phone: {

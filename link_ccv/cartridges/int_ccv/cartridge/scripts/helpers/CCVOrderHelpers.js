@@ -1,3 +1,4 @@
+var Site = require('dw/system/Site');
 var { CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 
 /**
@@ -40,7 +41,40 @@ function updateOrderRefunds(order, ccvRefunds) {
     });
 }
 
+/**
+ * Extracts the fields required for 3DS frictionless flow
+ * @param {dw.order.Order} order dw order
+ * @returns {Object} sca fields
+ */
+function getSCAFields(order) {
+    var billingAddress = order.billingAddress;
+    var shippingAddress = order.shipments[0].shippingAddress;
+    return {
+        scaReady: Site.current.getCustomPreferenceValue('ccvScaReadyEnabled') ? 'yes' : 'no',
+
+        billingAddress: billingAddress.address1,
+        billingCity: billingAddress.city,
+        billingState: billingAddress.stateCode,
+        billingPostalCode: billingAddress.postalCode,
+        billingCountry: billingAddress.countryCode.value,
+        billingHouseExtension: billingAddress.address2 || '',
+        billingPhoneNumber: billingAddress.phone.replace(/\D/g, ''),
+        billingPhoneCountry: billingAddress.custom.phone_country || '00',
+        billingEmail: order.customerEmail,
+        shippingAddress: shippingAddress.address1,
+        shippingCity: shippingAddress.city,
+        shippingState: shippingAddress.stateCode,
+        shippingPostalCode: shippingAddress.postalCode,
+        shippingCountry: shippingAddress.countryCode.value,
+        shippingPhoneCountry: shippingAddress.custom.phone_country || '00',
+        shippingPhoneNumber: shippingAddress.phone.replace(/\D/g, ''),
+        shippingHouseExtension: shippingAddress.address2 || '',
+        shippingEmail: order.customerEmail
+    };
+}
+
 module.exports = {
     getRefundAmountRemaining,
-    updateOrderRefunds
+    updateOrderRefunds,
+    getSCAFields
 };

@@ -266,7 +266,8 @@ test('Can proceed through checkout steps as guest', async () => {
     // Fill out shipping address form and submit
     user.type(screen.getByLabelText(/first name/i), 'Tester')
     user.type(screen.getByLabelText(/last name/i), 'McTesting')
-    user.type(screen.getByLabelText(/phone/i), '(727) 555-1234')
+    user.type(screen.getByLabelText(/phone country/i), '1234')
+    user.type(screen.getByLabelText(/phone$/i), '(727) 555-1234')
     user.type(screen.getByLabelText(/address/i), '123 Main St')
     user.type(screen.getByLabelText(/city/i), 'Tampa')
     user.selectOptions(screen.getByLabelText(/state/i), ['FL'])
@@ -582,6 +583,7 @@ test('Can edit address during checkout as a registered customer', async () => {
                 full_name: 'Test McTester',
                 id: '047b18d4aaaf4138f693a4b931',
                 last_name: 'McTester',
+                c_phone_country: '123',
                 phone: '(727) 555-1234',
                 postal_code: '33712',
                 state_code: 'FL',
@@ -734,7 +736,8 @@ test('Can add address during checkout as a registered customer', async () => {
     user.click(screen.getByRole('button', {name: /add new address/i}))
     user.type(screen.getByRole('textbox', {name: /first name/i}), 'Test2')
     user.type(screen.getByRole('textbox', {name: /last name/i}), 'McTester')
-    user.type(screen.getByRole('textbox', {name: /phone/i}), '7275551234')
+    user.type(screen.getByRole('textbox', {name: /phone country/i}), '123')
+    user.type(screen.getByRole('textbox', {name: /phone$/i}), '7275551234')
     user.selectOptions(screen.getByRole('combobox', {name: /country/i}), ['US'])
     user.type(screen.getByRole('textbox', {name: /address/i}), 'Tropicana Field')
     user.type(screen.getByRole('textbox', {name: /city/i}), 'Tampa')

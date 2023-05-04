@@ -21,7 +21,10 @@ const AddressFields = ({form, prefix = ''}) => {
                 <Field {...fields.firstName} />
                 <Field {...fields.lastName} />
             </SimpleGrid>
-            <Field {...fields.phone} />
+            <SimpleGrid templateColumns="1fr 4fr" gap={5}>
+                <Field {...fields.phoneCountry} />
+                <Field {...fields.phone} />
+            </SimpleGrid>
             <Field {...fields.countryCode} />
             <Field {...fields.address1} />
             <Field {...fields.city} />

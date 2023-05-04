@@ -19,11 +19,11 @@ var languageMap = {
  * Hook fired after creating an order via OCAPI.
  * Here we create a payment request in CCV, and return the payUrl to the clientSide
  * @param {Object} order - the database object
- * @returns {dw.system.Status} status
+ * @returns {undefined|dw.system.Status} return status.ERROR if the payment create request failed
  */
-exports.afterPOST = function (order) {
+exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
-
+    var { getSCAFields } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
     var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
 
     // ============= CREATE CCV PAYMENT REQUEST =============
@@ -88,6 +88,10 @@ exports.afterPOST = function (order) {
             // if we don't specify a transactionType in the request, 'sale' wil be used by default
             requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
         }
+
+        // adding data required for 3DS frictionless flow
+        var scaFields = getSCAFields(order);
+        Object.assign(requestBody, scaFields);
     }
 
     // BANCONTACT
@@ -127,7 +131,4 @@ exports.afterPOST = function (order) {
     if (paymentInstrument.custom.ccvVaultAccessToken) {
         paymentInstrument.custom.ccvVaultAccessToken = '****';
     }
-
-    return new Status(Status.OK);
 };
-
