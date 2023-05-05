@@ -4,7 +4,7 @@ var { CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers'
 /**
  * Returns amount eligible for refund for the given order
  * @param {dw.order.Order} order SFCC order
- * @returns {number} refundable amount
+ * @returns {dw.value.Money} refundable amount
  */
 function getRefundAmountRemaining(order) {
     var Money = require('dw/value/Money');

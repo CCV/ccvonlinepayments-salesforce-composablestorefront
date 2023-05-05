@@ -110,7 +110,8 @@ const CCVPaymentHelpersMock = {
     checkCCVTransactions: sandbox.stub(),
     getCCVPaymentMethods: sandbox.stub(),
     refundCCVPayment: sandbox.stub(),
-    getRefundAmountRemaining: sandbox.stub()
+    getRefundAmountRemaining: sandbox.stub(),
+    cancelCCVPayment: sandbox.stub()
 };
 
 const authorizeCCVMock = {
@@ -149,6 +150,16 @@ const CacheMgrMock = {
             }
         };
     }
+};
+
+const ISMLMock = {
+    renderTemplate: sandbox.stub()
+};
+
+const CCVOrderHelpersMock = {
+    getRefundAmountRemaining: sandbox.stub(),
+    updateOrderRefunds: sandbox.stub(),
+    getSCAFields: sandbox.stub()
 };
 
 const collectionsMock = {
@@ -194,7 +205,8 @@ const dw = {
     HookMgrMock: sandbox.stub(HookMgr),
     SiteMock: sandbox.stub(Site),
     StringUtilsMock,
-    CacheMgrMock
+    CacheMgrMock,
+    ISMLMock
 };
 
 const initMocks = function () {
@@ -216,6 +228,8 @@ const initMocks = function () {
     Object.keys(dw.MoneyMock).map(i => dw.MoneyMock[i].reset());
     Object.keys(dw.StringUtilsMock).map(i => dw.StringUtilsMock[i].reset());
     Object.keys(CCVPaymentHelpersMock).map(i => CCVPaymentHelpersMock[i].reset());
+    Object.keys(CCVOrderHelpersMock).map(i => CCVOrderHelpersMock[i].reset());
+    Object.keys(ISMLMock).map(i => ISMLMock[i].reset());
     Object.keys(ocapiServiceMock).map(i => ocapiServiceMock[i].reset());
     Object.keys(authorizeCCVMock).map(i => authorizeCCVMock[i].reset());
 
@@ -242,11 +256,12 @@ const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scr
 });
 
 module.exports = {
-    sandbox: sandbox,
-    dw: dw,
-    ocapiServiceMock: ocapiServiceMock,
-    CCVPaymentHelpersMock: CCVPaymentHelpersMock,
-    CCVOrderHelpers: CCVOrderHelpers,
+    sandbox,
+    dw,
+    ocapiServiceMock,
+    CCVPaymentHelpersMock,
+    CCVOrderHelpers,
+    CCVOrderHelpersMock,
     CCV_CONSTANTS,
     authorizeCCVMock,
     collectionsMock,

@@ -59,10 +59,10 @@
                     The full order amount has already been refunded or is pending refund.
                 </div>
                 <div class="text-muted">
-                    Refund statuses will be updated by the ProcessRefunds job.
+                    Refund statuses will be updated by the CCVProcessRefunds job.
                 </div>
             </div>
         </isif>
     </div>
-	<hr/>
+
 </isdecorate>

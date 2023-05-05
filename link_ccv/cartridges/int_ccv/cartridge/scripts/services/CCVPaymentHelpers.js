@@ -9,7 +9,8 @@ var CCV_CONSTANTS = {
         CREATE_PAYMENT: '/payment',
         CHECK_TRANSACTION_STATUS: '/transaction',
         REFUND: '/refund',
-        REVERSAL: '/reversal'
+        REVERSAL: '/reversal',
+        CANCEL: '/cancel'
     },
     STATUS: {
         PENDING: 'pending',
@@ -179,6 +180,19 @@ function refundCCVPayment({ order, amount, description }) {
     return ccvRefunds;
 }
 
+/**
+ * Cancels a CCV payment if it is not yet authorized
+ * @param {{dw.order.Order}} order order
+ * @returns {object|null} service response
+ */
+function cancelCCVPayment({ order }) {
+    var reference = order.custom.ccvTransactionReference;
+
+    return callCCVService({
+        path: `${CCV_CONSTANTS.PATH.CANCEL}?reference=${reference}`
+    });
+}
+
 module.exports = {
     callCCVService,
     CCV_CONSTANTS,
@@ -186,5 +200,6 @@ module.exports = {
     checkCCVTransaction,
     checkCCVTransactions,
     getCCVPaymentMethods,
-    refundCCVPayment
+    refundCCVPayment,
+    cancelCCVPayment
 };

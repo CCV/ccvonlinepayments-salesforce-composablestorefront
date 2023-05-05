@@ -1,5 +1,4 @@
 <isdecorate template="pt_csc.isml">
 	<div class="slds-text-heading--medium">Order Payment Refund</div>
-    <div>Refund not available for this order.</div>
-    <hr />
+    <div>Refund or cancel not available for this order.</div>
 </isdecorate>

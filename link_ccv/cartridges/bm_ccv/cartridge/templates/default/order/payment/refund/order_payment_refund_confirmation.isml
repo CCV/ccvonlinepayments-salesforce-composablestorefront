@@ -13,5 +13,4 @@
         <isinclude template="order/payment/refund/order_payment_refund" />
     </isif>
 
-    <hr />
 </isdecorate>

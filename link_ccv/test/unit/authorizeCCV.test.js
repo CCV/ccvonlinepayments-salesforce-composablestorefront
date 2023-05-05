@@ -16,7 +16,7 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
 });
 const Status = require('./helpers/mocks/dw/system/Status');
 
-describe('', function () {
+describe('authorizeCCV.js', function () {
     let order;
     let paymentInstrument;
 
