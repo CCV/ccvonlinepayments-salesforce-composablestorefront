@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react'
 import {useForm} from 'react-hook-form'
 import {useCheckout} from '../../../../app/pages/checkout/util/checkout-context'
 import {getPaymentInstrumentCardType} from '../../../../app/utils/cc-utils'
-
+import {useCCVPayment} from './ccv-context'
 /**
  * A hook for managing and coordinating the billing address and payment method forms.
  * @returns {Object}
@@ -20,12 +20,11 @@ const usePaymentFormsCCV = () => {
         isGuestCheckout
     } = useCheckout()
 
+    const {form: paymentMethodForm, setCreditCardData} = useCCVPayment()
     // This local state value manages the 'checked' state of the billing address form's
     // checkbox for `Same as shipping address`. We initialize its value by checking if the
     // currently applied billing address matches the currently applied shipping address.
     const [billingSameAsShipping, setBillingSameAsShipping] = useState(isBillingSameAsShipping)
-
-    const paymentMethodForm = useForm()
 
     const billingAddressForm = useForm({
         mode: 'onChange',

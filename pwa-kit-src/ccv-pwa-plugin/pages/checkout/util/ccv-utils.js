@@ -38,6 +38,7 @@ export const useCCVPaymentMethodsMap = () => {
 export const PaymentSummaryCCV = ({selectedPayment}) => {
     switch (selectedPayment.paymentMethodId) {
         case 'CCV_CREDIT_CARD_INLINE': {
+            if (!selectedPayment.paymentCard) return null
             const CardIcon = getCreditCardIcon(selectedPayment?.paymentCard?.cardType)
             return (
                 <Box>

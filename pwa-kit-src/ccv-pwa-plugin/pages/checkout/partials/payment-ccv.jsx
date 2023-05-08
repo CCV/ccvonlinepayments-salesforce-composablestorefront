@@ -27,6 +27,7 @@ import AddressDisplay from '../../../../app/components/address-display'
 import {PromoCode, usePromoCode} from '../../../../app/components/promo-code'
 import {PaymentSummaryCCV} from '../util/ccv-utils'
 import {useCCVPayment} from '../util/ccv-context'
+import usePaymentFormsCCV from '../util/usePaymentFormsCCV'
 
 const CCVPayment = () => {
     const {formatMessage} = useIntl()
@@ -42,17 +43,15 @@ const CCVPayment = () => {
         removePayment
     } = useCheckout()
 
+    const {paymentError, setPaymentError} = useCCVPayment()
+
     const {
-        paymentForms: {
-            paymentMethodForm,
-            billingAddressForm,
-            billingSameAsShipping,
-            setBillingSameAsShipping,
-            reviewOrder
-        },
-        paymentError,
-        setPaymentError
-    } = useCCVPayment()
+        paymentMethodForm,
+        billingAddressForm,
+        billingSameAsShipping,
+        setBillingSameAsShipping,
+        reviewOrder
+    } = usePaymentFormsCCV()
 
     const {removePromoCode, ...promoCodeProps} = usePromoCode()
 

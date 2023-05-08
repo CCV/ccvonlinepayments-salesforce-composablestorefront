@@ -3,20 +3,12 @@ import PropTypes from 'prop-types'
 import {useLocation} from 'react-router-dom'
 import {useCCVPaymentMethodsMap} from './ccv-utils'
 import {useCheckout} from '../../../../app/pages/checkout/util/checkout-context'
-import usePaymentFormsCCV from './usePaymentFormsCCV'
-
+import {useForm} from 'react-hook-form'
 const CCVPaymentContext = React.createContext()
 
 /** Can only be used inside checkout context */
 export const CCVPaymentProvider = ({children}) => {
-    const {
-        paymentMethodForm,
-        billingAddressForm,
-        billingSameAsShipping,
-        setBillingSameAsShipping,
-        reviewOrder
-    } = usePaymentFormsCCV()
-
+    const paymentMethodForm = useForm()
     const {customer} = useCheckout()
     const location = useLocation()
 
@@ -25,6 +17,8 @@ export const CCVPaymentProvider = ({children}) => {
 
     const hasSavedCards = customer?.paymentInstruments?.length > 0
     const [isEditingPayment, setIsEditingPayment] = useState(!hasSavedCards)
+
+    const [creditCardData, setCreditCardData] = useState({})
 
     const onPaymentIdChange = (value) => {
         if (value && isEditingPayment) {
@@ -57,13 +51,6 @@ export const CCVPaymentProvider = ({children}) => {
     return (
         <CCVPaymentContext.Provider
             value={{
-                paymentForms: {
-                    paymentMethodForm,
-                    billingAddressForm,
-                    billingSameAsShipping,
-                    setBillingSameAsShipping,
-                    reviewOrder
-                },
                 form: paymentMethodForm,
                 hasSavedCards,
                 isEditingPayment,
@@ -72,6 +59,8 @@ export const CCVPaymentProvider = ({children}) => {
                 onPaymentIdChange,
                 togglePaymentEdit,
                 onPaymentMethodChange,
+                creditCardData,
+                setCreditCardData,
                 paymentError,
                 setPaymentError
             }}
