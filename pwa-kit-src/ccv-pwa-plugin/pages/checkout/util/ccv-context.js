@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import PropTypes from 'prop-types'
 import {useLocation} from 'react-router-dom'
-import {useCCVPaymentMethodsMap} from './ccv-utils'
+import {useCCVPaymentMethodsMap} from './payment-components-ccv'
 import {useCheckout} from '../../../../app/pages/checkout/util/checkout-context'
 import {useForm} from 'react-hook-form'
 const CCVPaymentContext = React.createContext()

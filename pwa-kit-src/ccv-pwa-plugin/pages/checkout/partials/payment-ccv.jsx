@@ -25,7 +25,7 @@ import CCVPaymentSelection from './payment-selection-ccv'
 import ShippingAddressSelection from '../../../../app/pages/checkout/partials/shipping-address-selection'
 import AddressDisplay from '../../../../app/components/address-display'
 import {PromoCode, usePromoCode} from '../../../../app/components/promo-code'
-import {PaymentSummaryCCV} from '../util/ccv-utils'
+import {PaymentSummaryCCV} from '../util/payment-components-ccv'
 import {useCCVPayment} from '../util/ccv-context'
 import usePaymentFormsCCV from '../util/usePaymentFormsCCV'
 
