@@ -68,20 +68,22 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
             };
         } else if (paymentInstrument.creditCardNumber) {
             // new inline credit card payment
-            var [firstName, lastName] = paymentInstrument.creditCardHolder.split(' ');
-            requestBody.details = {
-                pan: paymentInstrument.creditCardNumber,
-                expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`.padStart(4, '0'),
-                cardholderFirstName: firstName,
-                cardholderLastName: lastName || firstName
-            };
-            if (customer.registered
-                && customer.authenticated
-                && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
-                // a vaultAccessToken will be returned in the checkTransactionInfo response
-                // we will add it to the customer's payment instrument in the UpdateStatuses job
-                requestBody.storeInVault = 'yes';
-            }
+            // var [firstName, lastName] = paymentInstrument.creditCardHolder.split(' ');
+            // requestBody.details = {
+            //     pan: paymentInstrument.creditCardNumber,
+            //     expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`.padStart(4, '0'),
+            //     cardholderFirstName: firstName,
+            //     cardholderLastName: lastName || firstName
+            // };
+        }
+
+        if (paymentInstrument.custom.ccv_save_card
+            && customer.registered
+            && customer.authenticated
+            && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
+            // a vaultAccessToken will be returned in the checkTransactionInfo response
+            // we will add it to the customer's payment instrument in the UpdateStatuses job
+            requestBody.storeInVault = 'yes';
         }
 
         if (Site.current.getCustomPreferenceValue('ccvCardsAuthoriseEnabled')) {

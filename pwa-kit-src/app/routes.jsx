@@ -100,7 +100,7 @@ const routes = [
         component: Wishlist
     },
     {
-        path: '/:locale/checkout/handleShopperRedirect',
+        path: '/checkout/handleShopperRedirect',
         component: CheckoutRedirect,
         exact: true
     },

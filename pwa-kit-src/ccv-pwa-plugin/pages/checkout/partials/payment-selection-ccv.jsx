@@ -25,6 +25,7 @@ import {useForm, Controller} from 'react-hook-form'
 import {useCheckout} from '../../../../app/pages/checkout/util/checkout-context'
 import CreditCardFields from '../../../../app/components/forms/credit-card-fields'
 import CCRadioGroup from '../../../../app/pages/checkout/partials/cc-radio-group'
+import CCRadioGroupCCV from './cc-radio-group-ccv'
 
 import {PaymentMethodIcons} from '../util/ccv-utils'
 import Field from '../../../../app/components/field'
@@ -316,7 +317,52 @@ const CCVMethodOptions = function ({paymentMethodId}) {
                 </>
             )
         }
-
+        case 'CCV_CREDIT_CARD': {
+            const {form, onPaymentIdChange, togglePaymentEdit, isEditingPayment} = useCCVPayment()
+            const {customer} = useCheckout()
+            const saveCardCheckbox = {
+                name: `saveCard`,
+                defaultValue: '',
+                inputProps: {disabled: form.watch('paymentInstrumentId') !== 'new_card'},
+                type: 'checkbox',
+                control: form.control,
+                label: formatMessage({
+                    defaultMessage: 'Save card for later.',
+                    id: 'payment_selection.message.save_card_for_later'
+                })
+            }
+            return (
+                <Box p={[4, 4, 6]} borderBottom="1px solid" borderColor="gray.100">
+                    <Stack spacing={6}>
+                        <Controller
+                            name="paymentInstrumentId"
+                            defaultValue=""
+                            control={form.control}
+                            rules={{
+                                required: formatMessage({
+                                    defaultMessage: 'Please select a payment method.',
+                                    id: 'payment_selection.message.select_payment_method'
+                                })
+                            }}
+                            render={({value}) => (
+                                <CCRadioGroupCCV
+                                    form={form}
+                                    value={value}
+                                    isEditingPayment={isEditingPayment}
+                                    togglePaymentEdit={togglePaymentEdit}
+                                    onPaymentIdChange={onPaymentIdChange}
+                                />
+                            )}
+                        />
+                    </Stack>
+                    {customer.isRegistered && (
+                        <Box py="20px">
+                            <Field {...saveCardCheckbox} />
+                        </Box>
+                    )}
+                </Box>
+            )
+        }
         default:
             return <input type="hidden" {...form.register('ccvIssuerID')} defaultValue="" />
     }

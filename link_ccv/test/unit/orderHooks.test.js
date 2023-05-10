@@ -168,22 +168,6 @@ describe('orderHooks', function () {
                 expect(paymentRequest.requestBody.details.cardholderLastName).to.be.undefined;
             });
 
-            it('request should include card data if card data is provided and there is no token', () => {
-                order.paymentInstruments[0].creditCardNumber = '1234123412341234';
-                order.paymentInstruments[0].creditCardExpirationMonth = 2;
-                order.paymentInstruments[0].creditCardExpirationYear = 25;
-                order.paymentInstruments[0].creditCardHolder = 'John Doe';
-
-                orderHooks.afterPOST(order);
-
-                const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
-                expect(paymentRequest.requestBody.details.vaultAccessToken).to.be.undefined;
-                expect(paymentRequest.requestBody.details.pan).to.eql('1234123412341234');
-                expect(paymentRequest.requestBody.details.expiryDate).to.eql('0225');
-                expect(paymentRequest.requestBody.details.cardholderFirstName).to.eql('John');
-                expect(paymentRequest.requestBody.details.cardholderLastName).to.eql('Doe');
-            });
-
             it('the request\'s transactionType should be set to "authorise" if authorise cards site pref is enabled', () => {
                 stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(true);
 

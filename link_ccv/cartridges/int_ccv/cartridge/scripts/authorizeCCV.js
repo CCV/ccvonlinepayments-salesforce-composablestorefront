@@ -82,15 +82,10 @@ exports.handleAuthorizationResult = function (authResult, order) {
         return new Status(Status.ERROR, '< CCV: price or currency mismatch >');
     }
 
-    if (transactionStatusResponse.details && transactionStatusResponse.details.vaultAccessToken) {
-        var collections = require('*/cartridge/scripts/util/collections');
-        var paymentInstrument = collections.find(order.customer.profile.wallet.paymentInstruments, instrument => {
-            return transactionStatusResponse.details.maskedPan.endsWith(instrument.creditCardNumberLastDigits);
-        });
-
-        if (paymentInstrument) {
-            paymentInstrument.custom.ccvVaultAccessToken = transactionStatusResponse.details.vaultAccessToken;
-        }
+    // create a new CCV card payment instrument for the customer if there is a vaultAccessToken in the response
+    if (transactionStatusResponse.details && transactionStatusResponse.details.vaultAccessToken
+        && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
+        createCardPaymentInstrument(order, transactionStatusResponse);
     }
 
     if (isAuthorized) {
@@ -213,4 +208,25 @@ function failOrderWithHook({ order, noteTitle, noteMsg }) {
     order.addNote(noteTitle, noteMsg);
 
     HookMgr.callHook('ccv.order.update.afterOrderFailed', 'afterOrderFailed', { order, context: authContext });
+}
+
+/**
+ * Creates a payment instrument for the customer based on a vaultAccessToken from CCV
+ * @param {dw.order.Order} order order
+ * @param {Object} transactionStatusResponse response from check transaction status call
+ */
+function createCardPaymentInstrument(order, transactionStatusResponse) {
+    var customerPaymentInstrument = order.customer.profile.wallet.createPaymentInstrument('CCV_CREDIT_CARD');
+    customerPaymentInstrument.custom.ccvVaultAccessToken = transactionStatusResponse.details.vaultAccessToken;
+    customerPaymentInstrument.custom.ccv_method_id = 'card';
+    customerPaymentInstrument.setCreditCardNumber(transactionStatusResponse.details.maskedPan);
+    var expiryDate = transactionStatusResponse.details.expiryDate;
+
+    customerPaymentInstrument.setCreditCardType(transactionStatusResponse.details.brand);
+    if (expiryDate && expiryDate.length === 4) {
+        var expirationMonth = expiryDate.substring(0, 2);
+        var expirationYear = expiryDate.substring(2, 4);
+        customerPaymentInstrument.setCreditCardExpirationMonth(+expirationMonth);
+        customerPaymentInstrument.setCreditCardExpirationYear(+`20${expirationYear}`);
+    }
 }

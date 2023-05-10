@@ -36,60 +36,65 @@ export const useCCVPaymentMethodsMap = () => {
 }
 
 export const PaymentSummaryCCV = ({selectedPayment}) => {
-    switch (selectedPayment.paymentMethodId) {
-        case 'CCV_CREDIT_CARD_INLINE': {
-            if (!selectedPayment.paymentCard) return null
-            const CardIcon = getCreditCardIcon(selectedPayment?.paymentCard?.cardType)
-            return (
-                <Box>
-                    {CardIcon && <CardIcon layerStyle="ccIcon" />}
-
-                    <Stack direction="row">
-                        <Text>{selectedPayment.paymentCard.cardType}</Text>
-                        <Text>
-                            &bull;&bull;&bull;&bull; {selectedPayment.paymentCard.numberLastDigits}
-                        </Text>
-                        <Text>
-                            {selectedPayment.paymentCard.expirationMonth}/
-                            {selectedPayment.paymentCard.expirationYear}
-                        </Text>
-                    </Stack>
-                </Box>
-            )
-        }
-
-        default: {
-            const paymentMethodsMap = useCCVPaymentMethodsMap()
-            let optionDescription
-
-            const selectedPaymentData =
-                (selectedPayment && paymentMethodsMap[selectedPayment.paymentMethodId]) || {}
-            const selectedMethodName = selectedPaymentData.name
-
-            if (selectedPaymentData && selectedPaymentData.c_ccvOptions) {
-                const options = selectedPaymentData?.c_ccvOptions
-                const option =
-                    options &&
-                    options.find((option) => option.issuerid === selectedPayment.c_ccv_issuer_id)
-                optionDescription =
-                    (option && option.issuerdescription) || selectedPayment.c_ccv_option
-            }
-            return (
-                <Stack>
-                    <Stack direction="row" spacing={1} align="center">
-                        {selectedMethodName && <Text>{selectedMethodName}</Text>}
-                        <PaymentMethodIcons
-                            paymentMethodId={selectedPayment.paymentMethodId}
-                            iconHeight="30px"
-                        />
-                    </Stack>
-                    {optionDescription && <Box>{optionDescription}</Box>}
-                </Stack>
-            )
-        }
+    if (selectedPayment.paymentCard) {
+        return <CreditCardSummary selectedPayment={selectedPayment} />
     }
+    return <DefaultPaymentSummary selectedPayment={selectedPayment} />
 }
 PaymentSummaryCCV.propTypes = {
+    selectedPayment: PropTypes.object
+}
+
+const CreditCardSummary = ({selectedPayment}) => {
+    if (!selectedPayment.paymentCard) return null
+    const CardIcon = getCreditCardIcon(selectedPayment?.paymentCard?.cardType)
+    return (
+        <Box>
+            {CardIcon && <CardIcon layerStyle="ccIcon" />}
+
+            <Stack direction="row">
+                <Text>{selectedPayment.paymentCard.cardType}</Text>
+                <Text>&bull;&bull;&bull;&bull; {selectedPayment.paymentCard.numberLastDigits}</Text>
+                <Text>
+                    {selectedPayment.paymentCard.expirationMonth}/
+                    {selectedPayment.paymentCard.expirationYear}
+                </Text>
+            </Stack>
+        </Box>
+    )
+}
+CreditCardSummary.propTypes = {
+    selectedPayment: PropTypes.object
+}
+
+const DefaultPaymentSummary = ({selectedPayment}) => {
+    const paymentMethodsMap = useCCVPaymentMethodsMap()
+    let optionDescription
+
+    const selectedPaymentData =
+        (selectedPayment && paymentMethodsMap[selectedPayment.paymentMethodId]) || {}
+    const selectedMethodName = selectedPaymentData.name
+
+    if (selectedPaymentData && selectedPaymentData.c_ccvOptions) {
+        const options = selectedPaymentData?.c_ccvOptions
+        const option =
+            options && options.find((option) => option.issuerid === selectedPayment.c_ccv_issuer_id)
+        optionDescription = (option && option.issuerdescription) || selectedPayment.c_ccv_option
+    }
+    return (
+        <Stack>
+            <Stack direction="row" spacing={1} align="center">
+                {selectedMethodName && <Text>{selectedMethodName}</Text>}
+                <PaymentMethodIcons
+                    paymentMethodId={selectedPayment.paymentMethodId}
+                    iconHeight="30px"
+                />
+            </Stack>
+            {optionDescription && <Box>{optionDescription}</Box>}
+        </Stack>
+    )
+}
+DefaultPaymentSummary.propTypes = {
     selectedPayment: PropTypes.object
 }
 

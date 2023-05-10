@@ -15,9 +15,7 @@ const usePaymentFormsCCV = () => {
         setBillingAddress,
         isBillingSameAsShipping,
         goToNextStep,
-        customer,
-        basket,
-        isGuestCheckout
+        basket
     } = useCheckout()
 
     const {form: paymentMethodForm, setCreditCardData} = useCCVPayment()
@@ -87,7 +85,7 @@ const usePaymentFormsCCV = () => {
     async function setPaymentCCV(payment) {
         const {paymentInstrumentId, paymentMethodId, ccvIssuerID, ccvMethodId} = payment
 
-        if (paymentInstrumentId) {
+        if (paymentInstrumentId && paymentInstrumentId !== 'new_card') {
             // Customer selected a saved card
             await basket.setPaymentInstrument({
                 customerPaymentInstrumentId: paymentInstrumentId
@@ -107,13 +105,27 @@ const usePaymentFormsCCV = () => {
             paymentInstrument.c_ccv_method_id = ccvMethodId
         }
 
-        // adding new credit card
-        if (payment.number) {
-            const [expirationMonth, expirationYear] = payment.expiry.split('/')
+        if (payment.saveCard) {
+            paymentInstrument.c_ccv_save_card = true
+        }
 
+        // adding new credit card to basket for inline card method
+        if (payment.number) {
+            const splitName = payment.holder.split(' ')
+
+            // data to send to CCV cardDataURL
+            setCreditCardData({
+                pan: payment.number.replace(/ /g, ''),
+                expiryDate: payment.expiry,
+                cardholderFirstName: splitName[0],
+                cardholderLastName: splitName[splitName.length - 1]
+            })
+
+            // saving masked information to basket
+            const [expirationMonth, expirationYear] = payment.expiry.split('/')
             paymentInstrument.paymentCard = {
                 holder: payment.holder,
-                number: payment.number.replace(/ /g, ''),
+                number: payment.number.replace(/ /g, '').replace(/\d(?=\d{4})/g, '#'),
                 cardType: getPaymentInstrumentCardType(payment.cardType),
                 expirationMonth: parseInt(expirationMonth),
                 expirationYear: parseInt(expirationYear),
@@ -128,11 +140,6 @@ const usePaymentFormsCCV = () => {
         }
 
         await basket.setPaymentInstrument(paymentInstrument)
-
-        // Save the payment instrument to the customer's account if they are registered
-        if (!isGuestCheckout && !payment.id && payment.number) {
-            customer.addSavedPaymentInstrument(paymentInstrument)
-        }
     }
 
     return {

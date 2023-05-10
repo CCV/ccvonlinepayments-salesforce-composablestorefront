@@ -28,7 +28,6 @@ describe('authorizeCCV.js', function () {
         order = new stubs.dw.OrderMock();
         order.currencyCode = 'EUR';
         order.totalGrossPrice = { value: 50.00 };
-
         paymentInstrument = new stubs.dw.OrderPaymentInstrumentMock();
         order.custom.ccvTransactionReference = 'testTransactionRef';
         order.paymentInstruments = [paymentInstrument];
@@ -237,6 +236,56 @@ describe('authorizeCCV.js', function () {
             expect(handleResult).to.be.an.instanceof(Status);
             expect(handleResult.status).to.equal(0);
             expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+        });
+
+        it('should create a new customer payment instrument if ccvStoreCardsInVaultEnabled is enabled and there is vaultAccessToken in response', () => {
+            const mockInstrument = {
+                custom: {},
+                setCreditCardNumber: stubs.sandbox.stub(),
+                setCreditCardType: stubs.sandbox.stub(),
+                setCreditCardExpirationMonth: stubs.sandbox.stub(),
+                setCreditCardExpirationYear: stubs.sandbox.stub()
+            };
+
+            order.customer = { profile: { wallet: { createPaymentInstrument: () => mockInstrument } } };
+            const details = {
+                scaToken: true,
+                maskedPan: '5555XXXXXXXX4444',
+                acquirerResponseCode: '00',
+                vaultAccessToken: '6C8F95B54BC251E1B92FDAA7',
+                dataType: 'card',
+                expirationTimestamp: 1686297131501,
+                authorisedAmount: 31.49,
+                acquirer: 'Valitor',
+                cardholderLastName: 'Sparrow',
+                authenticationProtocol: '3DS1',
+                acquirerResponseCodeDescription: 'ApprovedOrCompletedSuccessfully',
+                expiryDate: '0124',
+                cardholderFirstName: 'Tester',
+                initialTransactionId: 'xxbpj3AVzkCTT',
+                expirationDuration: 'P0Y0M30DT0H0M0.000S',
+                brand: 'mastercard',
+                authenticationStatus: 'Y'
+            };
+
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'eur',
+                method: 'card',
+                type: 'sale',
+                status: 'success',
+                details
+            });
+            stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvStoreCardsInVaultEnabled').returns(true);
+
+            const result = authorizeCCV(order);
+            const handleResult = handleAuthorizationResult(result, order);
+            expect(handleResult).to.be.an.instanceof(Status);
+            expect(handleResult.status).to.equal(0);
+            expect(mockInstrument.setCreditCardNumber).to.have.been.calledOnceWith(details.maskedPan);
+            expect(mockInstrument.setCreditCardType).to.have.been.calledOnceWith(details.brand);
+            expect(mockInstrument.setCreditCardExpirationMonth).to.have.been.calledOnceWith(1);
+            expect(mockInstrument.setCreditCardExpirationYear).to.have.been.calledOnceWith(2024);
         });
 
         it('should update the paymentTransaction.amount if the payment is authorized', () => {

@@ -5,7 +5,7 @@ import useBasket from '../../../../app/commerce-api/hooks/useBasket'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()
-    const {locale, formatMessage} = useIntl()
+    const {formatMessage} = useIntl()
     const basket = useBasket()
 
     return {
@@ -15,7 +15,7 @@ const useCCVApi = () => {
                 headers: {_sfdc_customer_id: api.auth.usid},
                 body: {basketId: basket.basketId},
                 parameters: {
-                    ccvReturnUrl: `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
+                    ccvReturnUrl: `${getAppOrigin()}/checkout/handleShopperRedirect`
                 }
             })
 
