@@ -31,7 +31,7 @@ const CCRadioGroupCCV = ({form, value = '', onPaymentIdChange = () => null}) => 
                 <Stack spacing={4}>
                     <SimpleGrid columns={[1, 1, 2]} spacing={4}>
                         {customer.paymentInstruments
-                            ?.filter((x) => x)
+                            ?.filter((card) => !!card.c_ccvVaultAccessToken)
                             .map((payment) => {
                                 const CardIcon = getCreditCardIcon(payment.paymentCard?.cardType)
                                 return (

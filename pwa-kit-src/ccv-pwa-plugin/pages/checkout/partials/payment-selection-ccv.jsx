@@ -327,6 +327,7 @@ const IdealOptions = ({paymentMethodId}) => {
             <Controller
                 as={Select}
                 name="ccvIssuerID"
+                data-testid="options-ideal"
                 defaultValue=""
                 control={form.control}
                 rules={{
@@ -400,7 +401,7 @@ const GiropayOptions = ({paymentMethodId}) => {
     }
 
     return (
-        <Box padding="20px">
+        <Box padding="20px" data-testid="options-giropay">
             <Field {...issuerField} />
         </Box>
     )

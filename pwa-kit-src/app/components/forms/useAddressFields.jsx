@@ -83,11 +83,11 @@ export default function useAddressFields({form: {watch, control, errors}, prefix
             }),
             rules: {
                 required: formatMessage({
-                    defaultMessage: 'Please select your phone country code.',
+                    defaultMessage: 'Please enter your phone country code.',
                     id: 'use_address_fields.error.please_select_your_phone_country'
                 })
             },
-            error: errors[`${prefix}phoneCountry`],
+            error: errors[`${prefix}c_phone_country`],
             control
         },
         phone: {
