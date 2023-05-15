@@ -5,12 +5,14 @@ var Order = require('dw/order/Order');
 var { authorizeCCV, handleAuthorizationResult } = require('*/cartridge/scripts/authorizeCCV');
 var Transaction = require('dw/system/Transaction');
 
-var jobStatus = new Status(Status.OK);
+exports.execute = function (args) {
+    var oneDayInMs = 24 * 60 * 60 * 1000;
+    var cutOffDate = new Date(Date.now() - (args.cutoffPeriodInDays * oneDayInMs));
 
-exports.execute = function () {
-    OrderMgr.processOrders(checkOrderStatus, `status=${Order.ORDER_STATUS_CREATED}`);
+    // only process orders older than 1 day
+    OrderMgr.processOrders(checkOrderStatus, `status=${Order.ORDER_STATUS_CREATED} AND creationDate < {0}`, cutOffDate);
 
-    return jobStatus;
+    return new Status(Status.OK);
 };
 
 /**
@@ -18,18 +20,13 @@ exports.execute = function () {
  * @param {dw.order.Order} order order
  */
 function checkOrderStatus(order) {
-    try {
-        Transaction.wrap(function () {
+    Transaction.wrap(function () {
+        try {
             var authResult = authorizeCCV(order, null, 'job');
-            var handlerResult = handleAuthorizationResult(authResult, order);
-
-            if (handlerResult.status === Status.OK) {
-                OrderMgr.placeOrder(order);
-            }
-        });
-    } catch (error) {
-        ccvLogger.error(`Error updating status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
-        jobStatus = new Status(Status.ERROR);
-    }
+            handleAuthorizationResult(authResult, order);
+        } catch (error) {
+            ccvLogger.error(`Error updating status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
+        }
+    });
 }
 

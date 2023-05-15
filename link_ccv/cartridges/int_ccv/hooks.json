@@ -5,20 +5,8 @@
             "script": "./cartridge/scripts/hooks/customObjectsHooks.js"
         },
         {
-            "name": "dw.ocapi.shop.order.payment_instrument.afterPATCH",
-            "script": "./cartridge/scripts/hooks/paymentInstrumentHooks.js"
-        },
-        {
-            "name": "dw.order.payment.authorize",
-            "script": "./cartridge/scripts/hooks/paymentInstrumentHooks.js"
-        },
-        {
-            "name": "dw.order.payment.authorizeCreditCard",
-            "script": "./cartridge/scripts/hooks/paymentInstrumentHooks.js"
-        },
-        {
             "name": "dw.ocapi.shop.order.afterPOST",
-            "script": "./cartridge/scripts/hooks/orderHooks.js"
+            "script": "./cartridge/scripts/hooks/orderHooksCCV.js"
         },
         {
             "name": "dw.ocapi.shop.basket.payment_methods.modifyGETResponse_v2",

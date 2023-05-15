@@ -11,7 +11,17 @@
 			 "function":"execute",
 			 "transactional":"true",
 			 "timeout-in-seconds":"900",
-			 "parameters":{},
+			 "parameters":{
+				"parameter": [
+					{
+						"@name":"cutoffPeriodInDays",
+						"@type":"double",
+						"@required":"true",
+						"description":"The job will only process orders older than the number of days set here.",
+						"default-value":"1"
+					  }
+				]
+			 },
 			 "status-codes":{
                 "status": [
                     {

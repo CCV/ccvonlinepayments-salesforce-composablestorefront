@@ -14,7 +14,6 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
     'dw/system/HookMgr': stubs.dw.HookMgrMock,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock
 });
-const Status = require('./helpers/mocks/dw/system/Status');
 
 describe('authorizeCCV.js', function () {
     let order;
@@ -26,6 +25,7 @@ describe('authorizeCCV.js', function () {
 
     beforeEach(() => {
         order = new stubs.dw.OrderMock();
+        order.orderNo = '0001';
         order.currencyCode = 'EUR';
         order.totalGrossPrice = { value: 50.00 };
         paymentInstrument = new stubs.dw.OrderPaymentInstrumentMock();
@@ -46,10 +46,10 @@ describe('authorizeCCV.js', function () {
         .withArgs('ccvAutoRefundEnabled').returns(false);
     });
     context('#authorizeCCV:', function () {
-        it('should return { error } if ccvTransactionReference is missing from the order.', () => {
+        it('should return { missingReference } if ccvTransactionReference is missing from the order.', () => {
             order.custom.ccvTransactionReference = null;
             const result = authorizeCCV(order);
-            expect(typeof result.error).to.eql('string');
+            expect(result.missingReference).to.be.true;
         });
 
         it('should return { error } if the checkCCVTransaction service fails.', () => {
@@ -99,16 +99,23 @@ describe('authorizeCCV.js', function () {
     });
 
     context('#handleAuthorizationResult:', function () {
-        it('should return status.ERROR and fail the order if ccvTransactionReference is missing from order', () => {
+        it('should fail the order if ccvTransactionReference is missing from order', () => {
             order.custom.ccvTransactionReference = null;
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
+            handleAuthorizationResult(result, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnceWith(order);
         });
 
-        it('should return status.ERROR and fail the order if ccvStatus=failed', () => {
+        it('should throw an error but not fail the order if there is an error with the authResult', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.throws(new Error('Transaction not found!'));
+            const result = authorizeCCV(order);
+            expect(handleAuthorizationResult.bind(this, result, order)).to.throw('Error checking transaction status in order 0001: Error: Transaction not found!');
+
+            expect(stubs.dw.OrderMgrMock.failOrder).not.to.have.been.called;
+            expect(stubs.dw.OrderMgrMock.placeOrder).not.to.have.been.called;
+        });
+
+        it('should fail the order if ccvStatus=failed', () => {
             stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
                 amount: 50.00,
                 currency: 'eur',
@@ -117,13 +124,11 @@ describe('authorizeCCV.js', function () {
                 status: 'failed'
             });
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
+            handleAuthorizationResult(result, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnceWith(order);
         });
 
-        it('should return status.ERROR if ccvStatus=manualintervention', () => {
+        it('should not fail the order if ccvStatus=manualintervention', () => {
             stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
                 amount: 50.00,
                 currency: 'eur',
@@ -132,14 +137,13 @@ describe('authorizeCCV.js', function () {
                 status: 'manualintervention'
             });
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
+            handleAuthorizationResult(result, order);
             expect(order.custom.ccvManualIntervention).to.be.true;
-            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.calledOnce;
+            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+            expect(stubs.dw.OrderMgrMock.placeOrder).to.not.have.been.called;
         });
 
-        it('should return status.ERROR if there is price mismatch', () => {
+        it('should fail the order if there is price mismatch', () => {
             stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
                 amount: 55.00,
                 currency: 'eur',
@@ -150,13 +154,11 @@ describe('authorizeCCV.js', function () {
             stubs.CCVPaymentHelpersMock.refundCCVPayment.returns([{}]);
 
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
+            handleAuthorizationResult(result, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
         });
 
-        it('should return status.ERROR if there is currency mismatch', () => {
+        it('should fail the order if there is currency mismatch', () => {
             stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
                 amount: 55.00,
                 currency: 'usd',
@@ -165,9 +167,7 @@ describe('authorizeCCV.js', function () {
                 status: 'success'
             });
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
+            handleAuthorizationResult(result, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
         });
 
@@ -185,9 +185,7 @@ describe('authorizeCCV.js', function () {
             stubs.CCVPaymentHelpersMock.refundCCVPayment.returns({});
 
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
+            handleAuthorizationResult(result, order);
             expect(stubs.CCVPaymentHelpersMock.refundCCVPayment).to.have.been.calledOnce;
         });
 
@@ -203,9 +201,7 @@ describe('authorizeCCV.js', function () {
             .withArgs('ccvAutoRefundEnabled').returns(false);
 
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
+            handleAuthorizationResult(result, order);
             expect(stubs.CCVPaymentHelpersMock.refundCCVPayment).to.not.have.been.called;
         });
 
@@ -222,20 +218,17 @@ describe('authorizeCCV.js', function () {
             });
             stubs.CCVPaymentHelpersMock.refundCCVPayment.throws(new Error('timeout'));
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
+            handleAuthorizationResult(result, order);
 
             expect(stubs.CCVPaymentHelpersMock.refundCCVPayment).to.have.been.calledOnce;
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
             expect(stubs.dw.OrderMgrMock.failOrder).to.have.been.calledOnce;
         });
 
-        it('should return status.OK if the payment is authorized', () => {
+        it('should place the order if the payment is authorized', () => {
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(0);
+            handleAuthorizationResult(result, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+            expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.called;
         });
 
         it('should create a new customer payment instrument if ccvStoreCardsInVaultEnabled is enabled and there is vaultAccessToken in response', () => {
@@ -279,9 +272,7 @@ describe('authorizeCCV.js', function () {
             stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvStoreCardsInVaultEnabled').returns(true);
 
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(0);
+            handleAuthorizationResult(result, order);
             expect(mockInstrument.setCreditCardNumber).to.have.been.calledOnceWith(details.maskedPan);
             expect(mockInstrument.setCreditCardType).to.have.been.calledOnceWith(details.brand);
             expect(mockInstrument.setCreditCardExpirationMonth).to.have.been.calledOnceWith(1);
@@ -303,17 +294,13 @@ describe('authorizeCCV.js', function () {
                 status: 'pending'
             });
             const result = authorizeCCV(order);
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(1);
+            handleAuthorizationResult(result, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
         });
 
-        it('should call ccv.order.update.afterOrderAuthorized hook with correct params after successful auth', () => {
+        it('should call ccv.order.update.afterOrderAuthorized hook with correct context after successful auth', () => {
             const result = authorizeCCV(order, null, 'job');
-            const handleResult = handleAuthorizationResult(result, order);
-            expect(handleResult).to.be.an.instanceof(Status);
-            expect(handleResult.status).to.equal(0);
+            handleAuthorizationResult(result, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
             expect(stubs.dw.HookMgrMock.callHook).to.have.been.calledOnceWith(
                 'ccv.order.update.afterOrderAuthorized',
@@ -322,7 +309,7 @@ describe('authorizeCCV.js', function () {
             );
         });
 
-        it('should call ccv.order.update.afterOrderFailed hook with correct params after failed order', () => {
+        it('should call ccv.order.update.afterOrderFailed hook with correct context after failed order', () => {
             stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
                 amount: 50.00,
                 currency: 'usd',

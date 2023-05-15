@@ -1,4 +1,3 @@
-var Status = require('dw/system/Status');
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
 var OrderMgr = require('dw/order/OrderMgr');
 var Site = require('dw/system/Site');
@@ -21,7 +20,7 @@ exports.authorizeCCV = function (order, orderPaymentInstrument, context) {
 
     if (!ccvTransactionReference) {
         ccvLogger.warn(`No CCV transaction reference found for order ${order.orderNo}`);
-        return { error: 'No CCV transaction reference found' };
+        return { missingReference: true };
     }
 
     try {
@@ -54,68 +53,57 @@ exports.authorizeCCV = function (order, orderPaymentInstrument, context) {
  *
  * @param {Object} authResult authorization result object
  * @param {dw.order.Order} order order
- * @returns {dw.system.Status} Status.OK if auth is successful, otherwise Status.ERROR
  */
 exports.handleAuthorizationResult = function (authResult, order) {
     authContext = authResult.context;
 
     var { status, transactionStatusResponse, currencyMismatch, priceMismatch, isAuthorized, error } = authResult;
 
+    if (authResult.missingReference) {
+        failOrderWithHook({
+            order,
+            noteTitle: 'CCV payment failed',
+            noteMsg: 'No ccvTransactionReference found in order.'
+        });
+        return;
+    }
+
     if (error) {
-        handleError(order);
-        return new Status(Status.ERROR, `< CCV: error: ${error}>`);
+        throw new Error(`Error checking transaction status in order ${order.orderNo}: ${error}`)
     }
 
     if (status === CCV_CONSTANTS.STATUS.FAILED) {
         handleFailed(order);
-        return new Status(Status.ERROR, `< CCV: status: failed; ccvFailureCode: ${transactionStatusResponse.failureCode} >`);
+        return;
     }
 
     if (status === CCV_CONSTANTS.STATUS.MANUAL_INTERVENTION) {
         handleManualIntervention(order, order.custom.ccvTransactionReference);
-        return new Status(Status.ERROR, `< CCV: status: ${status} >`);
+        return;
     }
 
     // paymentAmount or currency mismatch between SFCC and CCV
     if (status === CCV_CONSTANTS.STATUS.SUCCESS && (priceMismatch || currencyMismatch)) {
         handlePriceOrCurrencyMismatch(order, transactionStatusResponse);
-        return new Status(Status.ERROR, '< CCV: price or currency mismatch >');
-    }
-
-    // create a new CCV card payment instrument for the customer if there is a vaultAccessToken in the response
-    if (transactionStatusResponse.details && transactionStatusResponse.details.vaultAccessToken
-        && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
-        createCardPaymentInstrument(order, transactionStatusResponse);
+        return;
     }
 
     if (isAuthorized) {
+        // create a new CCV card payment instrument for the customer if there is a vaultAccessToken in the response
+        if (transactionStatusResponse.details && transactionStatusResponse.details.vaultAccessToken
+            && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
+            createCardPaymentInstrument(order, transactionStatusResponse);
+        }
         handleSuccess(order);
         HookMgr.callHook('ccv.order.update.afterOrderAuthorized', 'afterOrderAuthorized', {
             order,
             context: authContext
         });
 
-        return new Status(Status.OK);
+        return;
     }
-
-    return new Status(Status.ERROR, `< CCV: no action taken, status=${status}>`);
 };
 
-/**
- * Handler for orders with CCV payment status = failed
- * @param {dw.order.Order} order order being processed
- */
-function handleError(order) {
-    ccvLogger.info(`No CCV transaction id in order ${order.orderNo}. Failing order.`);
-
-    failOrderWithHook({
-        order,
-        noteTitle: 'CCV payment failed',
-        noteMsg: 'No ccvTransactionReference found in order.'
-    });
-    // OrderMgr.failOrder(order);
-    // order.addNote('CCV payment failed', 'No ccvTransactionReference found in order.');
-}
 /**
  * Handler for orders with CCV payment status = failed
  * @param {dw.order.Order} order order being processed
@@ -172,9 +160,6 @@ function handlePriceOrCurrencyMismatch(order, transactionStatusResponse) {
         noteMsg: msg
     });
 
-    // OrderMgr.failOrder(order);
-    // order.addNote('Order failed via CCV-handleAuthorizationResult', msg);
-
     ccvLogger.fatal(`${msg} Failing order ${order.orderNo}`);
 }
 
@@ -191,6 +176,7 @@ function handleSuccess(order) {
         paymentInstrument.paymentTransaction.setAmount(orderTotal);
     }
 
+    OrderMgr.placeOrder(order);
     ccvLogger.info(`Successful transaction: orderNo: ${order.orderNo}`);
 }
 /**
@@ -204,7 +190,7 @@ function handleSuccess(order) {
  *
  */
 function failOrderWithHook({ order, noteTitle, noteMsg }) {
-    OrderMgr.failOrder(order);
+    OrderMgr.failOrder(order, true);
     order.addNote(noteTitle, noteMsg);
 
     HookMgr.callHook('ccv.order.update.afterOrderFailed', 'afterOrderFailed', { order, context: authContext });

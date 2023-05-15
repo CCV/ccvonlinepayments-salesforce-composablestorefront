@@ -5,6 +5,7 @@ var Status = require('dw/system/Status');
 var Site = require('dw/system/Site');
 var PaymentMgr = require('dw/order/PaymentMgr');
 var PaymentTransaction = require('dw/order/PaymentTransaction');
+var URLUtils = require('dw/web/URLUtils');
 
 var languageMap = {
     nl: 'nld',
@@ -45,6 +46,7 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         currency: order.currencyCode.toLowerCase(),
         method: selectedMethodCCVId,
         returnUrl: `${returnUrl}?ref=${order.orderNo}&token=${order.orderToken}`,
+        webhookUrl: URLUtils.abs('CCV-WebhookStatus', 'ref', order.orderNo, 'token', order.orderToken).toString(),
         merchantOrderReference: order.orderNo,
         description: orderDescription,
         language: languageMap[requestLanguage],

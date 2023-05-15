@@ -5,7 +5,7 @@ const { expect } = require('chai');
 const stubs = require('./helpers/mocks/stubs');
 const Status = require('./helpers/mocks/dw/system/Status');
 
-const orderHooks = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hooks/orderHooks', {
+const orderHooksCCV = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hooks/orderHooksCCV', {
     'dw/order/OrderMgr': stubs.dw.OrderMgrMock,
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/Logger': stubs.dw.loggerMock,
@@ -13,11 +13,12 @@ const orderHooks = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hooks/
     '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpers,
     'dw/system/Status': stubs.dw.Status,
     'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
-    'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction
+    'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction,
+    'dw/web/URLUtils': stubs.dw.URLUtilsMock
 
 });
 
-describe('orderHooks', function () {
+describe('orderHooksCCV', function () {
     let order;
     let createPaymentResponse;
     let paymentInstrument;
@@ -96,44 +97,45 @@ describe('orderHooks', function () {
         stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
         stubs.dw.PaymentMgrMock.getPaymentMethod.returns({ getPaymentProcessor: () => CCV_PAYMENT_PROCESSOR });
         stubs.CCVPaymentHelpersMock.createCCVPayment.returns(createPaymentResponse);
+        stubs.dw.URLUtilsMock.abs.returns({ toString: () => 'webhook-url' });
     });
 
     context('afterPOST', function () {
         it('should save payUrl to the order', () => {
-            orderHooks.afterPOST(order);
+            orderHooksCCV.afterPOST(order);
             expect(order.custom.ccvPayUrl).to.equal(createPaymentResponse.payUrl);
         });
 
         it('should return Status.ERROR if createCCVPayment call fails', () => {
             stubs.CCVPaymentHelpersMock.createCCVPayment.throws();
 
-            const result = orderHooks.afterPOST(order);
+            const result = orderHooksCCV.afterPOST(order);
             expect(result).to.be.an.instanceof(Status);
             expect(result.status).to.equal(1);
         });
 
         it('returnUrl should contain orderNo and orderToken', () => {
-            orderHooks.afterPOST(order);
+            orderHooksCCV.afterPOST(order);
             const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
             expect(paymentRequest.requestBody.returnUrl).to.have.string(order.orderNo)
             .and.to.have.string(order.orderToken);
         });
 
         it('should map to the correct language code in request', () => {
-            orderHooks.afterPOST(order);
+            orderHooksCCV.afterPOST(order);
             const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
             expect(paymentRequest.requestBody.language).to.eql('eng');
         });
 
 
         it('should update the orderPaymentInstrument\'s paymenTransaction.transactionID', () => {
-            orderHooks.afterPOST(order);
+            orderHooksCCV.afterPOST(order);
 
             expect(paymentInstrument.paymentTransaction.setTransactionID).to.have.been.calledOnceWith(createPaymentResponse.reference);
         });
 
         it('should update the orderPaymentInstrument\'s paymenTransaction.paymentProcessor', () => {
-            orderHooks.afterPOST(order);
+            orderHooksCCV.afterPOST(order);
 
             expect(paymentInstrument.paymentTransaction.setPaymentProcessor).to.have.been.calledOnceWith(CCV_PAYMENT_PROCESSOR);
         });
@@ -141,7 +143,7 @@ describe('orderHooks', function () {
         it('should update the orderPaymentInstrument\'s paymenTransaction.type = AUTH for "authorise" payment type', () => {
             stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(true);
 
-            orderHooks.afterPOST(order);
+            orderHooksCCV.afterPOST(order);
 
             expect(paymentInstrument.paymentTransaction.setType).to.have.been.calledOnceWith('AUTH');
         });
@@ -149,7 +151,7 @@ describe('orderHooks', function () {
         it('should update the orderPaymentInstrument\'s paymenTransaction.type = CAPTURE for "sale" payment type', () => {
             stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
 
-            orderHooks.afterPOST(order);
+            orderHooksCCV.afterPOST(order);
 
             expect(paymentInstrument.paymentTransaction.setType).to.have.been.calledOnceWith('CAPTURE');
         });
@@ -159,7 +161,7 @@ describe('orderHooks', function () {
         context('Card', function () {
             it('if credit card token is provided, request should include it as vaultAccessToken and no other card data', () => {
                 order.paymentInstruments[0].custom.ccvVaultAccessToken = 'testToken';
-                orderHooks.afterPOST(order);
+                orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.details.vaultAccessToken).to.be.string;
                 expect(paymentRequest.requestBody.details.pan).to.be.undefined;
@@ -171,14 +173,14 @@ describe('orderHooks', function () {
             it('the request\'s transactionType should be set to "authorise" if authorise cards site pref is enabled', () => {
                 stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(true);
 
-                orderHooks.afterPOST(order);
+                orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.transactionType).to.eql(stubs.CCVPaymentHelpersMock.CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE);
             });
             it('the request\'s transactionType should be set not be set if authorise cards site pref is disabled', () => {
                 stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
 
-                orderHooks.afterPOST(order);
+                orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.transactionType).to.be.undefined;
             });
@@ -187,7 +189,7 @@ describe('orderHooks', function () {
         context('iDEAL', function () {
             it('request should include issuer id', () => {
                 order.paymentInstruments[0].custom = { ccv_method_id: 'ideal', ccv_issuer_id: 'issuer_id_test' };
-                orderHooks.afterPOST(order);
+                orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.issuer).to.eql('issuer_id_test');
             });
@@ -196,7 +198,7 @@ describe('orderHooks', function () {
                 stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
                 order.paymentInstruments[0].custom = { ccv_method_id: 'ideal', ccv_issuer_id: 'issuer_id_test' };
 
-                orderHooks.afterPOST(order);
+                orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.transactionType).to.be.undefined;
             });
@@ -205,7 +207,7 @@ describe('orderHooks', function () {
         context('Giropay', function () {
             it('request should include bic', () => {
                 order.paymentInstruments[0].custom = { ccv_method_id: 'giropay', ccv_issuer_id: 'issuer_id_test' };
-                orderHooks.afterPOST(order);
+                orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.details.bic).to.eql('issuer_id_test');
             });
@@ -215,7 +217,7 @@ describe('orderHooks', function () {
             it('request should include brand=bcmc', () => {
                 order.paymentInstruments[0].custom = { ccv_method_id: 'card' };
                 order.paymentInstruments[0].paymentMethod = 'CCV_BANCONTACT';
-                orderHooks.afterPOST(order);
+                orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.brand).to.eql('bcmc');
             });
