@@ -33,7 +33,7 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
 
     try {
         Transaction.wrap(function () {
-            var authResult = authorizeCCV(order, null, 'webhook');
+            var authResult = authorizeCCV(order, 'webhook');
             handleAuthorizationResult(authResult, order);
         });
     } catch (error) {

@@ -255,6 +255,15 @@ const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scr
     'dw/system/Transaction': dw.TransactionMock
 });
 
+const authorizationHandlers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/authorizationHandlers', {
+    'dw/system/HookMgr': dw.HookMgrMock,
+    'dw/order/Order': dw.OrderMock,
+    'dw/order/OrderMgr': dw.OrderMgrMock,
+    'dw/system/Site': dw.SiteMock,
+    'dw/system/Logger': dw.loggerMock,
+    '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock
+});
+
 module.exports = {
     sandbox,
     dw,
@@ -264,6 +273,7 @@ module.exports = {
     CCVOrderHelpersMock,
     CCV_CONSTANTS,
     authorizeCCVMock,
+    authorizationHandlers,
     collectionsMock,
     reset: initMocks,
     init: () => {

@@ -12,12 +12,14 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
     'dw/system/Logger': stubs.dw.loggerMock,
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/HookMgr': stubs.dw.HookMgrMock,
+    '*/cartridge/scripts/authorizationHandlers.js': stubs.authorizationHandlers,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock
 });
 
 describe('authorizeCCV.js', function () {
     let order;
     let paymentInstrument;
+    let transactionStatusResponse;
 
     before(() => stubs.init());
     afterEach(() => stubs.reset());
@@ -33,14 +35,14 @@ describe('authorizeCCV.js', function () {
         order.paymentInstruments = [paymentInstrument];
         paymentInstrument.paymentTransaction = new stubs.dw.PaymentTransactionMock();
         paymentInstrument.paymentTransaction.amount = new stubs.dw.MoneyMock();
-
-        stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+        transactionStatusResponse = {
             amount: 50.00,
             currency: 'eur',
             method: 'card',
             type: 'sale',
             status: 'success'
-        });
+        };
+        stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns(transactionStatusResponse);
 
         stubs.dw.SiteMock.current.getCustomPreferenceValue
         .withArgs('ccvAutoRefundEnabled').returns(false);
@@ -92,7 +94,7 @@ describe('authorizeCCV.js', function () {
             expect(result.isAuthorized).to.be.true;
         });
         it('should set context if it\'s passed as param', () => {
-            const result = authorizeCCV(order, null, 'job');
+            const result = authorizeCCV(order, 'job');
             expect(result.context).to.eql('job');
             expect(result.isAuthorized).to.be.true;
         });
@@ -299,13 +301,13 @@ describe('authorizeCCV.js', function () {
         });
 
         it('should call ccv.order.update.afterOrderAuthorized hook with correct context after successful auth', () => {
-            const result = authorizeCCV(order, null, 'job');
-            handleAuthorizationResult(result, order);
+            const authResult = authorizeCCV(order, 'job');
+            handleAuthorizationResult(authResult, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
             expect(stubs.dw.HookMgrMock.callHook).to.have.been.calledOnceWith(
                 'ccv.order.update.afterOrderAuthorized',
                 'afterOrderAuthorized',
-                { order, context: 'job' }
+                { order, authResult }
             );
         });
 
@@ -317,12 +319,12 @@ describe('authorizeCCV.js', function () {
                 type: 'sale',
                 status: 'failed'
             });
-            const result = authorizeCCV(order, null, 'job');
-            handleAuthorizationResult(result, order);
+            const authResult = authorizeCCV(order, 'job');
+            handleAuthorizationResult(authResult, order);
             expect(stubs.dw.HookMgrMock.callHook).to.have.been.calledOnceWith(
                 'ccv.order.update.afterOrderFailed',
                 'afterOrderFailed',
-                { order, context: 'job' }
+                { order, authResult }
             );
         });
     });

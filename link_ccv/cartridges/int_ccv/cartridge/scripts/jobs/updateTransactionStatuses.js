@@ -22,7 +22,7 @@ exports.execute = function (args) {
 function checkOrderStatus(order) {
     Transaction.wrap(function () {
         try {
-            var authResult = authorizeCCV(order, null, 'job');
+            var authResult = authorizeCCV(order, 'job');
             handleAuthorizationResult(authResult, order);
         } catch (error) {
             ccvLogger.error(`Error updating status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
