@@ -42,7 +42,6 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     // DEFAULT
     var requestBody = {
         amount: order.totalGrossPrice.value,
-        // amount: 8.01,
         currency: order.currencyCode.toLowerCase(),
         method: selectedMethodCCVId,
         returnUrl: `${returnUrl}?ref=${order.orderNo}&token=${order.orderToken}`,
@@ -68,15 +67,6 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
             requestBody.details = {
                 vaultAccessToken: paymentInstrument.custom.ccvVaultAccessToken
             };
-        } else if (paymentInstrument.creditCardNumber) {
-            // new inline credit card payment
-            // var [firstName, lastName] = paymentInstrument.creditCardHolder.split(' ');
-            // requestBody.details = {
-            //     pan: paymentInstrument.creditCardNumber,
-            //     expiryDate: `${paymentInstrument.creditCardExpirationMonth}${paymentInstrument.creditCardExpirationYear}`.padStart(4, '0'),
-            //     cardholderFirstName: firstName,
-            //     cardholderLastName: lastName || firstName
-            // };
         }
 
         if (paymentInstrument.custom.ccv_save_card

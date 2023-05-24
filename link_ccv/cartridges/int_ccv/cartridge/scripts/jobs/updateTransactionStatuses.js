@@ -10,7 +10,8 @@ exports.execute = function (args) {
     var cutOffDate = new Date(Date.now() - (args.cutoffPeriodInDays * oneDayInMs));
 
     // only process orders older than 1 day
-    OrderMgr.processOrders(checkOrderStatus, `status=${Order.ORDER_STATUS_CREATED} AND creationDate < {0}`, cutOffDate);
+    OrderMgr.processOrders(checkOrderStatus,
+        `status=${Order.ORDER_STATUS_CREATED} AND creationDate < {0} AND custom.ccvManualIntervention != true`, cutOffDate);
 
     return new Status(Status.OK);
 };

@@ -73,9 +73,12 @@ const CCVPayment = () => {
         }
     }, [paymentError])
 
-    // clearing any payment errors from location.state
+    // clearing paymentErrorMsg from location.state
     useEffect(() => {
-        window.history.replaceState({}, '')
+        const newState = {...window.history.state}
+        delete newState.state?.paymentErrorMsg
+
+        window.history.replaceState(newState, '')
     }, [])
 
     const [isRemovingPayment, setIsRemovingPayment] = useState(false)

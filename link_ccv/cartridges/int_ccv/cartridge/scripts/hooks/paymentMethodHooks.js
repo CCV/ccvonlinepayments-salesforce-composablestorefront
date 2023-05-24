@@ -12,7 +12,7 @@ exports.modifyGETResponse_v2 = function (basket, paymentMethodResultResponse) {
     var collections = require('*/cartridge/scripts/util/collections');
 
     var cache = CacheMgr.getCache('ccvPaymentMethodsCache');
-    var paymentMethodsMap = cache.get(`${Site.current.ID}_methods`, fetchCCVPaymentMethods);
+    var paymentMethodsMap = cache.get(`${Site.current.ID}_ccv_payment_methods`, fetchCCVPaymentMethods);
 
     collections.map(paymentMethodResultResponse.applicablePaymentMethods, (method) => {
         var ccvMethodId = method.c_ccvMethodId;
