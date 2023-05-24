@@ -83,4 +83,13 @@
         </custom-attributes>
     </payment-method>
 
+    <payment-method method-id="CCV_KLARNA">
+        <name xml:lang="x-default">Landing page</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">klarna</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
 </payment-settings>

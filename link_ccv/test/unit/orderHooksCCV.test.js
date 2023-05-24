@@ -10,7 +10,7 @@ const orderHooksCCV = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hoo
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/Logger': stubs.dw.loggerMock,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
-    '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpers,
+    '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpersMock,
     'dw/system/Status': stubs.dw.Status,
     'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
     'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction,
@@ -220,6 +220,29 @@ describe('orderHooksCCV', function () {
                 orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.brand).to.eql('bcmc');
+            });
+        });
+
+        context('Klarna', function () {
+            it('should add orderLines to the request body', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'klarna' };
+                order.paymentInstruments[0].paymentMethod = 'CCV_KLARNA';
+                var testOrderLines = [{
+                    type: 'PHYSICAL',
+                    name: 'Green and Gold Necklace',
+                    code: '013742003307M',
+                    quantity: 1,
+                    unit: 'pc',
+                    unitPrice: '25.92',
+                    totalPrice: 29.29,
+                    vatRate: 13,
+                    vat: 3.37
+                }];
+                stubs.CCVOrderHelpersMock.getKlarnaOrderLines.returns(testOrderLines);
+                orderHooksCCV.afterPOST(order);
+                const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
+                expect(paymentRequest.requestBody.method).to.eql('klarna');
+                expect(paymentRequest.requestBody.orderLines).to.eql(testOrderLines);
             });
         });
     });

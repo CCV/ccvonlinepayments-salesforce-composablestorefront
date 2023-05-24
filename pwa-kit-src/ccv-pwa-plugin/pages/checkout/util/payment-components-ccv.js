@@ -13,7 +13,8 @@ import {
     SofortIcon,
     EPSIcon,
     PayconiqIcon,
-    MaestroIcon
+    MaestroIcon,
+    KlarnaIcon
 } from '../../../../app/components/icons'
 
 import {Box, Stack, Text} from '@chakra-ui/react'
@@ -125,7 +126,8 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
         ),
         CCV_SOFORT: <SofortIcon width="auto" height={iconHeight} />,
         CCV_EPS: <EPSIcon width="auto" height={iconHeight} />,
-        CCV_PAYCONIQ: <PayconiqIcon width="auto" height={iconHeight} />
+        CCV_PAYCONIQ: <PayconiqIcon width="auto" height={iconHeight} />,
+        CCV_KLARNA: <KlarnaIcon width="auto" height={iconHeight} />
     }
     return iconMap[paymentMethodId] || null
 }
