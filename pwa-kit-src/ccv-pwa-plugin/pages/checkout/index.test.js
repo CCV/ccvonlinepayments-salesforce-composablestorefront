@@ -10,32 +10,32 @@ import {Route, Switch} from 'react-router-dom'
 import {screen, waitFor, waitForElementToBeRemoved, within} from '@testing-library/react'
 import user from '@testing-library/user-event'
 import {rest} from 'msw'
-import {renderWithProviders, createPathWithDefaults} from '../../utils/test-utils'
-import useShopper from '../../commerce-api/hooks/useShopper'
-import Auth from '../../commerce-api/auth'
+import {renderWithProviders, createPathWithDefaults} from '../../../app/utils/test-utils'
+import useShopper from '../../../app/commerce-api/hooks/useShopper'
+import Auth from '../../../app/commerce-api/auth'
 import {
     ocapiBasketWithItem,
     ocapiOrderResponse,
     mockShippingMethods,
-    mockPaymentMethods,
     mockedGuestCustomer,
     mockedRegisteredCustomer,
     mockedCustomerProductLists,
     productsResponse
-} from '../../commerce-api/mock-data'
+} from '../../../app/commerce-api/mock-data'
+import {mockPaymentMethodsCCV} from '../../mock-data/mock-data-ccv'
 import mockConfig from '../../../config/mocks/default'
 
 jest.setTimeout(60000)
 
-jest.mock('../../commerce-api/einstein')
+jest.mock('../../../app/commerce-api/einstein')
 
 // Make sure fetch is defined in test env
 Object.defineProperty(window, 'fetch', {
     value: require('cross-fetch')
 })
 
-jest.mock('../../commerce-api/utils', () => {
-    const originalModule = jest.requireActual('../../commerce-api/utils')
+jest.mock('../../../app/commerce-api/utils', () => {
+    const originalModule = jest.requireActual('../../../app/commerce-api/utils')
     return {
         ...originalModule,
         isTokenValid: jest.fn().mockReturnValue(true),
@@ -49,14 +49,14 @@ jest.mock('../../commerce-api/utils', () => {
     }
 })
 
-jest.mock('../../commerce-api/pkce', () => {
+jest.mock('../../../app/commerce-api/pkce', () => {
     return {
         createCodeVerifier: jest.fn().mockReturnValue('codeverifier'),
         generateCodeChallenge: jest.fn().mockReturnValue('codechallenge')
     }
 })
 
-const {keysToCamel} = jest.requireActual('../../commerce-api/utils')
+const {keysToCamel} = jest.requireActual('../../../app/commerce-api/utils')
 
 // This is our wrapped component for testing. It handles initialization of the customer
 // and basket the same way it would be when rendered in the real app. We also set up
@@ -102,7 +102,7 @@ beforeEach(() => {
 
         // mock available payment methods
         rest.get('*/baskets/:basketId/payment_methods', (req, res, ctx) => {
-            return res(ctx.json(mockPaymentMethods))
+            return res(ctx.json(mockPaymentMethodsCCV))
         }),
 
         // mock product details
@@ -218,7 +218,7 @@ test('Can proceed through checkout steps as guest', async () => {
                         _type: 'payment_card'
                     },
                     payment_instrument_id: '875cae2724408c9a3eb45715ba',
-                    payment_method_id: 'CREDIT_CARD',
+                    payment_method_id: 'CCV_CREDIT_CARD_INLINE',
                     _type: 'order_payment_instrument'
                 }
             ]
@@ -229,7 +229,8 @@ test('Can proceed through checkout steps as guest', async () => {
         rest.post('*/orders', (req, res, ctx) => {
             currentBasket = {
                 ...ocapiOrderResponse,
-                customer_info: {...ocapiOrderResponse.customer_info, email: 'test@test.com'}
+                customer_info: {...ocapiOrderResponse.customer_info, email: 'test@test.com'},
+                c_ccvPayUrl: 'ccvPayUrl.com/testRedirect'
             }
             return res(ctx.json(currentBasket))
         })
@@ -298,7 +299,10 @@ test('Can proceed through checkout steps as guest', async () => {
     // Wait for next step to render
     await waitFor(() => {
         expect(screen.getByTestId('sf-toggle-card-step-3-content')).not.toBeEmptyDOMElement()
+        expect(screen.getByText('Credit card inline')).not.toBeEmptyDOMElement()
     })
+
+    user.click(screen.getByText('Credit card inline'))
 
     // Applied shipping method should be displayed in previous step summary
     expect(screen.getByText('Default Shipping Method')).toBeInTheDocument()
@@ -333,11 +337,19 @@ test('Can proceed through checkout steps as guest', async () => {
     expect(step3Content.getByText('123 Main St')).toBeInTheDocument()
     expect(step3Content.getByText('Tampa, FL 33610')).toBeInTheDocument()
     expect(step3Content.getByText('US')).toBeInTheDocument()
+
+    // redefine window.location as a workaround for jsdom not allowing editing of window.location.href
+    const locationTemp = global.window.location
+    delete global.window.location
+    global.window.location = {...locationTemp}
+
     // Place the order
     user.click(placeOrderBtn)
 
-    // Should now be on our mocked confirmation route/page
-    expect(await screen.findByText(/success/i)).toBeInTheDocument()
+    // should redirect to CCV pay url
+    await waitFor(() => {
+        expect(window.location.href).toEqual('ccvPayUrl.com/testRedirect')
+    })
 })
 
 test('Can proceed through checkout as registered customer', async () => {
@@ -424,7 +436,7 @@ test('Can proceed through checkout as registered customer', async () => {
                         validFromYear: 2020
                     },
                     payment_instrument_id: 'testcard1',
-                    payment_method_id: 'CREDIT_CARD',
+                    payment_method_id: 'CCV_CREDIT_CARD_INLINE',
                     _type: 'order_payment_instrument'
                 }
             ]
@@ -440,7 +452,8 @@ test('Can proceed through checkout as registered customer', async () => {
         rest.post('*/orders', (req, res, ctx) => {
             currentBasket = {
                 ...ocapiOrderResponse,
-                customer_info: {...ocapiOrderResponse.customer_info, email: 'customer@test.com'}
+                customer_info: {...ocapiOrderResponse.customer_info, email: 'customer@test.com'},
+                c_ccvPayUrl: 'ccvPayUrl.com/testRedirect'
             }
             return res(ctx.json(currentBasket))
         })
@@ -501,10 +514,14 @@ test('Can proceed through checkout as registered customer', async () => {
     // Wait for next step to render
     await waitFor(() => {
         expect(screen.getByTestId('sf-toggle-card-step-3-content')).not.toBeEmptyDOMElement()
+        expect(screen.getByText('Credit card inline')).toBeInTheDocument()
     })
 
     // Applied shipping method should be displayed in previous step summary
     expect(screen.getByText('Default Shipping Method')).toBeInTheDocument()
+
+    // select inline credit card option
+    user.click(screen.getByText('Credit card inline'))
 
     // Select a saved card
     user.click(screen.getByDisplayValue('testcard1'))
@@ -532,7 +549,7 @@ test('Can proceed through checkout as registered customer', async () => {
     user.click(placeOrderBtn)
 
     await waitFor(() => {
-        expect(window.location.pathname).toEqual('/uk/en-GB/checkout/confirmation')
+        expect(window.location.href).toEqual('ccvPayUrl.com/testRedirect')
     })
 })
 
@@ -742,5 +759,199 @@ test('Can add address during checkout as a registered customer', async () => {
 
     await waitFor(async () => {
         expect(await screen.findByText(/test2 mctester/i)).toBeInTheDocument()
+    })
+})
+
+/* ================== CCV ====================== */
+test.only('Can select iDEAL/giropay options during checkout as a registered customer', async () => {
+    // Keep a *deep* of the initial mocked basket. Our mocked fetch responses will continuously
+    // update this object, which essentially mimics a saved basket on the backend.
+    let currentBasket = JSON.parse(JSON.stringify(ocapiBasketWithItem))
+
+    jest.spyOn(Auth.prototype, 'login').mockReturnValue(mockedRegisteredCustomer)
+
+    // Set up additional requests for intercepting/mocking for just this test.
+    global.server.use(
+        // mock adding guest email to basket
+        rest.put('*/baskets/:basketId/customer', (req, res, ctx) => {
+            currentBasket.customer_info.email = 'customer@test.com'
+            return res(ctx.json(currentBasket))
+        }),
+
+        // mock fetch product lists
+        rest.get('*/customers/:customerId/product-lists', (req, res, ctx) => {
+            return res(ctx.json(mockedCustomerProductLists))
+        }),
+
+        // mock add shipping and billing address to basket
+        rest.put('*/shipping_address', (req, res, ctx) => {
+            const shippingBillingAddress = {
+                address1: '123 Main St',
+                city: 'Tampa',
+                country_code: 'US',
+                first_name: 'Test',
+                full_name: 'Test McTester',
+                id: '047b18d4aaaf4138f693a4b931',
+                last_name: 'McTester',
+                phone: '(727) 555-1234',
+                postal_code: '33712',
+                state_code: 'FL',
+                _type: 'order_address'
+            }
+            currentBasket.shipments[0].shipping_address = shippingBillingAddress
+            currentBasket.billing_address = shippingBillingAddress
+            return res(ctx.json(currentBasket))
+        }),
+
+        // mock add billing address to basket
+        rest.put('*/billing_address', (req, res, ctx) => {
+            const shippingBillingAddress = {
+                address1: '123 Main St',
+                city: 'Tampa',
+                country_code: 'US',
+                first_name: 'Test',
+                full_name: 'Test McTester',
+                id: '047b18d4aaaf4138f693a4b931',
+                last_name: 'McTester',
+                phone: '(727) 555-1234',
+                postal_code: '33712',
+                state_code: 'FL',
+                _type: 'order_address'
+            }
+            currentBasket.shipments[0].shipping_address = shippingBillingAddress
+            currentBasket.billing_address = shippingBillingAddress
+            return res(ctx.json(currentBasket))
+        }),
+
+        // mock add shipping method
+        rest.put('*/shipments/me/shipping_method', (req, res, ctx) => {
+            currentBasket.shipments[0].shipping_method =
+                mockShippingMethods.applicable_shipping_methods[0]
+            return res(ctx.json(currentBasket))
+        }),
+
+        // mock add payment instrument
+        rest.post('*/baskets/:basketId/payment_instruments', (req, res, ctx) => {
+            currentBasket.payment_instruments = [
+                {
+                    _type: 'order_payment_instrument',
+                    amount: 0,
+                    payment_instrument_id: '80dd3d1182cfedbc2cc14f4a1e',
+                    payment_method_id: 'CCV_IDEAL',
+                    c_ccv_issuer_id: 'INGBNL2A',
+                    c_ccv_method_id: 'ideal'
+                }
+            ]
+            return res(ctx.json(currentBasket))
+        }),
+
+        // mock update address
+        rest.patch('*/addresses/savedaddress1', (req, res, ctx) => {
+            return res(ctx.json(mockedRegisteredCustomer.addresses[0]))
+        }),
+
+        // mock place order
+        rest.post('*/orders', (req, res, ctx) => {
+            currentBasket = {
+                ...ocapiOrderResponse,
+                customer_info: {...ocapiOrderResponse.customer_info, email: 'customer@test.com'},
+                c_ccvPayUrl: 'ccvPayUrl.com/testRedirect'
+            }
+            return res(ctx.json(currentBasket))
+        })
+    )
+
+    // Set the initial browser router path and render our component tree.
+    window.history.pushState({}, 'Checkout', createPathWithDefaults('/checkout'))
+    renderWithProviders(<WrappedCheckout history={history} />, {
+        wrapperProps: {siteAlias: 'uk', locale: {id: 'en-GB'}, appConfig: mockConfig.app}
+    })
+
+    // Switch to login
+    const haveAccountButton = await screen.findByText(/already have an account/i)
+    user.click(haveAccountButton)
+
+    // Wait for checkout to load and display first step
+    const loginBtn = await screen.findByText(/log in/i)
+
+    // Provide customer email and submit
+    const emailInput = screen.getByLabelText('Email')
+    const pwInput = screen.getByLabelText('Password')
+    user.type(emailInput, 'customer@test.com')
+    user.type(pwInput, 'Password!1')
+    user.click(loginBtn)
+
+    // Wait for next step to render
+    await waitFor(() =>
+        expect(screen.getByTestId('sf-toggle-card-step-1-content')).not.toBeEmptyDOMElement()
+    )
+
+    // Select a saved address and continue
+    user.click(screen.getByDisplayValue('savedaddress1'))
+    user.click(screen.getByText(/continue to shipping method/i))
+
+    // Wait for next step to render
+    await waitFor(() => {
+        expect(screen.getByTestId('sf-toggle-card-step-2-content')).not.toBeEmptyDOMElement()
+    })
+
+    // Default shipping option should be selected
+    const shippingOptionsForm = screen.getByTestId('sf-checkout-shipping-options-form')
+    await waitFor(() =>
+        expect(shippingOptionsForm).toHaveFormValues({
+            'shipping-options-radiogroup': 'DefaultShippingMethod'
+        })
+    )
+
+    // Submit selected shipping method
+    user.click(screen.getByText(/continue to payment/i))
+
+    // Wait for next step to render
+    await waitFor(() => {
+        expect(screen.getByTestId('sf-toggle-card-step-3-content')).not.toBeEmptyDOMElement()
+        expect(screen.getByText('iDEAL')).toBeInTheDocument()
+        expect(screen.getByText('Giropay')).toBeInTheDocument()
+    })
+
+    // Applied shipping method should be displayed in previous step summary
+    expect(screen.getByText('Default Shipping Method')).toBeInTheDocument()
+
+    // select Giropay payment method
+    user.click(screen.getByText('Giropay'))
+
+    // Giropay options should be rendered
+    expect(screen.getByTestId('options-giropay')).toBeInTheDocument()
+
+    // select iDEAL payment method
+    user.click(screen.getByText('iDEAL'))
+
+    // iDEAL options should be rendered
+    expect(screen.queryByTestId('options-giropay')).not.toBeInTheDocument()
+    expect(screen.getByTestId('options-ideal')).toBeInTheDocument()
+
+    user.selectOptions(screen.getByTestId('options-ideal'), 'Issuer Simulation V3 - ING')
+    // expect((getByText('Issuer Simulation V3 - ING')).selected).toBeTruthy();
+
+    // Move to final review step
+    user.click(screen.getByText(/review order/i))
+
+    const placeOrderBtn = await screen.findByTestId('sf-checkout-place-order-btn')
+
+    // Verify applied payment and billing address
+    const step3Content = within(screen.getByTestId('sf-toggle-card-step-3-content'))
+
+    expect(step3Content.getByText('Issuer Simulation V3 - ING')).toBeInTheDocument()
+    expect(step3Content.getByText('123 Main St')).toBeInTheDocument()
+
+    // redefine window.location as a workaround for jsdom not allowing editing of window.location.href
+    const locationTemp = global.window.location
+    delete global.window.location
+    global.window.location = {...locationTemp}
+
+    // Place the order
+    user.click(placeOrderBtn)
+
+    await waitFor(() => {
+        expect(window.location.href).toEqual('ccvPayUrl.com/testRedirect')
     })
 })
