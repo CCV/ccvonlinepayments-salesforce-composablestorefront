@@ -24,7 +24,6 @@ var languageMap = {
  */
 exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
-    var { getSCAFields } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
     var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
 
     // ============= CREATE CCV PAYMENT REQUEST =============
@@ -82,10 +81,19 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
             // if we don't specify a transactionType in the request, 'sale' wil be used by default
             requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
         }
+    }
 
-        // adding data required for 3DS frictionless flow
+    if (selectedMethodCCVId === 'card' || paymentInstrument.paymentMethod === 'CCV_KLARNA') {
+        var { getSCAFields } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+    // adding data required for 3DS frictionless flow and for Klarna
         var scaFields = getSCAFields(order);
         Object.assign(requestBody, scaFields);
+    }
+
+    // KLARNA
+    if (paymentInstrument.paymentMethod === 'CCV_KLARNA') {
+        var { getKlarnaOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+        requestBody.orderLines = getKlarnaOrderLines(order);
     }
 
     // BANCONTACT

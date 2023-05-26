@@ -8,6 +8,10 @@ const CustomObject = require('./dw/object/CustomObject');
 const OrderPaymentInstrument = require('./dw/order/OrderPaymentInstrument');
 const PaymentMethod = require('./dw/order/PaymentMethod');
 const PaymentProcessor = require('./dw/order/PaymentProcessor');
+const ProductLineItem = require('./dw/order/ProductLineItem');
+const ShippingLineItem = require('./dw/order/ShippingLineItem');
+const ProductShippingLineItem = require('./dw/order/ProductShippingLineItem');
+const PriceAdjustment = require('./dw/order/PriceAdjustment');
 const PaymentTransaction = require('./dw/order/PaymentTransaction');
 const PaymentMgr = require('./dw/order/PaymentMgr');
 const HookMgr = require('./dw/system/HookMgr');
@@ -159,11 +163,13 @@ const ISMLMock = {
 const CCVOrderHelpersMock = {
     getRefundAmountRemaining: sandbox.stub(),
     updateOrderRefunds: sandbox.stub(),
-    getSCAFields: sandbox.stub()
+    getSCAFields: sandbox.stub(),
+    getKlarnaOrderLines: sandbox.stub()
 };
 
 const collectionsMock = {
-    map: (collection, callback) => collection.map(callback)
+    map: (collection, callback) => collection.map(callback),
+    forEach: (collection, callback) => collection.forEach(callback)
 };
 
 const dw = {
@@ -182,6 +188,10 @@ const dw = {
     PaymentTransactionMock,
     PaymentTransaction: PaymentTransaction,
     PaymentMethodMock,
+    ProductLineItem,
+    ShippingLineItem,
+    ProductShippingLineItem,
+    PriceAdjustment,
     Money,
     MoneyMock,
     basketMock: {
@@ -252,7 +262,13 @@ const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scr
     '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock,
     'dw/system/Site': dw.SiteMock,
     'dw/value/Money': dw.Money,
-    'dw/system/Transaction': dw.TransactionMock
+    'dw/system/Transaction': dw.TransactionMock,
+    '*/cartridge/scripts/util/collections': collectionsMock,
+    'dw/order/ProductLineItem': dw.ProductLineItem,
+    'dw/order/ShippingLineItem': dw.ShippingLineItem,
+    'dw/order/ProductShippingLineItem': dw.ProductShippingLineItem,
+    'dw/order/PriceAdjustment': dw.PriceAdjustment,
+    '*/cartridge/models/KlarnaModelsCCV.js': require('../../../../cartridges/int_ccv/cartridge/models/KlarnaModelsCCV')
 });
 
 const authorizationHandlers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/authorizationHandlers', {

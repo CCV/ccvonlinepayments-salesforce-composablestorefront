@@ -5,8 +5,8 @@ const stubs = require('./helpers/mocks/stubs');
 const {
     getRefundAmountRemaining,
     updateOrderRefunds,
-    getSCAFields
-
+    getSCAFields,
+    getKlarnaOrderLines
 } = stubs.CCVOrderHelpers;
 
 const Money = require('./helpers/mocks/dw/value/Money');
@@ -229,7 +229,130 @@ describe('CCVOrderHelpers', function () {
             const fields = getSCAFields(order);
             expect(fields.billingPhoneCountry).to.eql('00');
             expect(fields.shippingPhoneCountry).to.eql('00');
+        });
+    });
 
+    context('#getKlarnaOrderLines:', function () {
+        it('should return order line objects', () => {
+            order.adjustedMerchandizeTotalGrossPrice = new Money(78.17, 'EUR');
+            const item1 = Object.assign(new stubs.dw.ProductLineItem(), {
+                lineItemText: 'Checked Silk Tie',
+                productID: '682875540326M',
+                quantity: {
+                    value: 2,
+                    unit: 'piece'
+                },
+                basePrice: new Money(21.59, 'EUR'),
+                adjustedGrossPrice: new Money(37.49, 'EUR'),
+                taxRate: 0.13,
+                tax: new Money(5.61, 'EUR')
+            });
+            const item2 = Object.assign(new stubs.dw.ProductLineItem(), {
+                lineItemText: 'Light Hematite Button Clip-on Earrings',
+                productID: '013742335484M',
+                quantity: {
+                    value: 1,
+                    unit: 'piece'
+                },
+                basePrice: new Money(12.96, 'EUR'),
+                adjustedGrossPrice: new Money(14.64, 'EUR'),
+                taxRate: 0.13,
+                tax: new Money(1.68, 'EUR')
+            });
+            const item3 = Object.assign(new stubs.dw.ShippingLineItem(), {
+                // ShippingLineItem
+                lineItemText: 'STANDARD_SHIPPING',
+                adjustedGrossPrice: new Money(6.77, 'EUR'),
+                taxRate: 0.13,
+                tax: new Money(3.74, 'EUR')
+            });
+            const item4 = Object.assign(new stubs.dw.ProductShippingLineItem(), {
+                // ProductShippingLineItem
+                lineItemText: 'Item Shipping Cost (Surcharge)',
+                adjustedGrossPrice: new Money(11.3, 'EUR'),
+                taxRate: 0.13,
+                tax: new Money(1.3, 'EUR')
+            });
+            const item5 = Object.assign(new stubs.dw.PriceAdjustment(), {
+                // PriceAdjustment
+                lineItemText: '5 Off Ties Promotion',
+                adjustedGrossPrice: new Money(-10.00, 'EUR'),
+                grossPrice: new Money(-10.00, 'EUR'),
+                priceValue: -10,
+                quantity: 1
+            });
+            order.allLineItems = [item1, item2, item3, item4, item5];
+
+            const orderLines = getKlarnaOrderLines(order);
+            expect(orderLines.length).to.eql(5);
+            expect(orderLines[0].type).to.eql('PHYSICAL');
+            expect(orderLines[0].name).to.eql(item1.lineItemText);
+            expect(orderLines[0].code).to.eql(item1.productID);
+            expect(orderLines[0].quantity).to.eql(item1.quantity.value);
+            expect(orderLines[0].unit).to.eql(item1.quantity.unit);
+
+            expect(orderLines[1].type).to.eql('PHYSICAL');
+
+            expect(orderLines[2].type).to.eql('SHIPPING_FEE');
+            expect(orderLines[2].name).to.eql(item3.lineItemText);
+            expect(orderLines[2].quantity).to.eql(1);
+            expect(orderLines[2].vatRate).to.eql(item3.taxRate * 100);
+            expect(orderLines[2].vat).to.eql(item3.tax.value);
+            expect(orderLines[2].totalPrice).to.eql(item3.adjustedGrossPrice.value);
+            expect(orderLines[2].unitPrice).to.eql(item3.adjustedGrossPrice.value);
+
+            expect(orderLines[3].type).to.eql('SHIPPING_FEE');
+            expect(orderLines[3].name).to.eql(item4.lineItemText);
+            expect(orderLines[3].quantity).to.eql(1);
+            expect(orderLines[3].vatRate).to.eql(item4.taxRate * 100);
+            expect(orderLines[3].vat).to.eql(item4.tax.value);
+            expect(orderLines[3].totalPrice).to.eql(item4.adjustedGrossPrice.value);
+            expect(orderLines[3].unitPrice).to.eql(item4.adjustedGrossPrice.value);
+
+            expect(orderLines[4].type).to.eql('DISCOUNT');
+            expect(orderLines[4].name).to.eql(item5.lineItemText);
+            expect(orderLines[4].quantity).to.eql(item5.quantity);
+            expect(orderLines[4].totalPrice).to.eql(item5.adjustedGrossPrice.value);
+            expect(orderLines[4].unitPrice).to.eql(item5.adjustedGrossPrice.value);
+        });
+
+        it('should set SURCHARGE type on price adjustments with price > 0', () => {
+            order.adjustedMerchandizeTotalGrossPrice = new Money(78.17, 'EUR');
+
+            const item1 = Object.assign(new stubs.dw.PriceAdjustment(), {
+                // PriceAdjustment
+                lineItemText: '10 Ties Surcharge',
+                adjustedGrossPrice: new Money(10.00, 'EUR'),
+                grossPrice: new Money(10.00, 'EUR'),
+                priceValue: 10,
+                quantity: 1
+            });
+            order.allLineItems = [item1];
+
+            const orderLines = getKlarnaOrderLines(order);
+
+            expect(orderLines[0].type).to.eql('SURCHARGE');
+        });
+
+        it('should set unit as "pc" if quantity.unit is undefined', () => {
+            order.adjustedMerchandizeTotalGrossPrice = new Money(78.17, 'EUR');
+
+            const item1 = Object.assign(new stubs.dw.ProductLineItem(), {
+                lineItemText: 'Checked Silk Tie',
+                productID: '682875540326M',
+                quantity: {
+                    value: 2
+                },
+                basePrice: new Money(21.59, 'EUR'),
+                adjustedGrossPrice: new Money(37.49, 'EUR'),
+                taxRate: 0.13,
+                tax: new Money(5.61, 'EUR')
+            });
+            order.allLineItems = [item1];
+
+            const orderLines = getKlarnaOrderLines(order);
+
+            expect(orderLines[0].unit).to.eql('pc');
         });
     });
 });

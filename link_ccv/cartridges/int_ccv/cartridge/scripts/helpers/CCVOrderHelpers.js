@@ -1,4 +1,8 @@
 var Site = require('dw/system/Site');
+var ProductLineItem = require('dw/order/ProductLineItem');
+var ShippingLineItem = require('dw/order/ShippingLineItem');
+var ProductShippingLineItem = require('dw/order/ProductShippingLineItem');
+var PriceAdjustment = require('dw/order/PriceAdjustment');
 var { CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 
 /**
@@ -61,6 +65,11 @@ function getSCAFields(order) {
         billingPhoneNumber: billingAddress.phone.replace(/\D/g, ''),
         billingPhoneCountry: billingAddress.custom.phone_country || '00',
         billingEmail: order.customerEmail,
+        billingFirstName: billingAddress.firstName,
+        billingLastName: billingAddress.lastName,
+
+        shippingFirstName: shippingAddress.firstName,
+        shippingLastName: shippingAddress.lastName,
         shippingAddress: shippingAddress.address1,
         shippingCity: shippingAddress.city,
         shippingState: shippingAddress.stateCode,
@@ -73,8 +82,49 @@ function getSCAFields(order) {
     };
 }
 
+/**
+ *
+ * @param {dw.order.Order} order sfcc order
+ * @returns {Array} array of order lines used for klarna payments
+ */
+function getKlarnaOrderLines(order) {
+    var collections = require('*/cartridge/scripts/util/collections');
+    var lineItems = [];
+
+
+    collections.forEach(order.allLineItems, (lineItem => {
+        lineItems.push(getKlarnaOrderLineModel(lineItem));
+    }));
+
+    return lineItems;
+}
+
+/**
+ * Returns an order line model used in Klarna payments
+ * @param {dw.order.ProductLineItem
+* |dw.order.ProductShippingLineItem
+* |dw.order.ShippingLineItem
+* |dw.order.PriceAdjustment} lineItem lineitem
+* @returns {Object|null} model
+*/
+function getKlarnaOrderLineModel(lineItem) {
+    var { KlarnaProductLineModel, KlarnaShippingLineModel, KlarnaDiscountLineModel } = require('*/cartridge/models/KlarnaModelsCCV.js');
+
+    if (lineItem instanceof ProductLineItem) {
+        return new KlarnaProductLineModel(lineItem);
+    } else if (lineItem instanceof ShippingLineItem
+        || lineItem instanceof ProductShippingLineItem) {
+        return new KlarnaShippingLineModel(lineItem);
+    } else if (lineItem instanceof PriceAdjustment) {
+        return new KlarnaDiscountLineModel(lineItem);
+    }
+    return null;
+}
+
 module.exports = {
     getRefundAmountRemaining,
     updateOrderRefunds,
-    getSCAFields
+    getSCAFields,
+    getKlarnaOrderLines,
+    getKlarnaOrderLineModel
 };
