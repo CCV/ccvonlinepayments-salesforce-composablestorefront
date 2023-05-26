@@ -1,3 +1,4 @@
+// Rename this to local.js to use as config for npm run start
 const sites = require('./sites.js')
 module.exports = {
     app: {
@@ -6,9 +7,9 @@ module.exports = {
             // Determine where the siteRef is located. Valid values include 'path|query_param|none'. Defaults to: 'none'
             // site: 'none',
             // Determine where the localeRef is located. Valid values include 'path|query_param|none'. Defaults to: 'none'
-            locale: 'path',
+            locale: 'none'
             // This boolean value dictates whether or not default site or locale values are shown in the url. Defaults to: false
-            showDefaults: true
+            // showDefaults: true
         },
         // The default site for your app. This value will be used when a siteRef could not be determined from the url
         defaultSite: 'RefArch',
@@ -22,12 +23,11 @@ module.exports = {
         commerceAPI: {
             proxyPath: `/mobify/proxy/api`,
             parameters: {
-                clientId: 'a6312b78-e141-43ad-bb91-cffc4e9b32a7',
-                organizationId: 'f_ecom_zziu_002',
+                clientId: 'd131f215-49ff-4676-b20d-d1ff67b63cf1',
+                organizationId: 'f_ecom_zziu_007',
                 shortCode: 'kv7kzm78',
                 siteId: 'RefArch'
-            },
-            usePageDesignerCompatibilityMode: false
+            }
         },
         // Einstein api config
         einsteinAPI: {
@@ -67,7 +67,7 @@ module.exports = {
                 path: 'api'
             },
             {
-                host: 'zziu-002.dx.commercecloud.salesforce.com',
+                host: 'zziu-007.dx.commercecloud.salesforce.com',
                 path: 'ocapi'
             }
         ]
