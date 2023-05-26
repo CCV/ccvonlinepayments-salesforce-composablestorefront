@@ -63,7 +63,7 @@ const CCRadioGroup = ({
                                             </Stack>
 
                                             <Box>
-                                                <Button variant="link" size="sm" colorScheme="red">
+                                                <Button variant="link" size="sm" colorScheme="red" onClick={() => customer.removeSavedPaymentInstrument(payment.paymentInstrumentId)}>
                                                     <FormattedMessage
                                                         defaultMessage="Remove"
                                                         id="cc_radio_group.action.remove"

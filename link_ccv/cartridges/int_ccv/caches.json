@@ -1,0 +1,8 @@
+{
+    "caches": [
+      {
+        "id": "ccvPaymentMethodsCache",
+        "expireAfterSeconds": 3600
+      }
+    ]
+  }

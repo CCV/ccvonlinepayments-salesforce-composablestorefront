@@ -679,6 +679,7 @@ export const mockedRegisteredCustomer = {
             lastModified: '2021-04-07T12:08:03.000Z',
             lastName: 'McTester',
             phone: '(727) 555-1234',
+            c_phone_country: '123',
             postalCode: '33712',
             preferred: true,
             stateCode: 'FL'

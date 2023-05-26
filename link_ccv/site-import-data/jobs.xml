@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jobs xmlns="http://www.demandware.com/xml/impex/jobs/2015-07-01">
+    <job job-id="CCVPayment-CheckOrderTransactionStatuses" priority="0">
+        <description>
+            Checks and updates the payment transaction statuses for orders in "Created" status
+        </description>
+        <parameters/>
+        <flow>
+            <context site-id="RefArch"/>
+            <step step-id="CCVUpdateTransactionStatuses" type="custom.CCV.UpdateTransactionStatuses" enforce-restart="false">
+                <description/>
+                <parameters/>
+            </step>
+        </flow>
+        <rules/>
+        <triggers>
+            <run-recurring enabled="true">
+                <recurrence>
+                    <date-from>2019-10-25Z</date-from>
+                    <start-time>04:00:00.000Z</start-time>
+                    <interval>2M</interval>
+                    <day-of-week/>
+                </recurrence>
+            </run-recurring>
+        </triggers>
+    </job>
+
+    <job job-id="CCVPayment-ProcessRefunds" priority="0">
+        <description>
+            Updates refund status on orders with pending refunds
+        </description>
+        <parameters/>
+        <flow>
+            <context site-id="RefArch"/>
+            <step step-id="CCVProcessRefunds" type="custom.CCV.ProcessRefunds" enforce-restart="false">
+                <description/>
+                <parameters/>
+            </step>
+        </flow>
+        <rules/>
+        <triggers>
+            <run-recurring enabled="true">
+                <recurrence>
+                    <date-from>2019-10-25Z</date-from>
+                    <start-time>04:00:00.000Z</start-time>
+                    <interval>2M</interval>
+                    <day-of-week/>
+                </recurrence>
+            </run-recurring>
+        </triggers>
+    </job>
+</jobs>

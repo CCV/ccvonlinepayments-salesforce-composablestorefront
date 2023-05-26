@@ -13,6 +13,7 @@ import OcapiShopperOrders from './ocapi-shopper-orders'
 import {getTenantId, isError, isTokenValid} from './utils'
 import Auth from './auth'
 import EinsteinAPI from './einstein'
+import OcapiCCV from '../../ccv-pwa-plugin/pages/checkout/util/ocapi-ccv'
 
 /**
  * The configuration details for the connecting to the API.
@@ -94,6 +95,9 @@ class CommerceAPI {
             shopperSearch: {
                 api: sdk.ShopperSearch,
                 sendCurrency: ['productSearch', 'getSearchSuggestions']
+            },
+            ccvPayment: {
+                api: OcapiCCV
             }
         }
 

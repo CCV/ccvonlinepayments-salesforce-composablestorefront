@@ -91,6 +91,7 @@ test('Allows customer to add/edit/remove addresses', async () => {
     user.click(screen.getByText(/add address/i))
     user.type(screen.getByLabelText('First Name'), 'Tyler')
     user.type(screen.getByLabelText('Last Name'), 'Glasnow')
+    user.type(screen.getByLabelText('Phone Country'), '1234')
     user.type(screen.getByLabelText('Phone'), '7277277727')
     user.type(screen.getByLabelText('Address'), 'Tropicana Field')
     user.type(screen.getByLabelText('City'), 'St Petersburg')
