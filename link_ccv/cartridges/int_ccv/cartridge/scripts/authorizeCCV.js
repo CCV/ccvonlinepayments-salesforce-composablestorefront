@@ -17,8 +17,10 @@ exports.authorizeCCV = function (order, context) {
         return { missingReference: true };
     }
 
+    var paymentProcessorId = order.paymentTransaction.paymentProcessor.ID;
+
     try {
-        transactionStatusResponse = checkCCVTransaction(ccvTransactionReference);
+        transactionStatusResponse = checkCCVTransaction(ccvTransactionReference, paymentProcessorId);
     } catch (error) {
         return { error };
     }

@@ -36,8 +36,12 @@ function callCCVService(svcParams) {
             svc.addHeader('charset', 'utf-8');
             svc.setRequestMethod(params.requestMethod || 'POST');
 
-            var url = svc.configuration.credential.URL + (params.path || '');
-            var apiKey = svc.configuration.credential.password;
+            var paymentProcessorId = params.paymentProcessorId || 'CCV_DEFAULT';
+
+            var baseUrl = Site.current.getCustomPreferenceValue(`${paymentProcessorId}_URL`);
+            var apiKey = Site.current.getCustomPreferenceValue(`${paymentProcessorId}_API_KEY`);
+
+            var url = params.absPath || baseUrl + (params.path || '');
             var authHeader = 'Basic ' + StringUtils.encodeBase64(apiKey + ':');
 
             svc.addHeader('Authorization', authHeader);
@@ -83,37 +87,45 @@ function createCCVPayment(params) {
     return callCCVService({
         path: CCV_CONSTANTS.PATH.CREATE_PAYMENT,
         requestMethod: 'POST',
-        requestBody: params.requestBody
+        requestBody: params.requestBody,
+        paymentProcessorId: params.paymentProcessorId
+    });
+}
     });
 }
 
 /**
  * Checks the status of a CCV transaction
  * @param {string} reference CCV transaction reference
+ * @param {string} paymentProcessorId payment processor id
  * @returns {Object} response from service call
  */
-function checkCCVTransaction(reference) {
+function checkCCVTransaction(reference, paymentProcessorId) {
     if (!reference) {
         throw new Error('Failed checking transaction: missing reference!');
     }
     return callCCVService({
         requestMethod: 'GET',
-        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?reference=${reference}`
+        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?reference=${reference}`,
+        paymentProcessorId
+
     });
 }
 
 /**
  * Checks the status of multiple CCV transactions
  * @param {Array} references CCV transaction references
+ * @param {string} paymentProcessorId payment processor id
  * @returns {Object} response from service call
  */
-function checkCCVTransactions(references) {
+function checkCCVTransactions(references, paymentProcessorId) {
     if (!references || references.length === 0) {
         throw new Error('Failed checking transactions: missing references!');
     }
     return callCCVService({
         requestMethod: 'GET',
-        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?references=${references.join(',')}`
+        path: `${CCV_CONSTANTS.PATH.CHECK_TRANSACTION_STATUS}?references=${references.join(',')}`,
+        paymentProcessorId
     });
 }
 /**
@@ -143,6 +155,8 @@ function refundCCVPayment({ order, amount, description }) {
         description: description
     };
 
+    var paymentProcessorId = order.paymentTransaction.paymentProcessor.ID;
+
     var isReversal = order.paymentInstruments[0].paymentTransaction.type.value === PaymentTransaction.TYPE_AUTH;
 
     if (amount && !isReversal) {
@@ -154,7 +168,8 @@ function refundCCVPayment({ order, amount, description }) {
     try {
         refundResponse = callCCVService({
             path: isReversal ? CCV_CONSTANTS.PATH.REVERSAL : CCV_CONSTANTS.PATH.REFUND,
-            requestBody: requestBody
+            requestBody: requestBody,
+            paymentProcessorId
         });
     } catch (error) {
         // refund requests can fail if, for example, we exceed the refundable amount
@@ -183,13 +198,15 @@ function refundCCVPayment({ order, amount, description }) {
 /**
  * Cancels a CCV payment if it is not yet authorized
  * @param {{dw.order.Order}} order order
- * @returns {object|null} service response
+ * @returns {Object|null} service response
  */
 function cancelCCVPayment({ order }) {
     var reference = order.custom.ccvTransactionReference;
+    var paymentProcessorId = order.paymentTransaction.paymentProcessor.ID;
 
     return callCCVService({
-        path: `${CCV_CONSTANTS.PATH.CANCEL}?reference=${reference}`
+        path: `${CCV_CONSTANTS.PATH.CANCEL}?reference=${reference}`,
+        paymentProcessorId
     });
 }
 
