@@ -1,5 +1,5 @@
 {
-  "name": "pwa-ccv-test",
+  "name": "demo-client",
   "version": "0.0.1",
   "license": "See license in LICENSE",
   "private": true,
@@ -91,5 +91,9 @@
     "iOS >= 9.0",
     "Android >= 4.4.4",
     "last 4 ChromeAndroid versions"
-  ]
+  ],
+  "volta": {
+    "node": "14.21.3",
+    "npm": "6.14.18"
+  }
 }
