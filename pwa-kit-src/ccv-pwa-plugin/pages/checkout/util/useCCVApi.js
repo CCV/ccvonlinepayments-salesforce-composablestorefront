@@ -33,18 +33,6 @@ const useCCVApi = () => {
 
             return response
         },
-        async checkTransactionStatus({parameters}) {
-            const paymentTransaction = await api.ccvPayment.checkTransactionStatus({
-                // eslint-disable-next-line prettier/prettier
-                parameters: parameters
-            })
-
-            if (!paymentTransaction?.c_result) {
-                throw new Error('Error checking transaction status.')
-            }
-
-            return paymentTransaction.c_result
-        },
         async submitOrderCCV({setIsLoading, setPaymentError}) {
             setIsLoading(true)
             setPaymentError(null)

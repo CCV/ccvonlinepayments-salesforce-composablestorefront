@@ -21,7 +21,7 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
     var order = OrderMgr.getOrder(orderRef, orderToken);
 
     if (!order) {
-        throw new Error('CCV: Order not found.');
+        throw new Error(`CCV: Order not found. Order ref: ${orderRef}`);
     }
 
     if (order.status.value !== Order.ORDER_STATUS_CREATED) {

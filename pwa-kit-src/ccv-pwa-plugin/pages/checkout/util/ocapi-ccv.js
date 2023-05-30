@@ -39,37 +39,6 @@ class OcapiCCV {
 
         return await this.fetchController(path, 'POST', args, 'postApplePayToken', body)
     }
-
-    async checkTransactionStatus(...args) {
-        const required = ['ref', 'token']
-        let requiredParametersError = checkRequiredParameters(args[0], required)
-        if (requiredParametersError) {
-            return requiredParametersError
-        }
-        let {
-            parameters: {ref, token}
-        } = args[0]
-
-        return this.fetch(
-            `custom_objects/CustomApi/check-transaction-status?ref=${ref}&token=${token}`,
-            'GET',
-            args,
-            'checkTransactionStatus'
-        )
-    }
-
-    async getBasketData(...args) {
-        const required = ['basketId']
-        let requiredParametersError = checkRequiredParameters(args[0], required)
-        if (requiredParametersError) {
-            return requiredParametersError
-        }
-        let {
-            parameters: {basketId}
-        } = args[0]
-
-        return this.fetch(`baskets/${basketId}`, 'GET', args, 'checkTransactionStatus')
-    }
 }
 
 export const createControllerFetch =

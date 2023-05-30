@@ -72,7 +72,7 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
             && customer.registered
             && customer.authenticated
             && Site.current.getCustomPreferenceValue('ccvStoreCardsInVaultEnabled')) {
-            // a vaultAccessToken will be returned in the checkTransactionInfo response
+            // a vaultAccessToken will be returned in the checkTransaction response
             // we will add it to the customer's payment instrument in the UpdateStatuses job
             requestBody.storeInVault = 'yes';
         }
