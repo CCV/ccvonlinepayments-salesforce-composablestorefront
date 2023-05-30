@@ -101,7 +101,21 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         requestBody.brand = 'bcmc';
     }
 
+    // APPLE PAY
+    if (paymentInstrument.paymentMethod === 'CCV_APPLE_PAY') {
+        var applePayValidationUrl = request.httpParameters.applePayValidationUrl && request.httpParameters.applePayValidationUrl.pop();
+        var applePayDomainName = request.httpParameters.applePayDomainName && request.httpParameters.applePayDomainName.pop();
+
+        if (!applePayValidationUrl || !applePayDomainName) {
+            throw new Error('Missing required parameters in CCV_APPLE_PAY.');
+        }
+
+        requestBody.details.applePayValidationUrl = applePayValidationUrl;
+        requestBody.details.applePayDomainName = applePayDomainName;
+    }
+
     var paymentResponse = {};
+    var paymentProcessor = PaymentMgr.getPaymentMethod(paymentInstrument.getPaymentMethod()).getPaymentProcessor();
 
     try {
         paymentResponse = createCCVPayment({
@@ -115,6 +129,13 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         ccvLogger.error(`Failed creating a CCV payment request: ${error}`);
 
         return new Status(Status.ERROR);
+    }
+
+    // APPLE PAY after CCV payment created
+    if (paymentInstrument.paymentMethod === 'CCV_APPLE_PAY') {
+        request.custom.applePayPaymentSession = paymentResponse.details.applePayPaymentSession;
+        order.custom.ccvCancelUrl = paymentResponse.cancelUrl; // eslint-disable-line no-param-reassign
+        order.custom.ccvCardDataUrl = paymentResponse.cardDataUrl; // eslint-disable-line no-param-reassign
     }
 
     // ============= set CCV properties =============
@@ -132,4 +153,15 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     if (paymentInstrument.custom.ccvVaultAccessToken) {
         paymentInstrument.custom.ccvVaultAccessToken = '****';
     }
+};
+
+/**
+ * Modifies OCAPI /orders POST response
+ * @param {dw.order.Order} order order
+ * @param {Object} orderResponse order response
+ */
+exports.modifyPOSTResponse = function (order, orderResponse) {
+    orderResponse.c_applePayPaymentSession = request.custom.applePayPaymentSession; // eslint-disable-line no-param-reassign
+    orderResponse.c_appleTokenSubmitUrl = URLUtils.url('CCV-SubmitApplePayToken').toString(); // eslint-disable-line no-param-reassign
+    orderResponse.c_order_status_pending = true; // eslint-disable-line no-param-reassign
 };

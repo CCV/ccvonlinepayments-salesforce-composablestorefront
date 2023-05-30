@@ -168,6 +168,7 @@ import EPSSymbol from '../../../ccv-pwa-plugin/assets/svg/eps-logo.svg'
 import PayconiqSymbol from '../../../ccv-pwa-plugin/assets/svg/payconiq-logo.svg'
 import MaestroSymbol from '../../../ccv-pwa-plugin/assets/svg/maestro-logo.svg'
 import KlarnaSymbol from '../../../ccv-pwa-plugin/assets/svg/klarna-logo.svg'
+import AppleSymbol from '../../../ccv-pwa-plugin/assets/svg/apple-pay-logo.svg'
 
 AmexSymbol.viewBox = AmexSymbol.viewBox || '0 0 38 22'
 MastercardSymbol.viewBox = MastercardSymbol.viewBox || '0 0 38 22'
@@ -181,6 +182,7 @@ EPSSymbol.viewBox = EPSSymbol.viewBox || '0 0 889 577'
 PayconiqSymbol.viewBox = PayconiqSymbol.viewBox || '0 0 326 230.5'
 MaestroSymbol.viewBox = MaestroSymbol.viewBox || '0 0 125 120'
 KlarnaSymbol.viewBox = KlarnaSymbol.viewBox || '0 0 100 40.4494'
+AppleSymbol.viewBox = AppleSymbol.viewBox || '0 0 165.52107 105.9651'
 
 // Export Chakra icon components that use our SVG sprite symbol internally
 // For non-square SVGs, we can use the symbol data from the import to set the
@@ -193,3 +195,4 @@ export const EPSIcon = icon('eps-logo', {viewBox: EPSSymbol.viewBox})
 export const PayconiqIcon = icon('payconiq-logo', {viewBox: PayconiqSymbol.viewBox})
 export const MaestroIcon = icon('maestro-logo', {viewBox: MaestroSymbol.viewBox})
 export const KlarnaIcon = icon('klarna-logo', {viewBox: KlarnaSymbol.viewBox})
+export const ApplePayIcon = icon('apple-pay-logo', {viewBox: AppleSymbol.viewBox})

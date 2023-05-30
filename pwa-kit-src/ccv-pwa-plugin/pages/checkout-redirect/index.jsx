@@ -21,14 +21,13 @@ const CheckoutRedirect = () => {
             // throw an error and redirect to home. However, the order is still "created" and
             // will be processed by the updateTransactionStatuses job
             if (!ref || !token || !newOrderData) {
-                throw new Error()
+                throw new Error(`missing ${!ref ? 'ref' : ''} ${!token ? 'token' : ''}${!newOrderData ? 'order data' : ''}`)
             }
 
             // update the basket with the new order data and pass c_order_status_pending
             // so loaded() check on the basket will pass and we won't create a new basket
             await setBasket({
-                ...newOrderData,
-                c_order_status_pending: true
+                ...newOrderData
             })
             const transactionStatus = await ccv.checkTransactionStatus({parameters: {ref, token}})
 
@@ -53,6 +52,8 @@ const CheckoutRedirect = () => {
                 navigate('/checkout/confirmation')
             }
         } catch (error) {
+            console.log('handle shopper redirect error')
+            console.log(error)
             await setBasket({c_order_status_pending: false})
             localStorage.removeItem('newOrderData')
 

@@ -20,6 +20,8 @@ export const CCVPaymentProvider = ({children}) => {
 
     const [creditCardData, setCreditCardData] = useState({})
 
+    const [applePayLoaded, setApplePayLoaded] = useState(false)
+
     const onPaymentIdChange = (value) => {
         if (value && isEditingPayment) {
             togglePaymentEdit()
@@ -62,7 +64,9 @@ export const CCVPaymentProvider = ({children}) => {
                 creditCardData,
                 setCreditCardData,
                 paymentError,
-                setPaymentError
+                setPaymentError,
+                applePayLoaded,
+                setApplePayLoaded
             }}
         >
             {children}

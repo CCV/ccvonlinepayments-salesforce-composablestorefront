@@ -21,4 +21,15 @@
         <credential-id>CCVPayment.credential</credential-id>
     </service>
 
+    <service service-id="ccv.ocapi.service">
+        <service-type>HTTP</service-type>
+        <enabled>true</enabled>
+        <log-prefix/>
+        <comm-log-enabled>false</comm-log-enabled>
+        <force-prd-enabled>false</force-prd-enabled>
+        <mock-mode-enabled>false</mock-mode-enabled>
+        <profile-id/>
+        <credential-id/>
+    </service>
+
 </services>

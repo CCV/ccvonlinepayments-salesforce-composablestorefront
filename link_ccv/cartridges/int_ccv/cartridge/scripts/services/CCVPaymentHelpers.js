@@ -2,6 +2,7 @@
 
 var LocalServiceRegistry = require('dw/svc/LocalServiceRegistry');
 var StringUtils = require('dw/util/StringUtils');
+var Site = require('dw/system/Site');
 
 var CCV_CONSTANTS = {
     PATH: {
@@ -91,6 +92,32 @@ function createCCVPayment(params) {
         paymentProcessorId: params.paymentProcessorId
     });
 }
+
+/**
+ * Creates a payment in CCV hosted-payment-page. The returned payUrl is where we have to
+ * redirect the customer so they can complete their payment
+ * @param {Object} params parameters passed in the http request
+ * @returns {Object} service call response
+ */
+function postApplePayToken(params) {
+    return callCCVService({
+        absPath: params.absPath,
+        requestMethod: 'POST',
+        requestBody: params.requestBody,
+        paymentProcessorId: params.paymentProcessorId
+    });
+}
+
+/**
+ * Cancels a CCV payment via the provided cancel URL
+ * @param {Object} params parameters passed in the http request
+ * @returns {Object} service call response
+ */
+function cancelCCVPaymentViaCardUrl(params) {
+    return callCCVService({
+        absPath: params.absPath,
+        requestMethod: 'POST',
+        paymentProcessorId: params.paymentProcessorId
     });
 }
 
@@ -218,5 +245,7 @@ module.exports = {
     checkCCVTransactions,
     getCCVPaymentMethods,
     refundCCVPayment,
-    cancelCCVPayment
+    cancelCCVPayment,
+    cancelCCVPaymentViaCardUrl,
+    postApplePayToken
 };

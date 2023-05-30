@@ -83,4 +83,13 @@
         </custom-attributes>
     </payment-method>
 
+    <payment-method method-id="CCV_APPLE_PAY">
+        <name xml:lang="x-default">Apple Pay</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_APPLE_PAY</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">applepay</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
 </payment-settings>

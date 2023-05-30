@@ -69,8 +69,8 @@ const PaymentSelection = ({form}) => {
                                     {/* dynamic payment methods */}
                                     <Stack gap={1}>
                                         {paymentMethods ? (
-                                            paymentMethods.applicablePaymentMethods.map(
-                                                (paymentMethod) => {
+                                            paymentMethods.applicablePaymentMethods
+                                                .map((paymentMethod) => {
                                                     return (
                                                         <CCVPaymentMethodRadio
                                                             key={paymentMethod.id}
@@ -81,8 +81,8 @@ const PaymentSelection = ({form}) => {
                                                             }
                                                         />
                                                     )
-                                                }
-                                            )
+                                                })
+                                                .filter((x) => x)
                                         ) : (
                                             <Stack>
                                                 <Skeleton height="56px" />
@@ -113,7 +113,21 @@ PaymentSelection.propTypes = {
 }
 
 const CCVPaymentMethodRadio = function ({paymentMethod, isSelected}) {
-    const {form} = useCCVPayment()
+    const {form, applePayLoaded} = useCCVPayment()
+
+    if (paymentMethod.id === 'CCV_APPLE_PAY') {
+        if (!applePayLoaded || !('ApplePaySession' in window)) {
+            return null
+        }
+
+        if (
+            applePayLoaded &&
+            'ApplePaySession' in window &&
+            !window.ApplePaySession.canMakePayments()
+        ) {
+            return null
+        }
+    }
 
     return (
         <Box border="1px solid" borderColor="gray.100" rounded="base">
