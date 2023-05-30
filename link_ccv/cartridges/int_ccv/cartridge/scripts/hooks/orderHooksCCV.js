@@ -119,8 +119,7 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 
     try {
         paymentResponse = createCCVPayment({
-            requestBody: requestBody,
-            paymentProcessorId: paymentProcessor.ID
+            requestBody: requestBody
         });
     } catch (error) {
         var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
@@ -141,6 +140,8 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     // ============= set CCV properties =============
     order.custom.ccvTransactionReference = paymentResponse.reference; // eslint-disable-line no-param-reassign
     order.custom.ccvPayUrl = paymentResponse.payUrl; // eslint-disable-line no-param-reassign
+
+    var paymentProcessor = PaymentMgr.getPaymentMethod(paymentInstrument.getPaymentMethod()).getPaymentProcessor();
 
     paymentInstrument.paymentTransaction.setTransactionID(paymentResponse.reference);
     paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);

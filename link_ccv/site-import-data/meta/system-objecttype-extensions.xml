@@ -270,36 +270,6 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
-            <attribute-definition attribute-id="CCV_APPLE_PAY_API_KEY">
-                <display-name xml:lang="x-default">CCV ApplePay API key</display-name>
-                <type>password</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <field-length>50</field-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="CCV_APPLE_PAY_URL">
-                <display-name xml:lang="x-default">CCV ApplePay URL</display-name>
-                <description xml:lang="x-default">Base URL for CCV_APPLE_PAY payment processor</description>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="CCV_DEFAULT_API_KEY">
-                <display-name xml:lang="x-default">CCV default API key</display-name>
-                <type>password</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <field-length>50</field-length>
-            </attribute-definition>
-            <attribute-definition attribute-id="CCV_DEFAULT_URL">
-                <display-name xml:lang="x-default">CCV_DEFAULT URL</display-name>
-                <description xml:lang="x-default">Base URL for CCV_DEFAULT payment processor</description>
-                <type>string</type>
-                <mandatory-flag>false</mandatory-flag>
-                <externally-managed-flag>false</externally-managed-flag>
-                <min-length>0</min-length>
-            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="CCV">
@@ -308,14 +278,6 @@
                 <attribute attribute-id="ccvStoreCardsInVaultEnabled"/>
                 <attribute attribute-id="ccvAutoRefundEnabled"/>
                 <attribute attribute-id="ccvScaReadyEnabled"/>
-            </attribute-group>
-            <attribute-group group-id="CCV_APPLE_PAY">
-                <attribute attribute-id="CCV_APPLE_PAY_API_KEY"/>
-                <attribute attribute-id="CCV_APPLE_PAY_URL"/>
-            </attribute-group>
-            <attribute-group group-id="CCV_DEFAULT">
-                <attribute attribute-id="CCV_DEFAULT_API_KEY"/>
-                <attribute attribute-id="CCV_DEFAULT_URL"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
