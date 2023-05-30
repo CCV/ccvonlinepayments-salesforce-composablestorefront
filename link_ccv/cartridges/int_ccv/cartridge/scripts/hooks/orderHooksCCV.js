@@ -141,8 +141,6 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     order.custom.ccvTransactionReference = paymentResponse.reference; // eslint-disable-line no-param-reassign
     order.custom.ccvPayUrl = paymentResponse.payUrl; // eslint-disable-line no-param-reassign
 
-    var paymentProcessor = PaymentMgr.getPaymentMethod(paymentInstrument.getPaymentMethod()).getPaymentProcessor();
-
     paymentInstrument.paymentTransaction.setTransactionID(paymentResponse.reference);
     paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
     paymentInstrument.paymentTransaction.setType(
@@ -164,5 +162,17 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 exports.modifyPOSTResponse = function (order, orderResponse) {
     orderResponse.c_applePayPaymentSession = request.custom.applePayPaymentSession; // eslint-disable-line no-param-reassign
     orderResponse.c_appleTokenSubmitUrl = URLUtils.url('CCV-SubmitApplePayToken').toString(); // eslint-disable-line no-param-reassign
-    orderResponse.c_order_status_pending = true; // eslint-disable-line no-param-reassign
+};
+
+/**
+ * Modifies OCAPI /orders GET response
+ * @param {dw.order.Order} order order
+ * @param {Object} orderResponse order response
+ */
+exports.modifyGETResponse = function (order, orderResponse) {
+    var failureCode = order.paymentTransaction.custom.ccv_failure_code;
+
+    if (failureCode) {
+        orderResponse.c_ccv_failure_code = failureCode; // eslint-disable-line no-param-reassign
+    }
 };

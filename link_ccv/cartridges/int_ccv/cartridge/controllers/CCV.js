@@ -13,8 +13,10 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
     var reqBody = JSON.parse(request.httpParameterMap.requestBodyAsString);
 
     if (!orderRef || !orderToken) {
-        throw new Error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef} token: ${orderToken}`);
+        ccvLogger.error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef}`);
+        throw new Error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef}`);
     }
+    ccvLogger.info(`CCV: Webhook called for order ${orderRef}.`);
 
     var order = OrderMgr.getOrder(orderRef, orderToken);
 
@@ -87,9 +89,6 @@ server.post('SubmitApplePayToken', function (req, res, next) { // eslint-disable
         throw new Error('CCV: SubmitApplePayToken called with on non-apple pay order.');
     }
 
-    var paymentProcessorId = order.paymentTransaction.paymentProcessor.ID;
-
-
     // ============ CANCEL PAYMENT ================
     // if the user clicked Cancel on the apple payment sheet we fail the order and cancel the CCV payment
     if (reqBody.isCancelled) {
@@ -100,8 +99,7 @@ server.post('SubmitApplePayToken', function (req, res, next) { // eslint-disable
         var { cancelCCVPaymentViaCardUrl } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
         try {
             cancelCCVPaymentViaCardUrl({
-                absPath: order.custom.ccvCancelUrl,
-                paymentProcessorId
+                absPath: order.custom.ccvCancelUrl
             });
         } catch (error) {
             ccvLogger.error(`CCV: cancel apple pay payment request failed, ${error}`);
@@ -111,18 +109,25 @@ server.post('SubmitApplePayToken', function (req, res, next) { // eslint-disable
     }
 
     // ============= SUBMIT APPLE PAY TOKEN ================
-    var { postApplePayToken, checkCCVTransaction } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
-    postApplePayToken({
-        absPath: order.custom.ccvCardDataUrl,
-        requestBody: { encryptedToken: reqBody.encryptedToken },
-        paymentProcessorId: paymentProcessorId
-    });
+    var { postApplePayToken } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 
-    var transactionStatus = checkCCVTransaction(order.custom.ccvTransactionReference, paymentProcessorId);
+    try {
+        postApplePayToken({
+            absPath: order.custom.ccvCardDataUrl,
+            requestBody: { encryptedToken: reqBody.encryptedToken }
+        });
+    } catch (error) {
+        ccvLogger.error(`Failed submitting apple pay token for order ${order.orderNo}: ${error}`);
 
-    res.json({
-        status: transactionStatus.status
-    });
+        Transaction.wrap(() => {
+            OrderMgr.failOrder(order, true);
+            order.addNote('Order failed', 'postApplePayToken call to CCV failed');
+        });
+
+        throw new Error(`Submitting apple token to ccv failed: ${error}`);
+    }
+
+    res.json({ status: 'success' });
     next();
 });
 

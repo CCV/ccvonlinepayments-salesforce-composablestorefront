@@ -2,7 +2,6 @@
 
 var LocalServiceRegistry = require('dw/svc/LocalServiceRegistry');
 var StringUtils = require('dw/util/StringUtils');
-var Site = require('dw/system/Site');
 
 var CCV_CONSTANTS = {
     PATH: {
@@ -37,14 +36,14 @@ function callCCVService(svcParams) {
             svc.addHeader('charset', 'utf-8');
             svc.setRequestMethod(params.requestMethod || 'POST');
 
-            var url = svc.configuration.credential.URL + (params.path || '');
+            var url = params.absPath || svc.configuration.credential.URL + (params.path || '');
             var apiKey = svc.configuration.credential.password;
             var authHeader = 'Basic ' + StringUtils.encodeBase64(apiKey + ':');
 
             svc.addHeader('Authorization', authHeader);
-
             // svc.addHeader('Idempotency-Reference', params.idempotencyReference);
             svc.setURL(url);
+
 
             return params.requestBody ? JSON.stringify(params.requestBody) : '';
         },
@@ -210,7 +209,7 @@ function refundCCVPayment({ order, amount, description }) {
 /**
  * Cancels a CCV payment if it is not yet authorized
  * @param {{dw.order.Order}} order order
- * @returns {object|null} service response
+ * @returns {Object|null} service response
  */
 function cancelCCVPayment({ order }) {
     var reference = order.custom.ccvTransactionReference;

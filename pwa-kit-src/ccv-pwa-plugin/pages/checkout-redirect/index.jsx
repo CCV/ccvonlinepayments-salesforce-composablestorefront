@@ -1,63 +1,95 @@
-import React, {useEffect, useContext} from 'react'
+import React, {useEffect, useContext, useRef, useCallback} from 'react'
 import useNavigation from '../../../app/hooks/use-navigation'
 import CheckoutSkeleton from '../../../app/pages/checkout/partials/checkout-skeleton'
-import useCCVApi from '../checkout/util/useCCVApi'
 import {Box, Text} from '@chakra-ui/react'
 import {BasketContext} from '../../../app/commerce-api/contexts'
+import useCustomer from '../../../app/commerce-api/hooks/useCustomer'
 
 const CheckoutRedirect = () => {
     const navigate = useNavigation()
     const {setBasket} = useContext(BasketContext)
-    const ccv = useCCVApi()
+    const customer = useCustomer()
+
+    const MAX_RETRIES = 10
+    const TIME_BETWEEN_RETRIES = 1000
+    let retries = 0
+    let timeout = useRef(null)
+
+    const checkOrderStatus = useCallback(async (orderNo, order) => {
+        let getOrderError = false
+
+        if (!order) {
+            try {
+                order = await customer.getOrder(orderNo)
+            } catch (error) {
+                getOrderError = true
+                console.log('Error getting order', error)
+            }
+        }
+
+        if ((retries >= MAX_RETRIES && order.status === 'created') || order.status === 'new') {
+            // we will update the c_order_status_pending on the confirmation page, to ensure the basket
+            // update doesn't happen before we redirect
+            await setBasket({
+                ...order,
+                c_order_status_pending: true
+            })
+            navigate('/checkout/confirmation')
+            return
+        }
+
+        if (order.status === 'created' || getOrderError) {
+            timeout.current = setTimeout(() => {
+                retries++
+                checkOrderStatus(orderNo)
+            }, TIME_BETWEEN_RETRIES)
+            return
+        }
+
+        if (order.status === 'failed') {
+            // the old basket should have been reopened by the webook, so we want to reload it
+            await setBasket({c_order_status_pending: false})
+
+            var errorMsg = order.c_ccv_failure_code
+            navigate('/checkout', 'push', {paymentErrorMsg: errorMsg})
+            return
+        }
+    })
 
     useEffect(async () => {
         try {
             const urlParams = new URLSearchParams(location.search)
-            const ref = urlParams.get('ref')
+            const orderNo = urlParams.get('ref')
             const token = urlParams.get('token')
-            const newOrderData = JSON.parse(localStorage.getItem('newOrderData'))
 
-            // if we don't have newOrderData, we can't show a confirmation page, so we
-            // throw an error and redirect to home. However, the order is still "created" and
-            // will be processed by the updateTransactionStatuses job
-            if (!ref || !token || !newOrderData) {
-                throw new Error(`missing ${!ref ? 'ref' : ''} ${!token ? 'token' : ''}${!newOrderData ? 'order data' : ''}`)
+            if (!orderNo || !token) {
+                throw new Error(`missing ${!orderNo ? 'ref' : ''} ${!token ? 'token' : ''}`)
             }
 
-            // update the basket with the new order data and pass c_order_status_pending
-            // so loaded() check on the basket will pass and we won't create a new basket
+            // update the basket with c_order_status_pending so the loaded() check
+            // on the basket will pass and we won't create a new basket
             await setBasket({
-                ...newOrderData
+                c_order_status_pending: true
             })
-            const transactionStatus = await ccv.checkTransactionStatus({parameters: {ref, token}})
 
-            if (!transactionStatus) {
-                throw new Error()
-            } else if (
-                transactionStatus.status === 'failed' ||
-                transactionStatus.customPaymentError
-            ) {
-                await setBasket({c_order_status_pending: false})
-                localStorage.removeItem('newOrderData')
-                var errorMsg = transactionStatus.errorMsg || transactionStatus.customPaymentError
+            let order = await customer.getOrder(orderNo)
 
-                navigate('/checkout', 'push', {paymentErrorMsg: errorMsg})
-            } else {
-                await setBasket({
-                    ...newOrderData,
-                    c_order_status_pending: false
-                })
-                localStorage.removeItem('newOrderData')
+            await setBasket({
+                ...order,
+                c_order_status_pending: true
+            })
 
-                navigate('/checkout/confirmation')
-            }
+            checkOrderStatus(orderNo, order)
         } catch (error) {
             console.log('handle shopper redirect error')
             console.log(error)
             await setBasket({c_order_status_pending: false})
-            localStorage.removeItem('newOrderData')
 
             navigate('/')
+        }
+
+        return () => {
+            clearTimeout(timeout.current)
         }
     }, [])
 

@@ -51,7 +51,6 @@ const useCCVApi = () => {
 
             try {
                 const orderResponse = await this.createOrder()
-                localStorage.setItem('newOrderData', JSON.stringify(orderResponse))
 
                 // redirect to hosted payment page
                 window.location.href = orderResponse.c_ccvPayUrl
@@ -71,7 +70,6 @@ const useCCVApi = () => {
 
             try {
                 const orderResponse = await this.createOrder({applePayValidationUrl})
-                localStorage.setItem('newOrderData', JSON.stringify(orderResponse))
 
                 // redirect to hosted payment page
                 return orderResponse
@@ -85,36 +83,18 @@ const useCCVApi = () => {
                 setPaymentError(message)
             }
         },
-        async submitAppleToken({
-            encryptedToken,
-            orderNo,
-            orderToken,
-            isCancelled,
-            path,
-            setIsLoading,
-            setPaymentError
-        }) {
-            try {
-                const response = await api.ccvPayment.postApplePayToken({
-                    headers: {_sfdc_customer_id: api.auth.usid},
-                    body: {encryptedToken, orderNo, orderToken, isCancelled},
-                    parameters: {},
-                    path
-                })
+        async submitAppleToken({encryptedToken, orderNo, orderToken, isCancelled, path}) {
+            const response = await api.ccvPayment.postApplePayToken({
+                headers: {_sfdc_customer_id: api.auth.usid},
+                body: {encryptedToken, orderNo, orderToken, isCancelled},
+                parameters: {},
+                path
+            })
 
-                if (response.error) {
-                    throw new Error(response.title)
-                }
-                return response
-            } catch (error) {
-                setIsLoading(false)
-                const message = formatMessage({
-                    id: 'checkout.message.generic_error',
-                    defaultMessage: 'An unexpected error occurred during checkout.'
-                })
-
-                setPaymentError(message)
+            if (response.error) {
+                throw new Error(response.title)
             }
+            return response
         },
         async onApplePayButtonClicked({setIsLoading, setPaymentError}) {
             if (!window.ApplePaySession) {
@@ -166,28 +146,30 @@ const useCCVApi = () => {
             session.onpaymentauthorized = async (event) => {
                 console.log('At payment authorized')
                 orderResponsePromise.then(async (orderResponse) => {
-                    const submitTokenResponse = await this.submitAppleToken({
-                        encryptedToken: event.payment.token,
-                        path: orderResponse.c_appleTokenSubmitUrl,
-                        orderNo: orderResponse.orderNo,
-                        orderToken: orderResponse.orderToken,
-                        setIsLoading,
-                        setPaymentError
-                    })
+                    let submitTokenResponse
+                    try {
+                        submitTokenResponse = await this.submitAppleToken({
+                            encryptedToken: event.payment.token,
+                            orderNo: orderResponse.orderNo,
+                            orderToken: orderResponse.orderToken,
+                            path: orderResponse.c_appleTokenSubmitUrl
+                        })
+                    } catch (error) {
+                        setIsLoading(false)
+                        const message = formatMessage({
+                            id: 'checkout.message.generic_error',
+                            defaultMessage: 'An unexpected error occurred during checkout.'
+                        })
+                        setPaymentError(message)
+                    }
 
-                    console.log(submitTokenResponse)
                     const result = {
-                        status:
-                            submitTokenResponse.status === 'failed'
-                                ? window.ApplePaySession.STATUS_FAILURE
-                                : window.ApplePaySession.STATUS_SUCCESS
+                        status: submitTokenResponse
+                            ? window.ApplePaySession.STATUS_SUCCESS
+                            : window.ApplePaySession.STATUS_FAILURE
                     }
                     session.completePayment(result)
-                    if (submitTokenResponse.status === 'failed') {
-                        setPaymentError('payment_failed')
-                        setIsLoading(false)
-                        return
-                    } else {
+                    if (submitTokenResponse?.status === 'success') {
                         navigate(
                             `/checkout/handleShopperRedirect?ref=${orderResponse.orderNo}&token=${orderResponse.orderToken}`
                         )
@@ -208,9 +190,7 @@ const useCCVApi = () => {
                             path: orderResponse.c_appleTokenSubmitUrl,
                             orderNo: orderResponse.orderNo,
                             orderToken: orderResponse.orderToken,
-                            isCancelled: true,
-                            setIsLoading,
-                            setPaymentError
+                            isCancelled: true
                         })
                     } catch (error) {
                         console.log('Failed cancelling')
