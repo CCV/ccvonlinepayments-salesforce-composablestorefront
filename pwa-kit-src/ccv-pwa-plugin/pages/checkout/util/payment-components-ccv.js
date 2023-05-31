@@ -174,7 +174,6 @@ DefaultPlaceOrderButton.propTypes = {
 export const ApplePayPlaceOrderButton = (props) => {
     const {locale} = useIntl()
 
-    console.log(locale)
     return (
         <Box
             onClickCapture={() => props.submitApplePayOrderHandler(props.basket)}

@@ -7,7 +7,7 @@ import useNavigation from '../../../../app/hooks/use-navigation'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()
-    const {formatMessage} = useIntl()
+    const {locale, formatMessage} = useIntl()
     const basket = useBasket()
     const navigate = useNavigation()
 
@@ -88,8 +88,41 @@ const useCCVApi = () => {
             if (!window.ApplePaySession) {
                 return
             }
+            setPaymentError(null)
+
             let orderResponsePromise = {}
             let isCancelled
+
+            // Product line items
+            const lineItems = basket.productItems.map((item) => {
+                return {
+                    label: item.itemText,
+                    type: 'final',
+                    amount: item.price
+                }
+            })
+
+            // Shipping
+            lineItems.push({
+                label: formatMessage({
+                    defaultMessage: 'Shipping',
+                    id: 'order_summary.label.shipping'
+                }),
+                type: 'final',
+                amount: basket.shippingTotal
+            })
+
+            // Tax
+            if (basket.taxation === 'net') {
+                lineItems.push({
+                    label: formatMessage({
+                        defaultMessage: 'Tax.',
+                        id: 'order_summary.label.tax'
+                    }),
+                    type: 'final',
+                    amount: basket.taxTotal
+                })
+            }
 
             var total = {
                 label: ccvConfig.applePayMerchantLabel,
@@ -98,18 +131,28 @@ const useCCVApi = () => {
             }
 
             const request = {
-                countryCode: 'BE',
+                countryCode: locale.split('-')[1],
                 currencyCode: basket?.currency,
                 merchantCapabilities: ['supports3DS'],
-                supportedNetworks: ['MasterCard', 'Visa'],
-                total: total
+                supportedNetworks: ccvConfig.applePaySupportedNetworks,
+                total: total,
+                lineItems
             }
 
             let session = new window.ApplePaySession(3, request)
 
             session.onvalidatemerchant = async (event) => {
-                console.log('At merchant validation')
+                const latestBasket = await api.ccvPayment.getBasketData({
+                    headers: {_sfdc_customer_id: api.auth.usid},
+                    parameters: {basketId: basket.basketId}
+                })
 
+                if (total.amount !== latestBasket.orderTotal) {
+                    basket.updateBasketCurrency(basket.currency, basket.basketId)
+                    setPaymentError('basket_stale_price')
+                    session.abort()
+                    return
+                }
                 orderResponsePromise = this.submitApplePayOrderCCV({
                     setIsLoading,
                     setPaymentError,
@@ -132,7 +175,6 @@ const useCCVApi = () => {
             }
 
             session.onpaymentauthorized = async (event) => {
-                console.log('At payment authorized')
                 orderResponsePromise.then(async (orderResponse) => {
                     let submitTokenResponse
                     try {
@@ -166,7 +208,6 @@ const useCCVApi = () => {
             }
 
             session.oncancel = async () => {
-                console.log('At cancel')
                 isCancelled = true
 
                 orderResponsePromise.then(async (orderResponse) => {

@@ -25,7 +25,13 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
     }
 
     if (order.status.value !== Order.ORDER_STATUS_CREATED) {
-        ccvLogger.warn(`CCV: Trying to update an order (${order.orderNo}) that is not in "Created" status via CCV-WebhookStatus.`);
+        if (order.status.value === Order.ORDER_STATUS_FAILED) {
+            // in case of apple pay cancellation, we fail the order directly in CCV-SubmitApplePayToken
+            // because we want to reopen the basket asap
+            ccvLogger.info(`CCV: order (${order.orderNo}) is already in status Failed. Skipping webhook update.`);
+        } else {
+            ccvLogger.warn(`CCV: Trying to update an order (${order.orderNo}) that is not in "Created" status via CCV-WebhookStatus.`);
+        }
         res.json({});
         return next();
     }
@@ -94,7 +100,7 @@ server.post('SubmitApplePayToken', function (req, res, next) { // eslint-disable
     if (reqBody.isCancelled) {
         Transaction.wrap(() => {
             OrderMgr.failOrder(order, true);
-            order.addNote('Order cancelled', 'Apple pay payment cancelled by customner via CCV-SubmitApplePayToken');
+            order.addNote('Order cancelled', 'Apple pay payment cancelled by customer via CCV-SubmitApplePayToken');
         });
         var { cancelCCVPaymentViaCardUrl } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
         try {

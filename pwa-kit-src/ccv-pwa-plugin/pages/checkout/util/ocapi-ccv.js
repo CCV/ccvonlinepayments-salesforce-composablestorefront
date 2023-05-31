@@ -39,6 +39,19 @@ class OcapiCCV {
 
         return await this.fetchController(path, 'POST', args, 'postApplePayToken', body)
     }
+
+    async getBasketData(...args) {
+        const required = ['basketId']
+        let requiredParametersError = checkRequiredParameters(args[0], required)
+        if (requiredParametersError) {
+            return requiredParametersError
+        }
+        let {
+            parameters: {basketId}
+        } = args[0]
+
+        return this.fetch(`baskets/${basketId}`, 'GET', args, 'getBasketData')
+    }
 }
 
 export const createControllerFetch =
