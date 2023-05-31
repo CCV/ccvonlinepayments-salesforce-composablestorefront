@@ -60,10 +60,9 @@ const CheckoutRedirect = () => {
         try {
             const urlParams = new URLSearchParams(location.search)
             const orderNo = urlParams.get('ref')
-            const token = urlParams.get('token')
 
-            if (!orderNo || !token) {
-                throw new Error(`missing ${!orderNo ? 'ref' : ''} ${!token ? 'token' : ''}`)
+            if (!orderNo) {
+                throw new Error('missing order ref')
             }
 
             // update the basket with c_order_status_pending so the loaded() check

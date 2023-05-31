@@ -47,7 +47,6 @@ describe('orderHooksCCV', function () {
             orderToken: 'orderToken',
             custom: {},
             customerEmail: 'tester_email@test.com',
-
             billingAddress: {
                 address1: 'Test Address 1',
                 city: 'CityTest',
@@ -114,11 +113,10 @@ describe('orderHooksCCV', function () {
             expect(result.status).to.equal(1);
         });
 
-        it('returnUrl should contain orderNo and orderToken', () => {
+        it('returnUrl should contain orderNo', () => {
             orderHooksCCV.afterPOST(order);
             const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
-            expect(paymentRequest.requestBody.returnUrl).to.have.string(order.orderNo)
-            .and.to.have.string(order.orderToken);
+            expect(paymentRequest.requestBody.returnUrl).to.have.string(order.orderNo);
         });
 
         it('should map to the correct language code in request', () => {

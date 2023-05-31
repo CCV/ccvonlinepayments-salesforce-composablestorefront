@@ -43,7 +43,7 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         amount: order.totalGrossPrice.value,
         currency: order.currencyCode.toLowerCase(),
         method: selectedMethodCCVId,
-        returnUrl: `${returnUrl}?ref=${order.orderNo}&token=${order.orderToken}`,
+        returnUrl: `${returnUrl}?ref=${order.orderNo}`,
         webhookUrl: URLUtils.abs('CCV-WebhookStatus', 'ref', order.orderNo, 'token', order.orderToken).toString(),
         merchantOrderReference: order.orderNo,
         description: orderDescription,
