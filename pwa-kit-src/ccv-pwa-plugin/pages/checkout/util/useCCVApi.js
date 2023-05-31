@@ -2,8 +2,8 @@ import {useCommerceAPI} from '../../../../app/commerce-api/contexts'
 import {getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
 import useBasket from '../../../../app/commerce-api/hooks/useBasket'
-import ccvConfig from '../../../ccvConfig'
 import useNavigation from '../../../../app/hooks/use-navigation'
+import {createApplePayRequest} from './ccv-utils'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()
@@ -93,51 +93,7 @@ const useCCVApi = () => {
             let orderResponsePromise = {}
             let isCancelled
 
-            // Product line items
-            const lineItems = basket.productItems.map((item) => {
-                return {
-                    label: item.itemText,
-                    type: 'final',
-                    amount: item.price
-                }
-            })
-
-            // Shipping
-            lineItems.push({
-                label: formatMessage({
-                    defaultMessage: 'Shipping',
-                    id: 'order_summary.label.shipping'
-                }),
-                type: 'final',
-                amount: basket.shippingTotal
-            })
-
-            // Tax
-            if (basket.taxation === 'net') {
-                lineItems.push({
-                    label: formatMessage({
-                        defaultMessage: 'Tax.',
-                        id: 'order_summary.label.tax'
-                    }),
-                    type: 'final',
-                    amount: basket.taxTotal
-                })
-            }
-
-            var total = {
-                label: ccvConfig.applePayMerchantLabel,
-                type: 'final',
-                amount: basket?.orderTotal
-            }
-
-            const request = {
-                countryCode: locale.split('-')[1],
-                currencyCode: basket?.currency,
-                merchantCapabilities: ['supports3DS'],
-                supportedNetworks: ccvConfig.applePaySupportedNetworks,
-                total: total,
-                lineItems
-            }
+            const request = createApplePayRequest(basket, formatMessage, locale)
 
             let session = new window.ApplePaySession(3, request)
 
@@ -147,7 +103,7 @@ const useCCVApi = () => {
                     parameters: {basketId: basket.basketId}
                 })
 
-                if (total.amount !== latestBasket.orderTotal) {
+                if (request.total.amount !== latestBasket.orderTotal) {
                     basket.updateBasketCurrency(basket.currency, basket.basketId)
                     setPaymentError('basket_stale_price')
                     session.abort()
