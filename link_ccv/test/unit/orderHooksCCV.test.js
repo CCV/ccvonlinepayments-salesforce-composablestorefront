@@ -95,6 +95,7 @@ describe('orderHooksCCV', function () {
         stubs.dw.BasketMgrMock.getCurrentBasket.returns({ UUID: '12345678abcd' });
         stubs.dw.OrderMgrMock.getOrder.returns(order);
         stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
+        stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccv3DSExemption').returns({ value: null });
         stubs.dw.PaymentMgrMock.getPaymentMethod.returns({ getPaymentProcessor: () => CCV_PAYMENT_PROCESSOR });
         stubs.CCVPaymentHelpersMock.createCCVPayment.returns(createPaymentResponse);
         stubs.dw.URLUtilsMock.abs.returns({ toString: () => 'webhook-url' });
@@ -183,6 +184,20 @@ describe('orderHooksCCV', function () {
                 orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.transactionType).to.be.undefined;
+            });
+
+            it('should add 3DS exemption to request if the site preference is enabled', () => {
+                const exemption = 'LOW_VALUE';
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccv3DSExemption').returns({ value: exemption });
+                orderHooksCCV.afterPOST(order);
+                const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
+                expect(paymentRequest.requestBody.details.authExemption).to.eql(exemption);
+            });
+            it('should not add 3DS exemption to request if the site preference is disabled', () => {
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccv3DSExemption').returns({ value: null });
+                orderHooksCCV.afterPOST(order);
+                const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
+                expect(paymentRequest.requestBody.details.authExemption).to.be.undefined;
             });
         });
 

@@ -263,6 +263,27 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="ccv3DSExemption">
+                <display-name xml:lang="x-default">CCV 3DS Exemption</display-name>
+                <description xml:lang="x-default">If a value is selected, an exemption for 3DS can be added to the payment request. This may shift the liability to the merchant.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <value>TRANSACTION_RISK_ANALYSIS</value>
+                    </value-definition>
+                    <value-definition>
+                        <value>LOW_VALUE</value>
+                    </value-definition>
+                    <value-definition>
+                        <value>SECURE_CORPORATE</value>
+                    </value-definition>
+                    <value-definition>
+                        <value>TRUSTED_BENEFICIARY</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="CCV">
@@ -271,6 +292,7 @@
                 <attribute attribute-id="ccvStoreCardsInVaultEnabled"/>
                 <attribute attribute-id="ccvAutoRefundEnabled"/>
                 <attribute attribute-id="ccvScaReadyEnabled"/>
+                <attribute attribute-id="ccv3DSExemption"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
