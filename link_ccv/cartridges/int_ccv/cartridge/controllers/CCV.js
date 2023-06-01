@@ -16,7 +16,7 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
         ccvLogger.error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef}`);
         throw new Error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef}`);
     }
-    ccvLogger.info(`CCV: Webhook called for order ${orderRef}.`);
+    ccvLogger.info(`CCV: Payment webhook called for order ${orderRef}.`);
 
     var order = OrderMgr.getOrder(orderRef, orderToken);
 
@@ -50,6 +50,39 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
     } catch (error) {
         ccvLogger.error(`Error authorizing payment: ${error}`);
     }
+
+    res.json({ success: true });
+
+    next();
+});
+
+server.post('WebhookRefund', function (req, res, next) { // eslint-disable-line consistent-return
+    var orderNo = request.httpParameters.orderNo && request.httpParameters.orderNo[0];
+    var orderToken = request.httpParameters.orderToken && request.httpParameters.orderToken[0];
+    var reqBody = JSON.parse(request.httpParameterMap.requestBodyAsString);
+    var refundTransactionId = reqBody.id;
+
+    if (!orderNo || !orderToken || !refundTransactionId) {
+        ccvLogger.error(`CCV: OrderNo, token or transactionId missing from WebhookRefund request: OrderNo: ${orderNo} transactionId: ${refundTransactionId}`);
+        throw new Error(`CCV: OrderNo, token or transactionId missing from WebhookRefund request: OrderNo: ${orderNo} transactionId: ${refundTransactionId}`);
+    }
+    ccvLogger.info(`CCV: Refund Webhook called for order ${orderNo}.`);
+
+    var order = OrderMgr.getOrder(orderNo, orderToken);
+
+    if (!order) {
+        throw new Error(`CCV: Order not found. Order ref: ${orderNo}`);
+    }
+
+    if (!order.custom.ccvRefunds ||
+        !JSON.parse(order.custom.ccvRefunds).some(refund => {
+            return refund.reference === refundTransactionId;
+        })) {
+        throw new Error(`CCV: refund with given reference ID not found among order's refund: orderNo: ${order.orderNo} refundId: ${refundTransactionId}`);
+    }
+
+    var { checkRefundStatus } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+    checkRefundStatus(order);
 
     res.json({ success: true });
 
