@@ -81,6 +81,13 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
             // if we don't specify a transactionType in the request, 'sale' wil be used by default
             requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
         }
+
+        // Exempption from 3DS
+        var ccv3DSExemption = Site.current.getCustomPreferenceValue('ccv3DSExemption').value;
+
+        if (ccv3DSExemption) {
+            requestBody.details.authExemption = ccv3DSExemption;
+        }
     }
 
     if (selectedMethodCCVId === 'card' || paymentInstrument.paymentMethod === 'CCV_KLARNA') {
