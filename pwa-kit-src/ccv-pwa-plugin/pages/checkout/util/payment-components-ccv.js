@@ -14,8 +14,12 @@ import {
     EPSIcon,
     PayconiqIcon,
     MaestroIcon,
-    KlarnaIcon
+    KlarnaIcon,
+    ApplePayIcon
 } from '../../../../app/components/icons'
+import {Button} from '@chakra-ui/react'
+import {FormattedMessage} from 'react-intl'
+import {useIntl} from 'react-intl'
 
 import {Box, Stack, Text} from '@chakra-ui/react'
 import {getCreditCardIcon} from '../../../../app/utils/cc-utils'
@@ -127,7 +131,8 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
         CCV_SOFORT: <SofortIcon width="auto" height={iconHeight} />,
         CCV_EPS: <EPSIcon width="auto" height={iconHeight} />,
         CCV_PAYCONIQ: <PayconiqIcon width="auto" height={iconHeight} />,
-        CCV_KLARNA: <KlarnaIcon width="auto" height={iconHeight} />
+        CCV_KLARNA: <KlarnaIcon width="auto" height={iconHeight} />,
+        CCV_APPLE_PAY: <ApplePayIcon width="auto" height={iconHeight} />
     }
     return iconMap[paymentMethodId] || null
 }
@@ -135,4 +140,60 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
 export const PaymentMethodIcons = ({paymentMethodId, iconHeight}) => {
     if (!paymentMethodId) return null
     return getPaymentIcons(paymentMethodId, iconHeight)
+}
+
+export const PlaceOrderButton = (props) => {
+    return props.isApplePay ? (
+        <ApplePayPlaceOrderButton {...props} />
+    ) : (
+        <DefaultPlaceOrderButton {...props} />
+    )
+}
+PlaceOrderButton.propTypes = {
+    isApplePay: PropTypes.bool
+}
+
+const DefaultPlaceOrderButton = (props) => {
+    return (
+        <Button
+            w="full"
+            onClick={props.submitOrderHandler}
+            isLoading={props.isLoading}
+            data-testid={props.dataTestid || ''}
+        >
+            <FormattedMessage defaultMessage="Place Order" id="checkout.button.place_order" />
+        </Button>
+    )
+}
+DefaultPlaceOrderButton.propTypes = {
+    submitOrderHandler: PropTypes.func,
+    dataTestid: PropTypes.string,
+    isLoading: PropTypes.bool
+}
+
+export const ApplePayPlaceOrderButton = (props) => {
+    const {locale} = useIntl()
+
+    return (
+        <Box
+            onClickCapture={() => props.submitApplePayOrderHandler(props.basket)}
+            data-testid={props.dataTestid || ''}
+        >
+            <apple-pay-button
+                buttonstyle="black"
+                type="order"
+                locale={locale}
+                lang={locale}
+                style={{
+                    '--apple-pay-button-width': '100%',
+                    '--apple-pay-button-padding': '8px 0px'
+                }}
+            />
+        </Box>
+    )
+}
+ApplePayPlaceOrderButton.propTypes = {
+    submitApplePayOrderHandler: PropTypes.func,
+    dataTestid: PropTypes.string,
+    basket: PropTypes.object
 }

@@ -5,8 +5,7 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 import React, {useEffect, useState} from 'react'
-import {FormattedMessage} from 'react-intl'
-import {Alert, AlertIcon, Box, Button, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
+import {Alert, AlertIcon, Box, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
 import {CheckoutProvider, useCheckout} from '../../../app/pages/checkout/util/checkout-context'
 import ContactInfo from '../../../app/pages/checkout/partials/contact-info'
 import ShippingAddress from '../../../app/pages/checkout/partials/shipping-address'
@@ -15,7 +14,7 @@ import useCustomer from '../../../app/commerce-api/hooks/useCustomer'
 import useBasket from '../../../app/commerce-api/hooks/useBasket'
 import CheckoutSkeleton from '../../../app/pages/checkout/partials/checkout-skeleton'
 import OrderSummary from '../../../app/components/order-summary'
-
+import {PlaceOrderButton} from './util/payment-components-ccv'
 import CCVPayment from './partials/payment-ccv'
 import useCCVApi from './util/useCCVApi'
 import {CCVPaymentProvider, useCCVPayment} from './util/ccv-context'
@@ -24,17 +23,53 @@ const Checkout = () => {
     const {globalError, step} = useCheckout()
     const [isLoading, setIsLoading] = useState(false)
     const ccv = useCCVApi()
+    const basket = useBasket()
+    const {paymentError, setPaymentError, applePayLoaded, setApplePayLoaded} = useCCVPayment()
 
-    const {paymentError, setPaymentError} = useCCVPayment()
-
+    const isApplePay =
+        basket.paymentInstruments &&
+        basket.paymentInstruments[0].paymentMethodId === 'CCV_APPLE_PAY' &&
+        applePayLoaded
     // Scroll to the top when we get a global error
+
     useEffect(() => {
         if (globalError || (step === 4 && !paymentError)) {
             window.scrollTo({top: 0})
         }
     }, [globalError, step])
 
-    const submitOrder = async () => ccv.submitOrderCCV(setIsLoading, setPaymentError)
+    useEffect(() => {
+        const script = document.createElement('script')
+
+        script.src = 'https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js'
+        script.async = true
+
+        document.body.appendChild(script)
+        setApplePayLoaded(true)
+
+        return () => {
+            document.body.removeChild(script)
+            setApplePayLoaded(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (window.ApplePaySession) {
+            var merchantIdentifier = 'example.com.store'
+            var promise = window.ApplePaySession.canMakePaymentsWithActiveCard(merchantIdentifier)
+            promise.then(function (canMakePayments) {
+                if (canMakePayments) {
+                    console.log(123)
+                }
+            })
+        }
+    }, [applePayLoaded])
+
+    const onApplePayButtonClicked = async () => {
+        ccv.onApplePayButtonClicked({setPaymentError, setIsLoading})
+    }
+
+    const submitOrder = async () => ccv.submitOrderCCV({setIsLoading, setPaymentError})
 
     return (
         <Box background="gray.50" flex="1">
@@ -62,17 +97,14 @@ const Checkout = () => {
                             {step === 4 && (
                                 <Box pt={3} display={{base: 'none', lg: 'block'}}>
                                     <Container variant="form">
-                                        <Button
-                                            w="full"
-                                            onClick={submitOrder}
+                                        <PlaceOrderButton
+                                            submitOrderHandler={submitOrder}
+                                            submitApplePayOrderHandler={onApplePayButtonClicked}
                                             isLoading={isLoading}
+                                            isApplePay={isApplePay}
+                                            basket={basket}
                                             data-testid="sf-checkout-place-order-btn"
-                                        >
-                                            <FormattedMessage
-                                                defaultMessage="Place Order"
-                                                id="checkout.button.place_order"
-                                            />
-                                        </Button>
+                                        />
                                     </Container>
                                 </Box>
                             )}
@@ -84,12 +116,13 @@ const Checkout = () => {
 
                         {step === 4 && (
                             <Box display={{base: 'none', lg: 'block'}} pt={2}>
-                                <Button w="full" onClick={submitOrder} isLoading={isLoading}>
-                                    <FormattedMessage
-                                        defaultMessage="Place Order"
-                                        id="checkout.button.place_order"
-                                    />
-                                </Button>
+                                <PlaceOrderButton
+                                    submitOrderHandler={submitOrder}
+                                    submitApplePayOrderHandler={onApplePayButtonClicked}
+                                    isLoading={isLoading}
+                                    isApplePay={isApplePay}
+                                    basket={basket}
+                                />
                             </Box>
                         )}
                     </GridItem>
@@ -109,12 +142,14 @@ const Checkout = () => {
                     borderColor="gray.100"
                 >
                     <Container variant="form">
-                        <Button w="full" onClick={submitOrder} isLoading={isLoading}>
-                            <FormattedMessage
-                                defaultMessage="Place Order"
-                                id="checkout.button.place_order"
-                            />
-                        </Button>
+                        <PlaceOrderButton
+                            submitOrderHandler={submitOrder}
+                            submitApplePayOrderHandler={onApplePayButtonClicked}
+                            isLoading={isLoading}
+                            isApplePay={isApplePay}
+                            basket={basket}
+                            dataTestid="sf-checkout-place-order-btn"
+                        />
                     </Container>
                 </Box>
             )}

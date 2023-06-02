@@ -5,6 +5,7 @@ var OrderMgr = require('dw/order/OrderMgr');
 var Order = require('dw/order/Order');
 var Transaction = require('dw/system/Transaction');
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
+var Site = require('dw/system/Site');
 
 server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line consistent-return
     var orderRef = request.httpParameters.ref && request.httpParameters.ref[0];
@@ -12,17 +13,27 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
     var reqBody = JSON.parse(request.httpParameterMap.requestBodyAsString);
 
     if (!orderRef || !orderToken) {
-        throw new Error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef} token: ${orderToken}`);
+        ccvLogger.error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef}`);
+        throw new Error(`CCV: OrderNo or token missing from request: OrderNo: ${orderRef}`);
     }
+    ccvLogger.info(`CCV: Webhook called for order ${orderRef}.`);
 
     var order = OrderMgr.getOrder(orderRef, orderToken);
 
     if (!order) {
-        throw new Error('CCV: Order not found.');
+        throw new Error(`CCV: Order not found. Order ref: ${orderRef}`);
     }
 
     if (order.status.value !== Order.ORDER_STATUS_CREATED) {
-        throw new Error('CCV: Trying to update an order that is not in "Created" status.');
+        if (order.status.value === Order.ORDER_STATUS_FAILED) {
+            // in case of apple pay cancellation, we fail the order directly in CCV-SubmitApplePayToken
+            // because we want to reopen the basket asap
+            ccvLogger.info(`CCV: order (${order.orderNo}) is already in status Failed. Skipping webhook update.`);
+        } else {
+            ccvLogger.warn(`CCV: Trying to update an order (${order.orderNo}) that is not in "Created" status via CCV-WebhookStatus.`);
+        }
+        res.json({});
+        return next();
     }
 
     if (reqBody.id !== order.custom.ccvTransactionReference) {
@@ -42,6 +53,87 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
 
     res.json({ success: true });
 
+    next();
+});
+
+server.post('SubmitApplePayToken', function (req, res, next) { // eslint-disable-line consistent-return
+    var reqBody = JSON.parse(request.httpParameterMap.requestBodyAsString);
+
+    var orderNo = reqBody.orderNo;
+    var orderToken = reqBody.orderToken;
+
+    if (!orderNo || !orderToken) {
+        throw new Error(`CCV: OrderNo or token missing from request: OrderNo: ${orderNo} token: ${orderToken}`);
+    }
+
+    // we use this service call as an authorization check - it reuses the slas auth token from the pwa request
+    // if the user tries to access another user's order this call will return 404
+    var ocapiService = require('*/cartridge/scripts/services/ocapiService.js');
+    var getOrderResponse = ocapiService.createOcapiService().call({
+        requestPath: `https://${request.httpHost}/s/${Site.current.ID}/dw/shop/v23_1/orders/${orderNo}`,
+        requestMethod: 'GET'
+    });
+
+    if (!getOrderResponse.ok) {
+        ccvLogger.error(`Order (${orderNo}) not accessoble in request.`);
+        res.setStatusCode(401);
+        res.json({});
+        return next();
+    }
+
+    var order = OrderMgr.getOrder(orderNo, orderToken);
+
+    if (!order) {
+        throw new Error('CCV: Order not found.');
+    }
+
+    if (order.status.value !== Order.ORDER_STATUS_CREATED) {
+        throw new Error('CCV: Trying to update an order that is not in "Created" status.');
+    }
+
+    if (order.paymentInstrument.paymentMethod !== 'CCV_APPLE_PAY') {
+        throw new Error('CCV: SubmitApplePayToken called with on non-apple pay order.');
+    }
+
+    // ============ CANCEL PAYMENT ================
+    // if the user clicked Cancel on the apple payment sheet we fail the order and cancel the CCV payment
+    if (reqBody.isCancelled) {
+        Transaction.wrap(() => {
+            OrderMgr.failOrder(order, true);
+            order.addNote('Order cancelled', 'Apple pay payment cancelled by customer via CCV-SubmitApplePayToken');
+        });
+        var { cancelCCVPaymentViaCardUrl } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+        try {
+            cancelCCVPaymentViaCardUrl({
+                absPath: order.custom.ccvCancelUrl
+            });
+        } catch (error) {
+            ccvLogger.error(`CCV: cancel apple pay payment request failed, ${error}`);
+        }
+        res.json({});
+        return next();
+    }
+
+    // ============= SUBMIT APPLE PAY TOKEN ================
+    var { postApplePayToken } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+
+    try {
+        postApplePayToken({
+            absPath: order.custom.ccvCardDataUrl,
+            requestBody: { encryptedToken: reqBody.encryptedToken }
+        });
+    } catch (error) {
+        ccvLogger.error(`Failed submitting apple pay token for order ${order.orderNo}: ${error}`);
+
+        Transaction.wrap(() => {
+            OrderMgr.failOrder(order, true);
+            order.addNote('Order failed', 'postApplePayToken call to CCV failed');
+        });
+
+        throw new Error(`Submitting apple token to ccv failed: ${error}`);
+    }
+
+    res.json({ status: 'success' });
     next();
 });
 

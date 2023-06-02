@@ -36,14 +36,14 @@ function callCCVService(svcParams) {
             svc.addHeader('charset', 'utf-8');
             svc.setRequestMethod(params.requestMethod || 'POST');
 
-            var url = svc.configuration.credential.URL + (params.path || '');
+            var url = params.absPath || svc.configuration.credential.URL + (params.path || '');
             var apiKey = svc.configuration.credential.password;
             var authHeader = 'Basic ' + StringUtils.encodeBase64(apiKey + ':');
 
             svc.addHeader('Authorization', authHeader);
-
             // svc.addHeader('Idempotency-Reference', params.idempotencyReference);
             svc.setURL(url);
+
 
             return params.requestBody ? JSON.stringify(params.requestBody) : '';
         },
@@ -84,6 +84,32 @@ function createCCVPayment(params) {
         path: CCV_CONSTANTS.PATH.CREATE_PAYMENT,
         requestMethod: 'POST',
         requestBody: params.requestBody
+    });
+}
+
+/**
+ * Creates a payment in CCV hosted-payment-page. The returned payUrl is where we have to
+ * redirect the customer so they can complete their payment
+ * @param {Object} params parameters passed in the http request
+ * @returns {Object} service call response
+ */
+function postApplePayToken(params) {
+    return callCCVService({
+        absPath: params.absPath,
+        requestMethod: 'POST',
+        requestBody: params.requestBody
+    });
+}
+
+/**
+ * Cancels a CCV payment via the provided cancel URL
+ * @param {Object} params parameters passed in the http request
+ * @returns {Object} service call response
+ */
+function cancelCCVPaymentViaCardUrl(params) {
+    return callCCVService({
+        absPath: params.absPath,
+        requestMethod: 'POST'
     });
 }
 
@@ -183,7 +209,7 @@ function refundCCVPayment({ order, amount, description }) {
 /**
  * Cancels a CCV payment if it is not yet authorized
  * @param {{dw.order.Order}} order order
- * @returns {object|null} service response
+ * @returns {Object|null} service response
  */
 function cancelCCVPayment({ order }) {
     var reference = order.custom.ccvTransactionReference;
@@ -201,5 +227,7 @@ module.exports = {
     checkCCVTransactions,
     getCCVPaymentMethods,
     refundCCVPayment,
-    cancelCCVPayment
+    cancelCCVPayment,
+    cancelCCVPaymentViaCardUrl,
+    postApplePayToken
 };

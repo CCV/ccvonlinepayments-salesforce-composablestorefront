@@ -27,6 +27,12 @@ const useShopper = (opts = {}) => {
     useEffect(() => {
         const hasBasket = basket?.loaded
 
+        // if c_order_status_pending exists, the order payment is being checked
+        // and we don't want to create a new basket so we return early
+        if (hasBasket && basket.c_order_status_pending) {
+            return
+        }
+
         // We have a customer but no basket, so we fetch a new or existing basket
         if (customer.isInitialized && !hasBasket) {
             basket.getOrCreateBasket()

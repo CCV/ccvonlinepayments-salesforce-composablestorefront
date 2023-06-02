@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import React, {useEffect, useState, Fragment} from 'react'
+import React, {useEffect, useContext, useState, Fragment} from 'react'
 import {FormattedMessage, FormattedNumber} from 'react-intl'
 import {
     Box,
@@ -34,11 +34,13 @@ import CartItemVariantImage from '../../components/item-variant/item-image'
 import CartItemVariantName from '../../components/item-variant/item-name'
 import CartItemVariantAttributes from '../../components/item-variant/item-attributes'
 import CartItemVariantPrice from '../../components/item-variant/item-price'
+import {BasketContext} from '../../commerce-api/contexts'
 
 const CheckoutConfirmation = () => {
     const navigate = useNavigation()
     const basket = useBasket()
     const customer = useCustomer()
+    const {setBasket} = useContext(BasketContext)
 
     // The order data will initially be stored as our basket when first coming to this
     // page. We capture it in local state to use for our UI. A new basket will be automatically
@@ -65,6 +67,14 @@ const CheckoutConfirmation = () => {
     if (!order || !order.orderNo) {
         return null
     }
+
+    // we remove c_order_status_pending to unblock the creation of a new basket
+    useEffect(() => {
+        setBasket({
+            ...order,
+            c_order_status_pending: false
+        })
+    }, [])
 
     const CardIcon = getCreditCardIcon(order.paymentInstruments[0].paymentCard?.cardType)
 
