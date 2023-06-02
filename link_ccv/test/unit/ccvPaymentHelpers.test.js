@@ -16,7 +16,12 @@ const {
     'dw/system/Transaction': stubs.dw.TransactionMock,
     'dw/value/Money': stubs.dw.Money,
     'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction,
-    '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpers
+    '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpers,
+    'dw/web/URLUtils': stubs.dw.URLUtilsMock,
+    'dw/system/Site': stubs.dw.SiteMock,
+    'dw/web/URLAction': stubs.dw.URLActionMock,
+    'dw/web/URLParameter': stubs.dw.URLParameterMock,
+    'dw/system/Logger': stubs.dw.loggerMock
 });
 const Money = require('./helpers/mocks/dw/value/Money');
 const HTTPService = require('./helpers/mocks/dw/svc/HTTPFormService');
@@ -61,6 +66,7 @@ describe('ccvPaymentHelpers', function () {
                 }
             };
         } });
+        stubs.dw.URLUtilsMock.abs.returns({ toString: () => 'some-url' });
     });
     context('#refundCCVPayment:', function () {
         it('should be a "reversal" if the transaction type is "AUTH"', () => {

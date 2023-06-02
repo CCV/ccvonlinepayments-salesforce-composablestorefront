@@ -18,6 +18,8 @@ const HookMgr = require('./dw/system/HookMgr');
 const Logger = require('./dw/system/Logger');
 const OrderMgr = require('./dw/order/OrderMgr');
 const URLUtils = require('./dw/web/URLUtils');
+const URLParameter = require('./dw/web/URLParameter');
+const URLAction = require('./dw/web/URLAction');
 const UUIDUtils = require('./dw/util/UUIDUtils');
 const Status = require('./dw/system/Status');
 const Money = require('./dw/value/Money');
@@ -182,6 +184,8 @@ const dw = {
     ProfileMock: ProfileMock,
     OrderMgrMock: sandbox.stub(OrderMgr),
     URLUtilsMock: sandbox.stub(URLUtils),
+    URLParameterMock: sandbox.stub(URLParameter),
+    URLActionMock: sandbox.stub(URLAction),
     UUIDUtilsMock: sandbox.stub(UUIDUtils),
     OrderPaymentInstrumentMock,
     PaymentProcessorMock,
@@ -223,6 +227,8 @@ const initMocks = function () {
     // RESETS
     sandbox.reset();
     Object.keys(dw.URLUtilsMock).map(i => dw.URLUtilsMock[i].reset());
+    Object.keys(dw.URLParameterMock).map(i => dw.URLParameterMock[i].reset());
+    Object.keys(dw.URLActionMock).map(i => dw.URLActionMock[i].reset());
     Object.keys(dw.loggerMock).map(i => dw.loggerMock[i].reset());
     Object.keys(dw.UUIDUtilsMock).map(i => dw.UUIDUtilsMock[i].reset());
     Object.keys(dw.OrderMgrMock).map(i => dw.OrderMgrMock[i].reset());
@@ -267,6 +273,7 @@ const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scr
     'dw/order/ProductLineItem': dw.ProductLineItem,
     'dw/order/ShippingLineItem': dw.ShippingLineItem,
     'dw/order/ProductShippingLineItem': dw.ProductShippingLineItem,
+    'dw/system/Logger': dw.loggerMock,
     'dw/order/PriceAdjustment': dw.PriceAdjustment,
     '*/cartridge/models/KlarnaModelsCCV.js': require('../../../../cartridges/int_ccv/cartridge/models/KlarnaModelsCCV')
 });

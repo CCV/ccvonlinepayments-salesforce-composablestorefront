@@ -161,12 +161,24 @@ function getCCVPaymentMethods() {
 function refundCCVPayment({ order, amount, description }) {
     var Transaction = require('dw/system/Transaction');
     var PaymentTransaction = require('dw/order/PaymentTransaction');
+    var URLUtils = require('dw/web/URLUtils');
+    var Site = require('dw/system/Site');
+    var URLAction = require('dw/web/URLAction');
+    var URLParameter = require('dw/web/URLParameter');
+
 
     var ccvRefunds = JSON.parse(order.custom.ccvRefunds || '[]');
 
+    // we need to construct the URL in this way because otherwise the site gets set to 'default' and the url is invalid
+    var urlAction = new URLAction('CCV-WebhookRefund', Site.current.ID);
+    var orderParam = new URLParameter('orderNo', order.orderNo);
+    var tokenParam = new URLParameter('orderToken', order.orderToken);
+    var webhookUrl = URLUtils.abs(urlAction, orderParam, tokenParam);
+
     var requestBody = {
         reference: order.custom.ccvTransactionReference,
-        description: description
+        description: description,
+        webhookUrl: webhookUrl.toString()
     };
 
     var isReversal = order.paymentInstruments[0].paymentTransaction.type.value === PaymentTransaction.TYPE_AUTH;
