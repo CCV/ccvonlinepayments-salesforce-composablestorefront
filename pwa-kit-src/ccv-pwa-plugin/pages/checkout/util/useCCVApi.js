@@ -33,13 +33,22 @@ const useCCVApi = () => {
 
             return response
         },
-        async submitOrderCCV({setIsLoading, setPaymentError}) {
+        async submitOrderCCV({setIsLoading, setPaymentError, creditCardData}) {
             setIsLoading(true)
             setPaymentError(null)
 
             try {
                 const orderResponse = await this.createOrder()
-
+                if (orderResponse.c_card_data_url) {
+                    const cardDataResponse = await fetch(orderResponse.c_card_data_url, {
+                        method: 'POST',
+                        body: JSON.stringify(creditCardData),
+                        headers: {
+                            "Content-Type": "application/json",
+                          },
+                    })
+                    console.log(cardDataResponse)
+                }
                 // redirect to hosted payment page
                 window.location.href = orderResponse.c_ccvPayUrl
             } catch (error) {

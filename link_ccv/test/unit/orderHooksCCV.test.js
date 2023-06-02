@@ -68,7 +68,8 @@ describe('orderHooksCCV', function () {
                     phone: '1234-1234-522',
                     custom: { phone_country: '024' }
                 }
-            }]
+            }],
+            paymentInstrument: this.paymentInstruments[0]
         };
 
         paymentInstrument = order.paymentInstruments[0];
