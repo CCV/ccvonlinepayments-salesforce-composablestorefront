@@ -16,6 +16,8 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock
 });
 
+const Order = require('./helpers/mocks/dw/order/Order');
+
 describe('authorizeCCV.js', function () {
     let order;
     let paymentInstrument;
@@ -33,6 +35,9 @@ describe('authorizeCCV.js', function () {
         paymentInstrument = new stubs.dw.OrderPaymentInstrumentMock();
         order.custom.ccvTransactionReference = 'testTransactionRef';
         order.paymentInstruments = [paymentInstrument];
+        order.setPaymentStatus = (val) => {
+            order.paymentStatus = val;
+        };
         paymentInstrument.paymentTransaction = new stubs.dw.PaymentTransactionMock();
         paymentInstrument.paymentTransaction.amount = new stubs.dw.MoneyMock();
         transactionStatusResponse = {
@@ -231,6 +236,30 @@ describe('authorizeCCV.js', function () {
             handleAuthorizationResult(result, order);
             expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
             expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.called;
+        });
+
+        it('should set the status to PAID if the payment is authorized and the transaction type is "sale"', () => {
+            const result = authorizeCCV(order);
+            handleAuthorizationResult(result, order);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+            expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.called;
+            expect(order.paymentStatus).to.eql(Order.PAYMENT_STATUS_PAID);
+        });
+
+        it('should NOT set the status to PAID if the payment is authorize and the transaction type is not "sale"', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'eur',
+                method: 'card',
+                type: 'authorise',
+                status: 'success'
+            });
+
+            const result = authorizeCCV(order);
+            handleAuthorizationResult(result, order);
+            expect(stubs.dw.OrderMgrMock.failOrder).to.not.have.been.called;
+            expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.called;
+            expect(order.paymentStatus).not.to.eql(Order.PAYMENT_STATUS_PAID);
         });
 
         it('should create a new customer payment instrument if ccvStoreCardsInVaultEnabled is enabled and there is vaultAccessToken in response', () => {

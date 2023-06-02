@@ -73,6 +73,9 @@ function handlePriceOrCurrencyMismatch(order, authResult) {
  * @param {Object} authResult authorization result object
  */
 function handleSuccess(order, authResult) {
+    var { CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+    var Order = require('dw/order/Order');
+
     var orderTotal = order.totalGrossPrice;
     var paymentInstrument = order.paymentInstruments[0];
     var { transactionStatusResponse } = authResult;
@@ -89,6 +92,10 @@ function handleSuccess(order, authResult) {
     }
 
     OrderMgr.placeOrder(order);
+
+    if (transactionStatusResponse.type === CCV_CONSTANTS.TRANSACTION_TYPE.SALE) {
+        order.setPaymentStatus(Order.PAYMENT_STATUS_PAID);
+    }
 
     HookMgr.callHook('ccv.order.update.afterOrderAuthorized', 'afterOrderAuthorized', {
         order,

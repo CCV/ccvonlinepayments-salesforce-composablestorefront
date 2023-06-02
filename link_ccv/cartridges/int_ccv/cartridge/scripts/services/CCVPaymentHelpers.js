@@ -20,7 +20,7 @@ var CCV_CONSTANTS = {
     },
     TRANSACTION_TYPE: {
         AUTHORISE: 'authorise',
-        CAPTURE: 'sale'
+        SALE: 'sale'
     }
 };
 
