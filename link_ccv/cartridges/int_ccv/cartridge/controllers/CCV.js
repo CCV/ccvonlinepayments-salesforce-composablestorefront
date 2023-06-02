@@ -48,11 +48,11 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
             handleAuthorizationResult(authResult, order);
         });
     } catch (error) {
-        ccvLogger.error(`Error authorizing payment: ${error}`);
+        ccvLogger.error(`CCV-WebhookStatus: Error authorizing payment: ${error}`);
+        res.setStatusCode(500);
     }
 
-    res.json({ success: true });
-
+    res.json({});
     next();
 });
 
