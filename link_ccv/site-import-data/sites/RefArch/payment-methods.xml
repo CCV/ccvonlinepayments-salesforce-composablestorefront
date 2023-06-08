@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<payment-settings xmlns="http://www.demandware.com/xml/impex/paymentsettings/2009-09-15">
+
+    <payment-method method-id="CCV_CREDIT_CARD">
+        <name xml:lang="x-default">Credit Card</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">card</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_PAYPAL">
+        <name xml:lang="x-default">PayPal</name>
+        <description xml:lang="x-default">PayPal via CCV</description>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">paypal</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_IDEAL">
+        <name xml:lang="x-default">iDEAL</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">ideal</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_SOFORT">
+        <name xml:lang="x-default">Sofort</name>
+        <enabled-flag>true</enabled-flag>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">sofort</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_GIROPAY">
+        <name xml:lang="x-default">Giropay</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">giropay</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_CREDIT_CARD_INLINE">
+        <name xml:lang="x-default">Credit card inline</name>
+        <description xml:lang="x-default">Credit card</description>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">card</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_BANCONTACT">
+        <name xml:lang="x-default">Bancontact</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">card</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_LANDING_PAGE">
+        <name xml:lang="x-default">Landing page</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">landingpage</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_KLARNA">
+        <name xml:lang="x-default">Landing page</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_DEFAULT</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">klarna</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+    <payment-method method-id="CCV_APPLE_PAY">
+        <name xml:lang="x-default">Apple Pay</name>
+        <enabled-flag>true</enabled-flag>
+        <processor-id>CCV_APPLE_PAY</processor-id>
+        <custom-attributes>
+            <custom-attribute attribute-id="ccvMethodId">applepay</custom-attribute>
+        </custom-attributes>
+    </payment-method>
+
+</payment-settings>

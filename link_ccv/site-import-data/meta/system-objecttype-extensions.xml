@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <type-extension type-id="Basket">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccvTransactionReference">
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+    </type-extension>
+
+    <type-extension type-id="CustomerAddress">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="phone_country">
+                <display-name xml:lang="x-default">Phone country code</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="CCV">
+                <display-name xml:lang="x-default">CCV</display-name>
+                <attribute attribute-id="phone_country"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="Order">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccvTransactionReference">
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvRefunds">
+                <type>text</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvHasPendingRefunds">
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvManualIntervention">
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvManualInterventionRefund">
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvPriceOrCurrencyMismatch">
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>true</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvPayUrl">
+                <display-name xml:lang="x-default">CCV Pay URL</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvCardDataUrl">
+                <display-name xml:lang="x-default">CCV Card Data URL</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvCancelUrl">
+                <display-name xml:lang="x-default">CCV Cancel URL</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="ccv">
+                <display-name xml:lang="x-default">CCV</display-name>
+                <attribute attribute-id="ccvTransactionReference"/>
+                <attribute attribute-id="ccvRefunds"/>
+                <attribute attribute-id="ccvHasPendingRefunds"/>
+                <attribute attribute-id="ccvManualIntervention"/>
+                <attribute attribute-id="ccvManualInterventionRefund"/>
+                <attribute attribute-id="ccvPriceOrCurrencyMismatch"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="OrderAddress">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="phone_country">
+                <display-name xml:lang="x-default">Phone country code</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="CCV">
+                <display-name xml:lang="x-default">CCV attributes</display-name>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="CustomerPaymentInstrument">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccv_save_card">
+                <display-name xml:lang="x-default">Save card information</display-name>
+                <description xml:lang="x-default">Whether to save the card</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_issuer_id">
+                <display-name xml:lang="x-default">CCV issuer ID</display-name>
+                <description xml:lang="x-default">Selected option required for some CCV payment methods</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_method_id">
+                <display-name xml:lang="x-default">CCV method id</display-name>
+                <description xml:lang="x-default">Payment method ID in CCV system</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvVaultAccessToken">
+                <display-name xml:lang="x-default">CCV vault access token</display-name>
+                <description xml:lang="x-default">CCV token of the payment method</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="ccv">
+                <display-name xml:lang="x-default">CCV payment processor</display-name>
+                <attribute attribute-id="ccv_issuer_id"/>
+                <attribute attribute-id="ccv_method_id"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="OrderPaymentInstrument">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccv_issuer_id">
+                <display-name xml:lang="x-default">CCV issuer ID</display-name>
+                <description xml:lang="x-default">Selected option required for some CCV payment methods</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_method_id">
+                <display-name xml:lang="x-default">CCV method id</display-name>
+                <description xml:lang="x-default">Payment method ID in CCV system</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvVaultAccessToken">
+                <display-name xml:lang="x-default">CCV vault access token</display-name>
+                <description xml:lang="x-default">CCV token of the payment method</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="ccv">
+                <display-name xml:lang="x-default">CCV payment processor</display-name>
+                <attribute attribute-id="ccv_issuer_id"/>
+                <attribute attribute-id="ccv_method_id"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="PaymentMethod">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccvMethodId">
+                <description xml:lang="x-default">The payment method id in CCV</description>
+                <type>string</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="ccv">
+                <display-name xml:lang="x-default">ccv</display-name>
+                <attribute attribute-id="ccvMethodId"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="PaymentTransaction">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccv_transaction_status">
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_failure_code">
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="CCV">
+                <display-name xml:lang="x-default">CCV</display-name>
+                <attribute attribute-id="ccv_transaction_status"/>
+                <attribute attribute-id="ccv_failure_code"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+    <type-extension type-id="SitePreferences">
+        <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccvCardsAuthoriseEnabled">
+                <description xml:lang="x-default">If set to true, card payments' transaction type will be set to 'authorise'. If disabled, the type will be 'sale' .</description>
+                <type>boolean</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvStoreCardsInVaultEnabled">
+                <description xml:lang="x-default">Toggle the 'store in vault' functionality for cards</description>
+                <type>boolean</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvAutoRefundEnabled">
+                <display-name xml:lang="x-default">Auto Refund Enabled</display-name>
+                <description xml:lang="x-default">If enabled, orders with mismatching totals/currency in SFCC compared to CCV will be automatically refunded in updateTransactionStatuses job</description>
+                <type>boolean</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvScaReadyEnabled">
+                <display-name xml:lang="x-default">scaReady enabled</display-name>
+                <description xml:lang="x-default">If enabled CCV will validate the SCA fields sent on the createPayment request, and throw an error if some field is missing or malformed.</description>
+                <type>boolean</type>
+                <localizable-flag>false</localizable-flag>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv3DSExemption">
+                <display-name xml:lang="x-default">CCV 3DS Exemption</display-name>
+                <description xml:lang="x-default">If a value is selected, an exemption for 3DS can be added to the payment request. This may shift the liability to the merchant.</description>
+                <type>enum-of-string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <value-definitions>
+                    <value-definition>
+                        <value>TRANSACTION_RISK_ANALYSIS</value>
+                    </value-definition>
+                    <value-definition>
+                        <value>LOW_VALUE</value>
+                    </value-definition>
+                    <value-definition>
+                        <value>SECURE_CORPORATE</value>
+                    </value-definition>
+                    <value-definition>
+                        <value>TRUSTED_BENEFICIARY</value>
+                    </value-definition>
+                </value-definitions>
+            </attribute-definition>
+        </custom-attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="CCV">
+                <display-name xml:lang="x-default">ccv</display-name>
+                <attribute attribute-id="ccvCardsAuthoriseEnabled"/>
+                <attribute attribute-id="ccvStoreCardsInVaultEnabled"/>
+                <attribute attribute-id="ccvAutoRefundEnabled"/>
+                <attribute attribute-id="ccvScaReadyEnabled"/>
+                <attribute attribute-id="ccv3DSExemption"/>
+            </attribute-group>
+        </group-definitions>
+    </type-extension>
+
+</metadata>

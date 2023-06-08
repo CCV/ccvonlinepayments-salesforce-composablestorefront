@@ -1,0 +1,64 @@
+{
+	"step-types":{
+	   "script-module-step":[
+		  {
+			 "@type-id":"custom.CCV.UpdateTransactionStatuses",
+			 "@supports-parallel-execution":"false",
+			 "@supports-site-context":"true",
+			 "@supports-organization-context":"false",
+			 "description":"Checks and updates CCV transaction statuses for orders in status Created",
+			 "module":"int_ccv/cartridge/scripts/jobs/updateTransactionStatuses.js",
+			 "function":"execute",
+			 "transactional":"true",
+			 "timeout-in-seconds":"900",
+			 "parameters":{
+				"parameter": [
+					{
+						"@name":"cutoffPeriodInDays",
+						"@type":"double",
+						"@required":"true",
+						"description":"The job will only process orders older than the number of days set here.",
+						"default-value":"1"
+					  }
+				]
+			 },
+			 "status-codes":{
+                "status": [
+                    {
+                        "@code": "ERROR",
+                        "description": "Used when an error occurred."
+                    },
+                    {
+                        "@code": "OK",
+                        "description": "Used when execution was successful."
+                    }
+                ]
+			 }
+		  },
+		  {
+			 "@type-id":"custom.CCV.ProcessRefunds",
+			 "@supports-parallel-execution":"false",
+			 "@supports-site-context":"true",
+			 "@supports-organization-context":"false",
+			 "description":"Updates refund status on orders with pending refunds",
+			 "module":"int_ccv/cartridge/scripts/jobs/processRefunds.js",
+			 "function":"execute",
+			 "transactional":"true",
+			 "timeout-in-seconds":"900",
+			 "parameters":{},
+			 "status-codes":{
+                "status": [
+                    {
+                        "@code": "ERROR",
+                        "description": "Used when an error occurred."
+                    },
+                    {
+                        "@code": "OK",
+                        "description": "Used when execution was successful."
+                    }
+                ]
+			 }
+		  }
+	   ]
+	}
+ }
