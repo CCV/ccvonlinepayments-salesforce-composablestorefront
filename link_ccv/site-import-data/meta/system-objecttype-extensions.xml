@@ -164,6 +164,13 @@
 
     <type-extension type-id="OrderPaymentInstrument">
         <custom-attribute-definitions>
+            <attribute-definition attribute-id="ccv_save_card">
+                <display-name xml:lang="x-default">Save card information</display-name>
+                <description xml:lang="x-default">Whether to save the card</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
             <attribute-definition attribute-id="ccv_issuer_id">
                 <display-name xml:lang="x-default">CCV issuer ID</display-name>
                 <description xml:lang="x-default">Selected option required for some CCV payment methods</description>
