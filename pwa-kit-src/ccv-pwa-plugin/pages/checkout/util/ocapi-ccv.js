@@ -7,7 +7,7 @@ class OcapiCCV {
         this.fetchController = createControllerFetch(config)
     }
 
-    // based on ocapper-shopper-orders#createOrder
+    // based on ocapi-shopper-orders#createOrder
     async createOrder(...args) {
         const required = ['body', 'ccvReturnUrl']
         let requiredParametersError = checkRequiredParameters(args[0], required)
