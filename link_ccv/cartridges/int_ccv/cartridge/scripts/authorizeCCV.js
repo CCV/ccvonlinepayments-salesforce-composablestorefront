@@ -26,6 +26,9 @@ exports.authorizeCCV = function (order, context) {
     var status = transactionStatusResponse.status;
     var paymentInstrument = order.paymentInstruments[0];
 
+    // childReferenceId is present only when paying with Landing page payments
+    order.custom.ccvChildTransactionReference = transactionStatusResponse.childReferenceId || ''; // eslint-disable-line no-param-reassign
+
     paymentInstrument.paymentTransaction.custom.ccv_transaction_status = status;
     paymentInstrument.paymentTransaction.custom.ccv_failure_code = transactionStatusResponse.failureCode || null;
 
