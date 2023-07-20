@@ -3,18 +3,17 @@ import {getAppOrigin} from 'pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
 import useBasket from '../../../../app/commerce-api/hooks/useBasket'
 import useNavigation from '../../../../app/hooks/use-navigation'
-import useMultiSite from '../../../../app/hooks/use-multi-site'
 import {createApplePayRequest} from './ccv-utils'
+import {getConfig} from 'pwa-kit-runtime/utils/ssr-config'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()
     const {locale, formatMessage} = useIntl()
     const basket = useBasket()
-    const {site} = useMultiSite()
     const navigate = useNavigation()
-    const {l10n} = site
+    const localeConfig = getConfig()?.app?.url?.locale
 
-    const redirectWithLocale = l10n.supportedLocales?.length > 1
+    const redirectWithLocale = localeConfig !== 'none'
 
     return {
         // based on useBasket#createOrder
@@ -22,7 +21,13 @@ const useCCVApi = () => {
             let ccvReturnUrl = `${getAppOrigin()}/checkout/handleShopperRedirect`
 
             if (redirectWithLocale) {
-                ccvReturnUrl = `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
+                let localeAsQueryParam = localeConfig === 'query_param'
+
+                if (localeAsQueryParam) {
+                    ccvReturnUrl = `${getAppOrigin()}/checkout/handleShopperRedirect?locale=${locale}`
+                } else {
+                    ccvReturnUrl = `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
+                }
             }
 
             const parameters = {
