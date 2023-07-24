@@ -82,7 +82,6 @@ const CCRadioGroup = ({
                                 border="1px dashed"
                                 borderColor="gray.200"
                                 color="blue.600"
-                                height={{lg: 'full'}}
                                 minHeight={['44px', '44px', '154px']}
                                 rounded="base"
                                 fontWeight="medium"
