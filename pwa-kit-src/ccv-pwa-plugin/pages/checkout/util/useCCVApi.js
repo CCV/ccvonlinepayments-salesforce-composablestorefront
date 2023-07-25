@@ -4,19 +4,36 @@ import {useIntl} from 'react-intl'
 import useBasket from '../../../../app/commerce-api/hooks/useBasket'
 import useNavigation from '../../../../app/hooks/use-navigation'
 import {createApplePayRequest} from './ccv-utils'
+import {getConfig} from 'pwa-kit-runtime/utils/ssr-config'
 
 const useCCVApi = () => {
     const api = useCommerceAPI()
     const {locale, formatMessage} = useIntl()
     const basket = useBasket()
     const navigate = useNavigation()
+    const localeConfig = getConfig()?.app?.url?.locale
+
+    const redirectWithLocale = localeConfig !== 'none'
 
     return {
         // based on useBasket#createOrder
         async createOrder({applePayValidationUrl} = {}) {
-            const parameters = {
-                ccvReturnUrl: `${getAppOrigin()}/checkout/handleShopperRedirect`
+            let ccvReturnUrl = `${getAppOrigin()}/checkout/handleShopperRedirect`
+
+            if (redirectWithLocale) {
+                let localeAsQueryParam = localeConfig === 'query_param'
+
+                if (localeAsQueryParam) {
+                    ccvReturnUrl = `${getAppOrigin()}/checkout/handleShopperRedirect?locale=${locale}`
+                } else {
+                    ccvReturnUrl = `${getAppOrigin()}/${locale}/checkout/handleShopperRedirect`
+                }
             }
+
+            const parameters = {
+                ccvReturnUrl
+            }
+
             if (applePayValidationUrl) {
                 parameters.applePayValidationUrl = applePayValidationUrl
                 parameters.applePayDomainName = window.location.hostname
