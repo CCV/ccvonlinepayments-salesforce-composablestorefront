@@ -30,13 +30,20 @@ const ResetPassword = loadable(() => import('./pages/reset-password'), {fallback
 const Account = loadable(() => import('./pages/account'), {fallback})
 const Cart = loadable(() => import('./pages/cart'), {fallback})
 const Checkout = loadable(() => import('../ccv-pwa-plugin/pages/checkout'), {fallback})
-const CheckoutConfirmation = loadable(() => import('./pages/checkout/confirmation'), {fallback})
+const CheckoutConfirmation = loadable(
+    () => import('../ccv-pwa-plugin/pages/checkout/confirmation'),
+    {
+        fallback
+    }
+)
 const LoginRedirect = loadable(() => import('./pages/login-redirect'), {fallback})
 const ProductDetail = loadable(() => import('./pages/product-detail'), {fallback})
 const ProductList = loadable(() => import('./pages/product-list'), {fallback})
 const Wishlist = loadable(() => import('./pages/account/wishlist'), {fallback})
 const PageNotFound = loadable(() => import('./pages/page-not-found'))
-const CheckoutRedirect = loadable(() => import('../ccv-pwa-plugin/pages/checkout-redirect'), {fallback})
+const CheckoutRedirect = loadable(() => import('../ccv-pwa-plugin/pages/checkout-redirect'), {
+    fallback
+})
 
 const routes = [
     {
