@@ -8,10 +8,8 @@ import {
     AmexIcon,
     DiscoverIcon,
     MastercardIcon,
-    VisaIcon,
-    MaestroIcon,
-    BanContactIcon
-} from '../components/icons'
+    VisaIcon
+} from '@salesforce/retail-react-app/app/components/icons'
 
 /**
  * Formats a credit card number against given criteria
@@ -64,9 +62,7 @@ export const getCreditCardIcon = (type) => {
         amex: AmexIcon,
 
         // Discover
-        discover: DiscoverIcon,
-        bcmc: BanContactIcon,
-        maestro: MaestroIcon
+        discover: DiscoverIcon
     }[type.toLowerCase()]
 }
 
@@ -88,7 +84,8 @@ export const getPaymentInstrumentCardType = (type) => {
 }
 
 export const createCreditCardPaymentBodyFromForm = (paymentFormData) => {
-    // eslint-disable-next-line no-unused-vars
+    // Using destructuring to omit properties
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {expiry, paymentInstrumentId, ...selectedPayment} = paymentFormData
 
     // The form gives us the expiration date as `MM/YY` - so we need to split it into

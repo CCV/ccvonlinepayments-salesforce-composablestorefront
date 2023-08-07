@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
+/* eslint-disable @typescript-eslint/no-var-requires */
 'use strict'
 
 const path = require('path')
-const {getRuntime} = require('pwa-kit-runtime/ssr/server/express')
-const {isRemote} = require('pwa-kit-runtime/utils/ssr-server')
-const {getConfig} = require('pwa-kit-runtime/utils/ssr-config')
+const {getRuntime} = require('@salesforce/pwa-kit-runtime/ssr/server/express')
+const {isRemote} = require('@salesforce/pwa-kit-runtime/utils/ssr-server')
+const {getConfig} = require('@salesforce/pwa-kit-runtime/utils/ssr-config')
 const helmet = require('helmet')
 
 const options = {
@@ -40,7 +41,7 @@ const {handler} = runtime.createHandler(options, (app) => {
                 useDefaults: true,
                 directives: {
                     'img-src': ["'self'", '*.commercecloud.salesforce.com', 'data:'],
-                    'script-src': ["'self'", "'unsafe-eval'", 'storage.googleapis.com', "applepay.cdn-apple.com"],
+                    'script-src': ["'self'", "'unsafe-eval'", 'storage.googleapis.com'],
                     'connect-src': ["'self'", 'api.cquotient.com'],
 
                     // Do not upgrade insecure requests for local development

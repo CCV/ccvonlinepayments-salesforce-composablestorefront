@@ -19,7 +19,7 @@ import {
     Portal,
     Text
 } from '@chakra-ui/react'
-import {InfoIcon} from '../icons'
+import {InfoIcon} from '@salesforce/retail-react-app/app/components/icons'
 import {FormattedMessage} from 'react-intl'
 
 /**

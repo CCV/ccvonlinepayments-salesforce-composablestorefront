@@ -7,12 +7,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import {Grid, GridItem, SimpleGrid, Stack} from '@chakra-ui/react'
-import useCustomer from '../../commerce-api/hooks/useCustomer'
-import useAddressFields from './useAddressFields'
-import Field from '../field'
+import useAddressFields from '@salesforce/retail-react-app/app/components/forms/useAddressFields'
+import Field from '@salesforce/retail-react-app/app/components/field'
+import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
 
 const AddressFields = ({form, prefix = ''}) => {
-    const customer = useCustomer()
+    const {data: customer} = useCurrentCustomer()
     const fields = useAddressFields({form, prefix})
 
     return (
@@ -21,10 +21,7 @@ const AddressFields = ({form, prefix = ''}) => {
                 <Field {...fields.firstName} />
                 <Field {...fields.lastName} />
             </SimpleGrid>
-            <SimpleGrid templateColumns="1fr 4fr" gap={5}>
-                <Field {...fields.phoneCountry} />
-                <Field {...fields.phone} />
-            </SimpleGrid>
+            <Field {...fields.phone} />
             <Field {...fields.countryCode} />
             <Field {...fields.address1} />
             <Field {...fields.city} />

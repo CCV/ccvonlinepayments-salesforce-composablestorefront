@@ -5,14 +5,16 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 import {useIntl, defineMessages} from 'react-intl'
-import {formatPhoneNumber} from '../../utils/phone-utils'
-import {stateOptions, provinceOptions} from './state-province-options'
+import {formatPhoneNumber} from '@salesforce/retail-react-app/app/utils/phone-utils'
+import {
+    stateOptions,
+    provinceOptions
+} from '@salesforce/retail-react-app/app/components/forms/state-province-options'
 
 const messages = defineMessages({
     required: {defaultMessage: 'Required', id: 'use_address_fields.error.required'},
     firstName: {defaultMessage: 'First Name', id: 'use_address_fields.label.first_name'},
     lastName: {defaultMessage: 'Last Name', id: 'use_address_fields.label.last_name'},
-    phoneCountry: {defaultMessage: 'Phone Country', id: 'use_address_fields.label.phone_country'},
     phone: {defaultMessage: 'Phone', id: 'use_address_fields.label.phone'},
     country: {defaultMessage: 'Country', id: 'use_address_fields.label.country'},
     address: {defaultMessage: 'Address', id: 'use_address_fields.label.address'},
@@ -32,10 +34,17 @@ const messages = defineMessages({
  * A React hook that provides the field definitions for an address form.
  * @param {Object} form - The object returned from `useForm`
  * @param {Object} form.control - The form control object
- * @param {Object} form.errors - An object containing field errors
+ * @param {Object} form.formState.errors - An object containing field errors
  * @returns {Object} Field definitions for use in a form
  */
-export default function useAddressFields({form: {watch, control, errors}, prefix = ''}) {
+export default function useAddressFields({
+    form: {
+        watch,
+        control,
+        formState: {errors}
+    },
+    prefix = ''
+}) {
     const {formatMessage} = useIntl()
 
     const countryCode = watch('countryCode')
@@ -69,27 +78,6 @@ export default function useAddressFields({form: {watch, control, errors}, prefix
             error: errors[`${prefix}lastName`],
             control
         },
-        phoneCountry: {
-            name: `${prefix}c_phone_country`,
-            label: formatMessage(messages.phoneCountry),
-            defaultValue: '',
-            type: 'tel',
-            inputProps: ({onChange}) => ({
-                inputMode: 'numeric',
-                maxLength: 4,
-                onChange(evt) {
-                    onChange(evt.target.value.replace(/[^0-9 ]+/, ''))
-                }
-            }),
-            rules: {
-                required: formatMessage({
-                    defaultMessage: 'Please enter your phone country code.',
-                    id: 'use_address_fields.error.please_select_your_phone_country'
-                })
-            },
-            error: errors[`${prefix}c_phone_country`],
-            control
-        },
         phone: {
             name: `${prefix}phone`,
             label: formatMessage(messages.phone),
@@ -103,7 +91,7 @@ export default function useAddressFields({form: {watch, control, errors}, prefix
             },
             error: errors[`${prefix}phone`],
             inputProps: ({onChange}) => ({
-                inputmode: 'numeric',
+                inputMode: 'numeric',
                 onChange(evt) {
                     onChange(formatPhoneNumber(evt.target.value))
                 }

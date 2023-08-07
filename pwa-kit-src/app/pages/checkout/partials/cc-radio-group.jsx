@@ -8,10 +8,10 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import {FormattedMessage} from 'react-intl'
 import {Box, Button, Stack, Text, SimpleGrid, FormControl, FormErrorMessage} from '@chakra-ui/react'
-import {useCheckout} from '../util/checkout-context'
-import {PlusIcon} from '../../../components/icons'
-import {RadioCard, RadioCardGroup} from '../../../components/radio-card'
-import {getCreditCardIcon} from '../../../utils/cc-utils'
+import {PlusIcon} from '@salesforce/retail-react-app/app/components/icons'
+import {RadioCard, RadioCardGroup} from '@salesforce/retail-react-app/app/components/radio-card'
+import {getCreditCardIcon} from '@salesforce/retail-react-app/app/utils/cc-utils'
+import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
 
 const CCRadioGroup = ({
     form,
@@ -20,17 +20,17 @@ const CCRadioGroup = ({
     togglePaymentEdit = () => null,
     onPaymentIdChange = () => null
 }) => {
-    const {customer} = useCheckout()
+    const {data: customer} = useCurrentCustomer()
 
     return (
         <FormControl
             id="paymentInstrumentId"
-            isInvalid={form.errors.paymentInstrumentId}
+            isInvalid={form.formState.errors.paymentInstrumentId}
             isRequired={!isEditingPayment}
         >
-            {form.errors.paymentInstrumentId && (
+            {form.formState.errors.paymentInstrumentId && (
                 <FormErrorMessage marginTop={0} marginBottom={4}>
-                    {form.errors.paymentInstrumentId.message}
+                    {form.formState.errors.paymentInstrumentId.message}
                 </FormErrorMessage>
             )}
 
@@ -63,7 +63,7 @@ const CCRadioGroup = ({
                                             </Stack>
 
                                             <Box>
-                                                <Button variant="link" size="sm" colorScheme="red" onClick={() => customer.removeSavedPaymentInstrument(payment.paymentInstrumentId)}>
+                                                <Button variant="link" size="sm" colorScheme="red">
                                                     <FormattedMessage
                                                         defaultMessage="Remove"
                                                         id="cc_radio_group.action.remove"
@@ -82,6 +82,7 @@ const CCRadioGroup = ({
                                 border="1px dashed"
                                 borderColor="gray.200"
                                 color="blue.600"
+                                height={{lg: 'full'}}
                                 minHeight={['44px', '44px', '154px']}
                                 rounded="base"
                                 fontWeight="medium"

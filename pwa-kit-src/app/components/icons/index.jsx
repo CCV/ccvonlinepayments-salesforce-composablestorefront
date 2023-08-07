@@ -12,61 +12,60 @@ import {Icon, useTheme} from '@chakra-ui/react'
 // during SSR.
 // NOTE: Another solution would be to use `require-context.macro` package to accomplish
 // importing icon svg's.
-import '../../assets/svg/alert.svg'
-import '../../assets/svg/account.svg'
-import '../../assets/svg/basket.svg'
-import '../../assets/svg/check.svg'
-import '../../assets/svg/check-circle.svg'
-import '../../assets/svg/chevron-up.svg'
-import '../../assets/svg/chevron-down.svg'
-import '../../assets/svg/chevron-right.svg'
-import '../../assets/svg/chevron-left.svg'
-import '../../assets/svg/chevron-right.svg'
-import '../../assets/svg/chevron-up.svg'
-import '../../assets/svg/dashboard.svg'
-import '../../assets/svg/figma-logo.svg'
-import '../../assets/svg/filter.svg'
-import '../../assets/svg/file.svg'
-import '../../assets/svg/flag-ca.svg'
-import '../../assets/svg/flag-us.svg'
-import '../../assets/svg/flag-gb.svg'
-import '../../assets/svg/flag-fr.svg'
-import '../../assets/svg/flag-it.svg'
-import '../../assets/svg/flag-cn.svg'
-import '../../assets/svg/flag-jp.svg'
-import '../../assets/svg/github-logo.svg'
-import '../../assets/svg/hamburger.svg'
-import '../../assets/svg/info.svg'
-import '../../assets/svg/social-facebook.svg'
-import '../../assets/svg/social-instagram.svg'
-import '../../assets/svg/social-twitter.svg'
-import '../../assets/svg/social-youtube.svg'
-import '../../assets/svg/like.svg'
-import '../../assets/svg/lock.svg'
-import '../../assets/svg/payment.svg'
-import '../../assets/svg/plug.svg'
-import '../../assets/svg/plus.svg'
-import '../../assets/svg/receipt.svg'
-import '../../assets/svg/search.svg'
-import '../../assets/svg/signout.svg'
-import '../../assets/svg/user.svg'
-import '../../assets/svg/visibility.svg'
-import '../../assets/svg/visibility-off.svg'
-import '../../assets/svg/heart.svg'
-import '../../assets/svg/heart-solid.svg'
-import '../../assets/svg/close.svg'
+import '@salesforce/retail-react-app/app/assets/svg/alert.svg'
+import '@salesforce/retail-react-app/app/assets/svg/account.svg'
+import '@salesforce/retail-react-app/app/assets/svg/basket.svg'
+import '@salesforce/retail-react-app/app/assets/svg/check.svg'
+import '@salesforce/retail-react-app/app/assets/svg/check-circle.svg'
+import '@salesforce/retail-react-app/app/assets/svg/chevron-up.svg'
+import '@salesforce/retail-react-app/app/assets/svg/chevron-down.svg'
+import '@salesforce/retail-react-app/app/assets/svg/chevron-right.svg'
+import '@salesforce/retail-react-app/app/assets/svg/chevron-left.svg'
+import '@salesforce/retail-react-app/app/assets/svg/chevron-right.svg'
+import '@salesforce/retail-react-app/app/assets/svg/chevron-up.svg'
+import '@salesforce/retail-react-app/app/assets/svg/dashboard.svg'
+import '@salesforce/retail-react-app/app/assets/svg/figma-logo.svg'
+import '@salesforce/retail-react-app/app/assets/svg/filter.svg'
+import '@salesforce/retail-react-app/app/assets/svg/file.svg'
+import '@salesforce/retail-react-app/app/assets/svg/flag-ca.svg'
+import '@salesforce/retail-react-app/app/assets/svg/flag-us.svg'
+import '@salesforce/retail-react-app/app/assets/svg/flag-gb.svg'
+import '@salesforce/retail-react-app/app/assets/svg/flag-fr.svg'
+import '@salesforce/retail-react-app/app/assets/svg/flag-it.svg'
+import '@salesforce/retail-react-app/app/assets/svg/flag-cn.svg'
+import '@salesforce/retail-react-app/app/assets/svg/flag-jp.svg'
+import '@salesforce/retail-react-app/app/assets/svg/github-logo.svg'
+import '@salesforce/retail-react-app/app/assets/svg/hamburger.svg'
+import '@salesforce/retail-react-app/app/assets/svg/info.svg'
+import '@salesforce/retail-react-app/app/assets/svg/social-facebook.svg'
+import '@salesforce/retail-react-app/app/assets/svg/social-instagram.svg'
+import '@salesforce/retail-react-app/app/assets/svg/social-twitter.svg'
+import '@salesforce/retail-react-app/app/assets/svg/social-youtube.svg'
+import '@salesforce/retail-react-app/app/assets/svg/like.svg'
+import '@salesforce/retail-react-app/app/assets/svg/lock.svg'
+import '@salesforce/retail-react-app/app/assets/svg/plug.svg'
+import '@salesforce/retail-react-app/app/assets/svg/plus.svg'
+import '@salesforce/retail-react-app/app/assets/svg/receipt.svg'
+import '@salesforce/retail-react-app/app/assets/svg/search.svg'
+import '@salesforce/retail-react-app/app/assets/svg/signout.svg'
+import '@salesforce/retail-react-app/app/assets/svg/user.svg'
+import '@salesforce/retail-react-app/app/assets/svg/visibility.svg'
+import '@salesforce/retail-react-app/app/assets/svg/visibility-off.svg'
+import '@salesforce/retail-react-app/app/assets/svg/heart.svg'
+import '@salesforce/retail-react-app/app/assets/svg/heart-solid.svg'
+import '@salesforce/retail-react-app/app/assets/svg/close.svg'
 
 // For non-square SVGs, we can use the symbol data from the import to set the
 // proper viewBox attribute on the Icon wrapper.
-import AmexSymbol from '../../assets/svg/cc-amex.svg'
-import BrandLogoSymbol from '../../assets/svg/brand-logo.svg'
-import CVVSymbol from '../../assets/svg/cc-cvv.svg'
-import DiscoverSymbol from '../../assets/svg/cc-discover.svg'
-import LocationSymbol from '../../assets/svg/location.svg'
-import MastercardSymbol from '../../assets/svg/cc-mastercard.svg'
-import PaypalSymbol from '../../assets/svg/paypal.svg'
-import SocialPinterestSymbol from '../../assets/svg/social-pinterest.svg'
-import VisaSymbol from '../../assets/svg/cc-visa.svg'
+import AmexSymbol from '@salesforce/retail-react-app/app/assets/svg/cc-amex.svg'
+import BrandLogoSymbol from '@salesforce/retail-react-app/app/assets/svg/brand-logo.svg'
+import CVVSymbol from '@salesforce/retail-react-app/app/assets/svg/cc-cvv.svg'
+import DiscoverSymbol from '@salesforce/retail-react-app/app/assets/svg/cc-discover.svg'
+import LocationSymbol from '@salesforce/retail-react-app/app/assets/svg/location.svg'
+import MastercardSymbol from '@salesforce/retail-react-app/app/assets/svg/cc-mastercard.svg'
+import PaypalSymbol from '@salesforce/retail-react-app/app/assets/svg/paypal.svg'
+import SocialPinterestSymbol from '@salesforce/retail-react-app/app/assets/svg/social-pinterest.svg'
+import VisaSymbol from '@salesforce/retail-react-app/app/assets/svg/cc-visa.svg'
 
 // TODO: We're hardcoding the `viewBox` for these imported SVGs temporarily as the
 // SVG loader plugin is not properly providing us the symbol data on the client side.
@@ -92,7 +91,7 @@ const icon = (name, passProps) => {
         .replace(/-/g, '')
     const component = forwardRef((props, ref) => {
         const theme = useTheme()
-        const {baseStyle} = theme.components.Icon
+        const baseStyle = theme?.components?.Icon?.baseStyle
         return (
             <Icon ref={ref} {...baseStyle} {...passProps} {...props}>
                 <use role="presentation" xlinkHref={`#${name}`} />
@@ -136,7 +135,6 @@ export const InfoIcon = icon('info')
 export const LikeIcon = icon('like')
 export const LockIcon = icon('lock')
 export const LocationIcon = icon('location')
-export const PaymentIcon = icon('payment')
 export const PaypalIcon = icon('paypal', {viewBox: PaypalSymbol.viewBox})
 export const PlugIcon = icon('plug')
 export const PlusIcon = icon('plus')
@@ -158,41 +156,3 @@ export const VisibilityOffIcon = icon('visibility-off')
 export const HeartIcon = icon('heart')
 export const HeartSolidIcon = icon('heart-solid')
 export const CloseIcon = icon('close')
-
-// ==================== CCV ICONS ====================
-import IdealSymbol from '../../../ccv-pwa-plugin/assets/svg/ideal-logo.svg'
-import BancontactSymbol from '../../../ccv-pwa-plugin/assets/svg/bancontact-logo.svg'
-import GiropaySymbol from '../../../ccv-pwa-plugin/assets/svg/giropay-logo.svg'
-import SofortSymbol from '../../../ccv-pwa-plugin/assets/svg/sofort-logo.svg'
-import EPSSymbol from '../../../ccv-pwa-plugin/assets/svg/eps-logo.svg'
-import PayconiqSymbol from '../../../ccv-pwa-plugin/assets/svg/payconiq-logo.svg'
-import MaestroSymbol from '../../../ccv-pwa-plugin/assets/svg/maestro-logo.svg'
-import KlarnaSymbol from '../../../ccv-pwa-plugin/assets/svg/klarna-logo.svg'
-import AppleSymbol from '../../../ccv-pwa-plugin/assets/svg/apple-pay-logo.svg'
-
-AmexSymbol.viewBox = AmexSymbol.viewBox || '0 0 38 22'
-MastercardSymbol.viewBox = MastercardSymbol.viewBox || '0 0 38 22'
-PaypalSymbol.viewBox = PaypalSymbol.viewBox || '0 0 80 20'
-VisaSymbol.viewBox = VisaSymbol.viewBox || '0 0 38 22'
-IdealSymbol.viewBox = IdealSymbol.viewBox || '0 0 306.1 269.8'
-BancontactSymbol.viewBox = BancontactSymbol.viewBox || '0 0 326.1 230.5'
-GiropaySymbol.viewBox = GiropaySymbol.viewBox || '0 0 38 22'
-SofortSymbol.viewBox = SofortSymbol.viewBox || '0 0 746.1 286.2'
-EPSSymbol.viewBox = EPSSymbol.viewBox || '0 0 889 577'
-PayconiqSymbol.viewBox = PayconiqSymbol.viewBox || '0 0 326 230.5'
-MaestroSymbol.viewBox = MaestroSymbol.viewBox || '0 0 125 120'
-KlarnaSymbol.viewBox = KlarnaSymbol.viewBox || '0 0 100 40.4494'
-AppleSymbol.viewBox = AppleSymbol.viewBox || '0 0 165.52107 105.9651'
-
-// Export Chakra icon components that use our SVG sprite symbol internally
-// For non-square SVGs, we can use the symbol data from the import to set the
-// proper viewBox attribute on the Icon wrapper.
-export const IdealIcon = icon('ideal-logo', {viewBox: IdealSymbol.viewBox})
-export const BanContactIcon = icon('bancontact-logo', {viewBox: BancontactSymbol.viewBox})
-export const GiropayIcon = icon('giropay-logo', {viewBox: GiropaySymbol.viewBox})
-export const SofortIcon = icon('sofort-logo', {viewBox: SofortSymbol.viewBox})
-export const EPSIcon = icon('eps-logo', {viewBox: EPSSymbol.viewBox})
-export const PayconiqIcon = icon('payconiq-logo', {viewBox: PayconiqSymbol.viewBox})
-export const MaestroIcon = icon('maestro-logo', {viewBox: MaestroSymbol.viewBox})
-export const KlarnaIcon = icon('klarna-logo', {viewBox: KlarnaSymbol.viewBox})
-export const ApplePayIcon = icon('apple-pay-logo', {viewBox: AppleSymbol.viewBox})

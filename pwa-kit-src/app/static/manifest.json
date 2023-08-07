@@ -1,6 +1,6 @@
 {
-  "name": "pwa-ccv-test",
-  "short_name": "pwa-ccv-test",
+  "name": "example.com",
+  "short_name": "example.com",
   "start_url": "/?homescreen=1",
   "background_color": "#fff",
   "theme_color": "#4e439b",
@@ -16,3 +16,4 @@
     }
   ]
 }
+

@@ -5,11 +5,7 @@
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
 import cardValidator from 'card-validator'
-import getCardTypes from 'credit-card-type'
-
 import {useIntl, defineMessages} from 'react-intl'
-
-const CC_CVV_MAX_LENGTH = 4
 
 const messages = defineMessages({
     required: {defaultMessage: 'Required', id: 'use_credit_card_fields.error.required'},
@@ -46,7 +42,13 @@ const messages = defineMessages({
  * @param {Object} form.errors - An object containing field errors
  * @returns {Object} Field definitions for use in a form
  */
-export default function useCreditCardFields({form: {control, errors, getValues}, prefix = ''}) {
+export default function useCreditCardFields({
+    form: {
+        control,
+        formState: {errors}
+    },
+    prefix = ''
+}) {
     const {formatMessage} = useIntl()
 
     const fields = {
@@ -125,22 +127,13 @@ export default function useCreditCardFields({form: {control, errors, getValues},
                     defaultMessage: 'Please enter your security code.',
                     id: 'use_credit_card_fields.error.required_security_code'
                 }),
-                validate: (value) => {
-                    const ccNumber = getValues().number
-                    const ccTypes = getCardTypes(ccNumber)
-                    const ccType = ccTypes && ccTypes[0]
-                    const cvvLength = ccType?.code?.size || CC_CVV_MAX_LENGTH
-
-                    return (
-                        cardValidator.cvv(value, cvvLength).isValid ||
-                        formatMessage(messages.codeInvalid)
-                    )
-                }
+                validate: (value) =>
+                    cardValidator.cvv(value).isValid || formatMessage(messages.codeInvalid)
             },
             error: errors[`${prefix}securityCode`],
             inputProps: ({onChange}) => ({
                 inputMode: 'numeric',
-                maxLength: CC_CVV_MAX_LENGTH,
+                maxLength: 4,
                 onChange(evt) {
                     onChange(evt.target.value.replace(/[^0-9 ]+/, ''))
                 }
