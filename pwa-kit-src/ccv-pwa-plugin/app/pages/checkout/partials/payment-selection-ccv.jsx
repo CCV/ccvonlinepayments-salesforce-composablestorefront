@@ -16,16 +16,17 @@ import {useCCVPayment} from '../util/ccv-context'
 
 const PaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
-    const {paymentMethods} = useCheckout()
+    // const {paymentMethods} = useCheckout()
 
     const paymentFormRef = useRef()
     form = form || useForm()
 
-    const {onPaymentMethodChange} = useCCVPayment()
+    const {onPaymentMethodChange, getPaymentMethods} = useCCVPayment()
+    const paymentMethods = getPaymentMethods()
     const currentSelectedMethodId = form.watch('paymentMethodId')
     // focus form on error
     useEffect(() => {
-        if (Object.keys(form.errors).length > 0) {
+        if (form.errors && Object.keys(form.errors).length > 0) {
             paymentFormRef.current.scrollIntoView({behavior: 'smooth', block: 'start'})
         }
     }, [form.errors])
@@ -34,11 +35,11 @@ const PaymentSelection = ({form}) => {
         <form>
             <FormControl
                 id="paymentMethodId"
-                isInvalid={form.errors.paymentMethodId}
+                isInvalid={form.errors?.paymentMethodId}
                 ref={paymentFormRef}
             >
                 <FormErrorMessage marginTop={0} marginBottom={4}>
-                    {form.errors.paymentMethodId?.message}
+                    {form.errors?.paymentMethodId?.message}
                 </FormErrorMessage>
                 <Stack spacing={5}>
                     <Box overflow="hidden">
@@ -46,7 +47,7 @@ const PaymentSelection = ({form}) => {
                             name="paymentMethodId"
                             defaultValue=""
                             control={form.control}
-                            render={({onChange}) => (
+                            render={({field: {onChange}}) => (
                                 <RadioGroup
                                     onChange={(e) => {
                                         onChange(e)
@@ -56,8 +57,7 @@ const PaymentSelection = ({form}) => {
                                     {/* dynamic payment methods */}
                                     <Stack gap={1}>
                                         {paymentMethods ? (
-                                            paymentMethods.applicablePaymentMethods
-                                                .map((paymentMethod) => {
+                                            paymentMethods.map((paymentMethod) => {
                                                     return (
                                                         <CCVPaymentMethodRadio
                                                             key={paymentMethod.id}

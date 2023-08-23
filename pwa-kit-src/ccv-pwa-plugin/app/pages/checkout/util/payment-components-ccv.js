@@ -1,6 +1,5 @@
 import React, {useMemo} from 'react'
 import PropTypes from 'prop-types'
-import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 
 import {
     AmexIcon,
@@ -27,9 +26,7 @@ import {getCreditCardIcon} from '@salesforce/retail-react-app/app/utils/cc-utils
  * Returns a map of applicable payment methods keyed by payment method ID
  * @returns {Object} map of applicable payment methods
  */
-export const useCCVPaymentMethodsMap = () => {
-    const {paymentMethods} = useCheckout()
-
+export const useCCVPaymentMethodsMap = (paymentMethods) => {
     return useMemo(() => {
         if (!paymentMethods) return {}
 

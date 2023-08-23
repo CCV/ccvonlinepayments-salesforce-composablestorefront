@@ -1,10 +1,17 @@
-import {checkRequiredParameters, createOcapiFetch} from '@salesforce/retail-react-app/app/commerce-api/utils'
-import {camelCaseKeysToUnderscore} from '@salesforce/retail-react-app/app/commerce-api/utils'
 import {getAppOrigin} from '@salesforce/pwa-kit-react-sdk/utils/url'
+import {checkRequiredParameters, createOcapiFetch, camelCaseKeysToUnderscore} from '../../../commerce-api/utils'
+import {getConfig} from '@salesforce/pwa-kit-runtime/utils/ssr-config'
+
 class OcapiCCV {
-    constructor(config) {
-        this.fetch = createOcapiFetch(config)
-        this.fetchController = createControllerFetch(config)
+    constructor() {
+        const {app: appConfig} = getConfig()
+        const apiConfig = {
+            ...appConfig.commerceAPI,
+            einsteinConfig: appConfig.einsteinAPI
+        }
+
+        this.fetch = createOcapiFetch(apiConfig)
+        this.fetchController = createControllerFetch(apiConfig)
     }
 
     // based on ocapi-shopper-orders#createOrder
@@ -25,7 +32,10 @@ class OcapiCCV {
         if (applePayDomainName) path += `&applePayDomainName=${applePayDomainName}`
         if (applePayValidationUrl) path += `&applePayValidationUrl=${applePayValidationUrl}`
 
-        return await this.fetch(path, 'POST', args, 'createOrder', camelCaseKeysToUnderscore(body))
+        const underscoreBody = camelCaseKeysToUnderscore(body)
+        const res = await this.fetch(path, 'POST', args, 'createOrder', underscoreBody)
+
+        return res
     }
 
     async postApplePayToken(...args) {
@@ -69,8 +79,7 @@ export const createControllerFetch =
             'x-dw-client-id': commerceAPIConfig.parameters.clientId
         }
 
-        let response
-        response = await fetch(`${host}${endpoint}`, {
+        let response = await fetch(`${host}${endpoint}`, {
             method: method,
             headers: headers,
             ...(body && {

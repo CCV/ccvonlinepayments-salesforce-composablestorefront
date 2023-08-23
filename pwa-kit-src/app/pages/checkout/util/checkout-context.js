@@ -10,6 +10,7 @@ import useEinstein from '@salesforce/retail-react-app/app/hooks/use-einstein'
 import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
 import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
 
+
 const CheckoutContext = React.createContext()
 
 export const CheckoutProvider = ({children}) => {
@@ -75,7 +76,7 @@ export const CheckoutProvider = ({children}) => {
         step,
         STEPS,
         goToNextStep: () => setStep(step + 1),
-        goToStep: (step) => setStep(step)
+        goToStep: (step) => setStep(step),
     }
 
     return <CheckoutContext.Provider value={value}>{children}</CheckoutContext.Provider>

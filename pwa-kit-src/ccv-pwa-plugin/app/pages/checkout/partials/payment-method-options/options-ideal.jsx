@@ -20,41 +20,45 @@ export const IdealOptions = () => {
     })
 
     return (
-        <FormControl id="ccvIssuerID" isInvalid={form.errors.ccvIssuerID} padding="20px">
-            <Controller
-                as={Select}
-                name="ccvIssuerID"
-                data-testid="options-ideal"
-                defaultValue=""
-                control={form.control}
-                rules={{
-                    required: formatMessage({
-                        defaultMessage: 'Please select an option.',
-                        id: 'payment_selection.message.select_payment_method_option'
-                    })
-                }}
-            >
-                <option value="">
-                    {formatMessage({
-                        defaultMessage: 'Select your bank.',
-                        id: 'payment_selection.message.select_bank'
-                    })}
-                </option>
-                {Object.keys(countryGroups).map((countryGroup) => {
-                    return (
-                        <optgroup label={countryGroup} key={countryGroup}>
-                            {countryGroups[countryGroup].map((issuer) => {
+        <Controller
+            name="ccvIssuerID"
+            data-testid="options-ideal"
+            defaultValue=""
+            control={form.control}
+            rules={{
+                required: formatMessage({
+                    defaultMessage: 'Please select an option.',
+                    id: 'payment_selection.message.select_payment_method_option'
+                })
+            }}
+            render={({field}) => {
+                return (
+                    <FormControl id="ccvIssuerID" isInvalid={form.errors?.ccvIssuerID} padding="20px">
+                        <Select {...field}>
+                            <option value="">
+                                {formatMessage({
+                                    defaultMessage: 'Select your bank.',
+                                    id: 'payment_selection.message.select_bank'
+                                })}
+                            </option>
+                            {Object.keys(countryGroups).map((countryGroup) => {
                                 return (
-                                    <option value={issuer.issuerid} key={issuer.issuerid}>
-                                        {issuer.issuerdescription}
-                                    </option>
+                                    <optgroup label={countryGroup} key={countryGroup}>
+                                        {countryGroups[countryGroup].map((issuer) => {
+                                            return (
+                                                <option value={issuer.issuerid} key={issuer.issuerid}>
+                                                    {issuer.issuerdescription}
+                                                </option>
+                                            )
+                                        })}
+                                    </optgroup>
                                 )
                             })}
-                        </optgroup>
-                    )
-                })}
-            </Controller>
-            <FormErrorMessage>{form.errors.ccvIssuerID?.message}</FormErrorMessage>
-        </FormControl>
+                        </Select>
+                        <FormErrorMessage>{form.errors?.ccvIssuerID?.message}</FormErrorMessage>
+                    </FormControl>
+                )
+            }}
+        />
     )
 }

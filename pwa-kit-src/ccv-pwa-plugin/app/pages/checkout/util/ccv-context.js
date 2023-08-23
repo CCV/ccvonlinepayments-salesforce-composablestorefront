@@ -3,16 +3,30 @@ import PropTypes from 'prop-types'
 import {useLocation} from 'react-router-dom'
 import {useCCVPaymentMethodsMap} from './payment-components-ccv'
 import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
+import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
+import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
+import {usePaymentMethodsForBasket} from '@salesforce/commerce-sdk-react'
 import {useForm} from 'react-hook-form'
 const CCVPaymentContext = React.createContext()
 
 /** Can only be used inside checkout context */
 export const CCVPaymentProvider = ({children}) => {
     const paymentMethodForm = useForm()
-    const {customer} = useCheckout()
+    const {data: basket} = useCurrentBasket()
+    const {data: customer} = useCurrentCustomer()
     const location = useLocation()
+    const {data: paymentMethodsResponse} = usePaymentMethodsForBasket(
+        {
+            parameters: {
+                basketId: basket?.basketId,
+                shipmentId: 'me'
+            }
+        }
+    )
 
-    const paymentMethodsMap = useCCVPaymentMethodsMap()
+    const paymentMethods = paymentMethodsResponse?.applicablePaymentMethods
+
+    const paymentMethodsMap = useCCVPaymentMethodsMap(paymentMethodsResponse)
     const [paymentError, setPaymentError] = useState(location.state?.paymentErrorMsg || '')
 
     const hasSavedCards = customer?.paymentInstruments?.length > 0
@@ -30,6 +44,19 @@ export const CCVPaymentProvider = ({children}) => {
             paymentInstrumentId: value,
             paymentMethodId: paymentMethodForm.getValues('paymentMethodId')
         })
+    }
+
+     const getPaymentMethods = () => {
+        const {data: paymentMethodsResponse} = usePaymentMethodsForBasket(
+            {
+                parameters: {
+                    basketId: basket?.basketId,
+                    shipmentId: 'me'
+                }
+            }
+        )
+
+         return paymentMethodsResponse?.applicablePaymentMethods || []
     }
 
     const togglePaymentEdit = () => {
@@ -50,27 +77,27 @@ export const CCVPaymentProvider = ({children}) => {
         setPaymentError('')
     }
 
+    const ctx = {
+        form: paymentMethodForm,
+        hasSavedCards,
+        isEditingPayment,
+        setIsEditingPayment,
+        paymentMethodsMap,
+        onPaymentIdChange,
+        togglePaymentEdit,
+        onPaymentMethodChange,
+        creditCardData,
+        setCreditCardData,
+        paymentError,
+        setPaymentError,
+        applePayLoaded,
+        setApplePayLoaded,
+        getPaymentMethods,
+        paymentMethods
+    }
+
     return (
-        <CCVPaymentContext.Provider
-            value={{
-                form: paymentMethodForm,
-                hasSavedCards,
-                isEditingPayment,
-                setIsEditingPayment,
-                paymentMethodsMap,
-                onPaymentIdChange,
-                togglePaymentEdit,
-                onPaymentMethodChange,
-                creditCardData,
-                setCreditCardData,
-                paymentError,
-                setPaymentError,
-                applePayLoaded,
-                setApplePayLoaded
-            }}
-        >
-            {children}
-        </CCVPaymentContext.Provider>
+        <CCVPaymentContext.Provider value={ctx}>{children}</CCVPaymentContext.Provider>
     )
 }
 

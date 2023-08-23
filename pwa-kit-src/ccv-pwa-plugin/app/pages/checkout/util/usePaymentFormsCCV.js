@@ -2,6 +2,8 @@ import {useEffect, useState} from 'react'
 import {useForm} from 'react-hook-form'
 import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 import {getPaymentInstrumentCardType} from '@salesforce/retail-react-app/app/utils/cc-utils'
+import {useShopperBasketsMutation} from '@salesforce/commerce-sdk-react'
+import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
 import {useCCVPayment} from './ccv-context'
 /**
  * A hook for managing and coordinating the billing address and payment method forms.
@@ -10,13 +12,24 @@ import {useCCVPayment} from './ccv-context'
 const usePaymentFormsCCV = () => {
     const {
         selectedPayment,
-        selectedBillingAddress,
-        selectedShippingAddress,
-        setBillingAddress,
         isBillingSameAsShipping,
-        goToNextStep,
-        basket
+        goToNextStep
     } = useCheckout()
+    const {data: basket} = useCurrentBasket()
+    const selectedShippingAddress = basket?.shipments[0]?.shippingAddress;
+    const selectedBillingAddress = basket?.billingAddress;
+
+    const {mutateAsync: updatePaymentInstrumentInBasket} = useShopperBasketsMutation(
+        'updatePaymentInstrumentInBasket'
+    )
+
+    const {mutateAsync: addPaymentInstrumentToBasket} = useShopperBasketsMutation(
+        'addPaymentInstrumentToBasket'
+    )
+
+    const {mutateAsync: updateBillingAddressForBasket} = useShopperBasketsMutation(
+        'updateBillingAddressForBasket'
+    )
 
     const {form: paymentMethodForm, setCreditCardData} = useCCVPayment()
     // This local state value manages the 'checked' state of the billing address form's
@@ -55,11 +68,12 @@ const usePaymentFormsCCV = () => {
     }
 
     const submitBillingAddressForm = async (address) => {
-        if (!billingSameAsShipping) {
-            await setBillingAddress(address)
-        } else {
-            await setBillingAddress(selectedShippingAddress)
-        }
+        const addressToSet = billingSameAsShipping ? selectedShippingAddress : address;
+
+        await updateBillingAddressForBasket({
+            body: addressToSet,
+            parameters: {basketId: basket.basketId, shipmentId: 'me'}
+        })
 
         // Once the billing address is applied to the basket, we can move to the final
         // step in the process, which lets the customer review all checkout info.
@@ -139,7 +153,17 @@ const usePaymentFormsCCV = () => {
             }
         }
 
-        await basket.setPaymentInstrument(paymentInstrument)
+        if (!basket.paymentInstruments) {
+            await addPaymentInstrumentToBasket({
+                parameters: {basketId: basket?.basketId},
+                body: paymentInstrument
+            })
+        } else {
+            await updatePaymentInstrumentInBasket({
+                parameters: {basketId: basket?.basketId, paymentInstrumentId: basket.paymentInstruments[0].paymentInstrumentId},
+                body: paymentInstrument
+            })
+        }
     }
 
     return {

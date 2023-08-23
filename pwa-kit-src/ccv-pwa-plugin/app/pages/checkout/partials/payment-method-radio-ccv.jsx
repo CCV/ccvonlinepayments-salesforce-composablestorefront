@@ -11,6 +11,7 @@ import {CreditCardInlineOptions} from './payment-method-options/options-cc-inlin
 import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 import {useCCVPayment} from '../util/ccv-context'
 import {PaymentMethodIcons} from '../util/payment-components-ccv'
+import {useCurrentCustomer} from "@salesforce/retail-react-app/app/hooks/use-current-customer";
 
 export const CCVPaymentMethodRadio = function ({paymentMethod, isSelected}) {
     const {form, applePayLoaded} = useCCVPayment()
@@ -37,7 +38,7 @@ export const CCVPaymentMethodRadio = function ({paymentMethod, isSelected}) {
                     <Stack direction="row" align="center">
                         <Box>{paymentMethod.name}</Box>
                         <Spacer />
-                        <PaymentMethodIcons paymentMethodId={paymentMethod.id} iconHeight="28px" />
+                        {/*<PaymentMethodIcons paymentMethodId={paymentMethod.id} iconHeight="28px" />*/}
                     </Stack>
                 </Radio>
             </Box>
@@ -47,7 +48,7 @@ export const CCVPaymentMethodRadio = function ({paymentMethod, isSelected}) {
                     <input
                         type="hidden"
                         name="ccvMethodId"
-                        ref={form.register}
+                        {...form.register('ccvMethodId')}
                         defaultValue={paymentMethod.c_ccvMethodId}
                     />
                 </>
@@ -62,7 +63,7 @@ CCVPaymentMethodRadio.propTypes = {
 }
 
 export const CCVMethodOptions = function ({paymentMethodId}) {
-    const {customer} = useCheckout()
+    const {data: customer} = useCurrentCustomer()
 
     switch (paymentMethodId) {
         case 'CCV_CREDIT_CARD': {
@@ -83,6 +84,6 @@ export const CCVMethodOptions = function ({paymentMethodId}) {
     }
 }
 
-CCVMethodOptions.PropTypes = {
+CCVMethodOptions.propTypes = {
     paymentMethodId: PropTypes.string
 }

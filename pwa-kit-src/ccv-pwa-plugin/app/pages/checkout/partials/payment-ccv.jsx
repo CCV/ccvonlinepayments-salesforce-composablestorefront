@@ -13,9 +13,9 @@ import CCVPaymentSelection from './payment-selection-ccv'
 import ShippingAddressSelection from '@salesforce/retail-react-app/app/pages/checkout/partials/shipping-address-selection'
 import AddressDisplay from '@salesforce/retail-react-app/app/components/address-display'
 import {PromoCode, usePromoCode} from '@salesforce/retail-react-app/app/components/promo-code'
+import usePaymentFormsCCV from '../util/usePaymentFormsCCV'
 import {PaymentSummaryCCV} from '../util/payment-components-ccv'
 import {useCCVPayment} from '../util/ccv-context'
-import usePaymentFormsCCV from '../util/usePaymentFormsCCV'
 import {CCVPaymentError} from './payment-error-ccv'
 
 const CCVPayment = () => {
@@ -27,9 +27,7 @@ const CCVPayment = () => {
         setCheckoutStep,
         selectedShippingAddress,
         selectedBillingAddress,
-        selectedPayment,
-        getPaymentMethods,
-        removePayment
+        selectedPayment
     } = useCheckout()
 
     const {paymentError, setPaymentError} = useCCVPayment()
@@ -53,13 +51,17 @@ const CCVPayment = () => {
         }
     }, [paymentError, paymentErrorRef])
 
-    useEffect(async () => {
+    const onPaymentError = async () => {
         if (paymentError && selectedPayment?.paymentCard) {
             // delete customer payment instrument if there was an error and the basket was reopened
             // because the PAN will be masked and unusable
             await removePaymentAndResetForm()
             setCheckoutStep(checkoutSteps.PAYMENT)
         }
+    }
+
+    useEffect(() => {
+        onPaymentError()
     }, [paymentError])
 
     // clearing paymentErrorMsg from location.state
@@ -81,10 +83,6 @@ const CCVPayment = () => {
         }
         setIsRemovingPayment(false)
     }
-
-    useEffect(() => {
-        getPaymentMethods()
-    }, [])
 
     return (
         <>

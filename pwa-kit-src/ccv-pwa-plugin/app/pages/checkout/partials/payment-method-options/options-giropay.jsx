@@ -35,7 +35,7 @@ export const GiropayOptions = () => {
                 id: 'payment_selection.message.select_payment_method_option'
             })
         },
-        error: form.errors.ccvIssuerID,
+        error: form.errors?.ccvIssuerID,
         control: form.control
     }
 

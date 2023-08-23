@@ -1,16 +1,20 @@
-import {useCommerceApi} from '@salesforce/commerce-sdk-react'
+import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
 import {getAppOrigin} from '@salesforce/pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
 import { useCurrentBasket } from '@salesforce/retail-react-app/app/hooks/use-current-basket'
 import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
 import {createApplePayRequest} from './ccv-utils'
 import {getConfig} from '@salesforce/pwa-kit-runtime/utils/ssr-config'
+import OcapiCCV from './ocapi-ccv'
 
 const useCCVApi = () => {
     const api = useCommerceApi()
     const {locale, formatMessage} = useIntl()
-    const basket = useCurrentBasket()
     const navigate = useNavigation()
+    const {data: basket} = useCurrentBasket()
+
+    const ocapiCCVInstance = new OcapiCCV()
+    const {getTokenWhenReady} = useAccessToken()
     const localeConfig = getConfig()?.app?.url?.locale
 
     const redirectWithLocale = localeConfig !== 'none'
@@ -38,8 +42,11 @@ const useCCVApi = () => {
                 parameters.applePayValidationUrl = applePayValidationUrl
                 parameters.applePayDomainName = window.location.hostname
             }
-            const response = await api.ccvPayment.createOrder({
-                headers: {_sfdc_customer_id: api.auth.usid},
+            const token = await getTokenWhenReady()
+            const response = await ocapiCCVInstance.createOrder({
+                headers: {
+                    authorization: `Bearer ${token}`
+                },
                 body: {basketId: basket.basketId},
                 parameters
             })

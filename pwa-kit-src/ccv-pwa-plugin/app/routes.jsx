@@ -22,10 +22,19 @@ const Checkout = loadable(() => import('./pages/checkout'), {
     fallback
 })
 
+const CheckoutRedirect = loadable(() => import('./pages/checkout-redirect'), {
+    fallback
+})
+
 const routes = [
     {
         path: '/checkout',
         component: Checkout,
+        exact: true
+    },
+    {
+        path: '/checkout/handleShopperRedirect',
+        component: CheckoutRedirect,
         exact: true
     },
     ..._routes
