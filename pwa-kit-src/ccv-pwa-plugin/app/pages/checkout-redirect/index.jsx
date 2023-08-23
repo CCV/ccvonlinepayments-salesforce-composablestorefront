@@ -6,7 +6,6 @@ import { useCurrentCustomer } from '@salesforce/retail-react-app/app/hooks/use-c
 import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
 
 const CheckoutRedirect = () => {
-    debugger;
     const navigate = useNavigation()
     // const {setBasket} = useContext(BasketContext)
     const {data: customer} = useCurrentCustomer()

@@ -68,7 +68,17 @@ const usePaymentFormsCCV = () => {
     }
 
     const submitBillingAddressForm = async (address) => {
-        const addressToSet = billingSameAsShipping ? selectedShippingAddress : address;
+        const addressSource = billingSameAsShipping ? selectedShippingAddress : address;
+
+        const {
+            id,
+            preferred,
+            creationDate,
+            lastModified,
+            addressId,
+            addressName,
+            ...addressToSet
+        } = addressSource
 
         await updateBillingAddressForBasket({
             body: addressToSet,

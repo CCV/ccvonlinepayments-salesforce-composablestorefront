@@ -7,8 +7,6 @@ import {CreditCardOptions} from './payment-method-options/options-cc'
 import {GiropayOptions} from './payment-method-options/options-giropay'
 import {IdealOptions} from './payment-method-options/options-ideal'
 import {CreditCardInlineOptions} from './payment-method-options/options-cc-inline'
-
-import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 import {useCCVPayment} from '../util/ccv-context'
 import {PaymentMethodIcons} from '../util/payment-components-ccv'
 import {useCurrentCustomer} from "@salesforce/retail-react-app/app/hooks/use-current-customer";
