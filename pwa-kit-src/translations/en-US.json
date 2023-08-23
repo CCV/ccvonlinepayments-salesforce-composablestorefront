@@ -231,6 +231,9 @@
   "checkout_confirmation.heading.payment_details": {
     "defaultMessage": "Payment Details"
   },
+  "checkout_confirmation.heading.payment_method": {
+    "defaultMessage": "Payment Method"
+  },
   "checkout_confirmation.heading.shipping_address": {
     "defaultMessage": "Shipping Address"
   },
@@ -303,6 +306,18 @@
   },
   "checkout_payment.button.review_order": {
     "defaultMessage": "Review Order"
+  },
+  "checkout_payment.ccv_payment_error_cancelled": {
+    "defaultMessage": "Your basket has been updated. Please, try again."
+  },
+  "checkout_payment.ccv_payment_error_card_refused": {
+    "defaultMessage": "The payment could not be authorized - card refused."
+  },
+  "checkout_payment.ccv_payment_error_default": {
+    "defaultMessage": "The payment could not be authorized successfully."
+  },
+  "checkout_payment.ccv_payment_error_insufficient_funds": {
+    "defaultMessage": "The payment could not be authorized - insufficient funds."
   },
   "checkout_payment.heading.billing_address": {
     "defaultMessage": "Billing Address"
@@ -877,7 +892,7 @@
     "defaultMessage": "Subtotal"
   },
   "order_summary.label.tax": {
-    "defaultMessage": "Tax"
+    "defaultMessage": "Tax."
   },
   "page_not_found.action.go_back": {
     "defaultMessage": "Back to previous page"
@@ -929,8 +944,26 @@
     "defaultMessage": "1 uppercase letter",
     "description": "Password requirement"
   },
+  "payment_selection.button.save_and_continue": {
+    "defaultMessage": "Save & Continue"
+  },
+  "payment_selection.heading.add_new_card": {
+    "defaultMessage": "Add New Card"
+  },
   "payment_selection.heading.credit_card": {
     "defaultMessage": "Credit Card"
+  },
+  "payment_selection.message.save_card_for_later": {
+    "defaultMessage": "Save card for later."
+  },
+  "payment_selection.message.select_bank": {
+    "defaultMessage": "Select your bank."
+  },
+  "payment_selection.message.select_payment_method": {
+    "defaultMessage": "Please select a payment method."
+  },
+  "payment_selection.message.select_payment_method_option": {
+    "defaultMessage": "Please select an option."
   },
   "payment_selection.tooltip.secure_payment": {
     "defaultMessage": "This is a secure SSL encrypted payment."
