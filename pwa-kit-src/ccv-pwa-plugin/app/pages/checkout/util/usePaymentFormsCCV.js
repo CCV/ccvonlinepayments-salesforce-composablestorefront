@@ -149,7 +149,7 @@ const usePaymentFormsCCV = () => {
             const [expirationMonth, expirationYear] = payment.expiry.split('/')
             paymentInstrument.paymentCard = {
                 holder: payment.holder,
-                number: payment.number.replace(/ /g, '').replace(/\d(?=\d{4})/g, '#'),
+                maskedNumber: payment.number.replace(/ /g, '').replace(/\d(?=\d{4})/g, '#'),
                 cardType: getPaymentInstrumentCardType(payment.cardType),
                 expirationMonth: parseInt(expirationMonth),
                 expirationYear: parseInt(expirationYear),
