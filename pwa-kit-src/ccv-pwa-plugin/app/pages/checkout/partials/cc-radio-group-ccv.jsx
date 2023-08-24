@@ -10,10 +10,14 @@ import {FormattedMessage} from 'react-intl'
 import {Box, Button, Stack, Text, SimpleGrid, FormControl, FormErrorMessage} from '@chakra-ui/react'
 import {RadioCard, RadioCardGroup} from '@salesforce/retail-react-app/app/components/radio-card'
 import {getCreditCardIcon} from '@salesforce/retail-react-app/app/utils/cc-utils'
-import {useCurrentCustomer} from "@salesforce/retail-react-app/app/hooks/use-current-customer";
+import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer';
+import {useShopperCustomersMutation} from '@salesforce/commerce-sdk-react'
 
 const CCRadioGroupCCV = ({form, value = '', onPaymentIdChange = () => null}) => {
     const {data: customer} = useCurrentCustomer()
+    const {mutateAsync: deleteCustomerPaymentInstrument} = useShopperCustomersMutation(
+        'deleteCustomerPaymentInstrument'
+    )
 
     return (
         <FormControl
@@ -62,10 +66,13 @@ const CCRadioGroupCCV = ({form, value = '', onPaymentIdChange = () => null}) => 
                                                         variant="link"
                                                         size="sm"
                                                         colorScheme="red"
-                                                        onClick={() =>
-                                                            customer.removeSavedPaymentInstrument(
-                                                                payment.paymentInstrumentId
-                                                            )
+                                                        onClick={async () =>
+                                                            await deleteCustomerPaymentInstrument({
+                                                                parameters: {
+                                                                    paymentInstrumentId: payment.paymentInstrumentId,
+                                                                    customerId: customer.customerId
+                                                                }
+                                                            })
                                                         }
                                                     >
                                                         <FormattedMessage
