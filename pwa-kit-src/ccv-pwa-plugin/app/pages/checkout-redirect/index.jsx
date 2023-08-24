@@ -1,14 +1,12 @@
-import React, {useEffect, useContext, useRef, useCallback} from 'react'
+import React, {useEffect, useRef, useCallback} from 'react'
 import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
 import CheckoutSkeleton from '@salesforce/retail-react-app/app/pages/checkout/partials/checkout-skeleton'
 import {Box, Text} from '@chakra-ui/react'
-import { useCurrentCustomer } from '@salesforce/retail-react-app/app/hooks/use-current-customer'
 import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
 
 const CheckoutRedirect = () => {
     const navigate = useNavigation()
     // const {setBasket} = useContext(BasketContext)
-    const {data: customer} = useCurrentCustomer()
     const api = useCommerceApi()
     const {getTokenWhenReady} = useAccessToken()
 
