@@ -13,6 +13,8 @@ import CCVPaymentSelection from './payment-selection-ccv'
 import ShippingAddressSelection from '@salesforce/retail-react-app/app/pages/checkout/partials/shipping-address-selection'
 import AddressDisplay from '@salesforce/retail-react-app/app/components/address-display'
 import {PromoCode, usePromoCode} from '@salesforce/retail-react-app/app/components/promo-code'
+import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
+import {useShopperBasketsMutation} from '@salesforce/commerce-sdk-react'
 import usePaymentFormsCCV from '../util/usePaymentFormsCCV'
 import {PaymentSummaryCCV} from '../util/payment-components-ccv'
 import {useCCVPayment} from '../util/ccv-context'
@@ -20,15 +22,18 @@ import {CCVPaymentError} from './payment-error-ccv'
 
 const CCVPayment = () => {
     const {formatMessage} = useIntl()
-
+    const {data: basket} = useCurrentBasket()
     const {
         step,
         STEPS: checkoutSteps,
-        setCheckoutStep,
-        selectedShippingAddress,
-        selectedBillingAddress,
-        selectedPayment
+        goToStep,
     } = useCheckout()
+    const {mutateAsync: removePaymentInstrumentFromBasket} = useShopperBasketsMutation(
+        'removePaymentInstrumentFromBasket'
+    )
+    const selectedShippingAddress = basket.shipments && basket.shipments[0].shippingAddress
+    const selectedBillingAddress = basket.billingAddress
+    const selectedPayment = basket.paymentInstruments && basket.paymentInstruments[0]
 
     const {paymentError, setPaymentError} = useCCVPayment()
 
@@ -56,7 +61,7 @@ const CCVPayment = () => {
             // delete customer payment instrument if there was an error and the basket was reopened
             // because the PAN will be masked and unusable
             await removePaymentAndResetForm()
-            setCheckoutStep(checkoutSteps.PAYMENT)
+            goToStep(checkoutSteps.PAYMENT)
         }
     }
 
@@ -76,7 +81,12 @@ const CCVPayment = () => {
     async function removePaymentAndResetForm() {
         setIsRemovingPayment(true)
         try {
-            await removePayment()
+            await removePaymentInstrumentFromBasket({
+                parameters: {
+                    basketId: basket.basketId,
+                    paymentInstrumentId: basket.paymentInstruments[0].paymentInstrumentId
+                }
+            })
             paymentMethodForm.reset({paymentInstrumentId: '', paymentMethodId: ''})
         } catch (error) {
             console.log(error)
@@ -100,7 +110,7 @@ const CCVPayment = () => {
                 }
                 disabled={selectedPayment == null}
                 onEdit={() => {
-                    setCheckoutStep(checkoutSteps.PAYMENT)
+                    goToStep(checkoutSteps.PAYMENT)
                     setPaymentError(null)
                 }}
             >
