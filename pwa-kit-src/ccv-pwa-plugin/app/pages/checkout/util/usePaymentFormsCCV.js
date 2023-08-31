@@ -94,7 +94,7 @@ const usePaymentFormsCCV = () => {
     // but from a single control/button. So we kick off the payment submit first
     // and let that function take over the next step.
     // ------
-    // TODO: Figure out how to run the form validations simultaneuously before
+    // TODO: Figure out how to run the form validations simultaneously before
     // submitting the forms, so one doesn't need to wait on the other to check for
     // client-side validation errors.
     const reviewOrder = () => {
@@ -107,15 +107,7 @@ const usePaymentFormsCCV = () => {
      * @param {Object} payment
      */
     async function setPaymentCCV(payment) {
-        const {paymentInstrumentId, paymentMethodId, ccvIssuerID, ccvMethodId} = payment
-
-        if (paymentInstrumentId && paymentInstrumentId !== 'new_card') {
-            // Customer selected a saved card
-            await basket.setPaymentInstrument({
-                customerPaymentInstrumentId: paymentInstrumentId
-            })
-            return
-        }
+        const {paymentMethodId, ccvIssuerID, ccvMethodId} = payment
 
         const paymentInstrument = {
             paymentMethodId

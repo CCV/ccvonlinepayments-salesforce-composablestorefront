@@ -65,7 +65,7 @@ export const CCVMethodOptions = function ({paymentMethodId}) {
 
     switch (paymentMethodId) {
         case 'CCV_CREDIT_CARD': {
-            return customer.isRegistered ? <CreditCardOptions /> : null
+            return null
         }
         case 'CCV_CREDIT_CARD_INLINE': {
             return <CreditCardInlineOptions />
