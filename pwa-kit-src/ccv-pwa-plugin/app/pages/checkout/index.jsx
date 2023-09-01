@@ -7,7 +7,6 @@
 import React, {useEffect, useState} from 'react'
 import {Alert, AlertIcon, Box, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
 import {CheckoutProvider, useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
-import ContactInfo from '@salesforce/retail-react-app/app/pages/checkout/partials/contact-info'
 import ShippingAddress from '@salesforce/retail-react-app/app/pages/checkout/partials/shipping-address'
 import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
 import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
@@ -15,6 +14,7 @@ import CheckoutSkeleton from '@salesforce/retail-react-app/app/pages/checkout/pa
 import OrderSummary from '@salesforce/retail-react-app/app/components/order-summary'
 import {PlaceOrderButton} from './util/payment-components-ccv'
 import ShippingOptions from './partials/shipping-options'
+import ContactInfo from './partials/contact-info'
 import CCVPayment from './partials/payment-ccv'
 import useCCVApi from './util/useCCVApi'
 
