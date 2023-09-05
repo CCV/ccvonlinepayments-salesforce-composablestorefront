@@ -49,6 +49,7 @@ export default function ShippingOptions() {
         }
     )
 
+    const isMethodApplicable = (methodId, methods) => !!methods?.find(method => method.id === methodId)
     const selectedShippingMethod = basket?.shipments?.[0]?.shippingMethod
     const selectedShippingAddress = basket?.shipments?.[0]?.shippingAddress
 
@@ -61,12 +62,15 @@ export default function ShippingOptions() {
 
     useEffect(() => {
         const defaultMethodId = shippingMethods?.defaultShippingMethodId
-        const methodId = form.getValues().shippingMethodId
-        if (!selectedShippingMethod && !methodId && defaultMethodId) {
-            form.reset({shippingMethodId: defaultMethodId})
-        }
-        if (selectedShippingMethod && methodId !== selectedShippingMethod.id) {
+        const isDefaultApplicable = isMethodApplicable(defaultMethodId, shippingMethods?.applicableShippingMethods)
+        const isSelectedApplicable = isMethodApplicable(selectedShippingMethod?.id, shippingMethods?.applicableShippingMethods)
+
+        if (isSelectedApplicable) {
             form.reset({shippingMethodId: selectedShippingMethod.id})
+        } else if (isDefaultApplicable) {
+            form.reset({shippingMethodId: defaultMethodId})
+        } else {
+            form.reset({shippingMethodId:  shippingMethods?.applicableShippingMethods[0]?.id})
         }
     }, [selectedShippingMethod, shippingMethods])
 
