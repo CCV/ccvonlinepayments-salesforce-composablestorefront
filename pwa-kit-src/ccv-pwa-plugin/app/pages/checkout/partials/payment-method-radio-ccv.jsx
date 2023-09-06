@@ -43,12 +43,6 @@ export const CCVPaymentMethodRadio = function ({paymentMethod, isSelected}) {
             {isSelected && (
                 <>
                     <CCVMethodOptions paymentMethodId={paymentMethod.id} />
-                    <input
-                        type="hidden"
-                        name="ccvMethodId"
-                        {...form.register('ccvMethodId')}
-                        defaultValue={paymentMethod.c_ccvMethodId}
-                    />
                 </>
             )}
         </Box>
@@ -61,8 +55,6 @@ CCVPaymentMethodRadio.propTypes = {
 }
 
 export const CCVMethodOptions = function ({paymentMethodId}) {
-    const {data: customer} = useCurrentCustomer()
-
     switch (paymentMethodId) {
         case 'CCV_CREDIT_CARD': {
             return null

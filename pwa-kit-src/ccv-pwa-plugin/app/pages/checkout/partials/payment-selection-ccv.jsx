@@ -16,7 +16,6 @@ import {useCCVPayment} from '../util/ccv-context'
 
 const PaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
-    // const {paymentMethods} = useCheckout()
 
     const paymentFormRef = useRef()
     form = form || useForm()
@@ -35,11 +34,11 @@ const PaymentSelection = ({form}) => {
         <form>
             <FormControl
                 id="paymentMethodId"
-                isInvalid={form.errors?.paymentMethodId}
+                isInvalid={form.formState.errors?.paymentMethodId}
                 ref={paymentFormRef}
             >
                 <FormErrorMessage marginTop={0} marginBottom={4}>
-                    {form.errors?.paymentMethodId?.message}
+                    {form.formState.errors?.paymentMethodId?.message}
                 </FormErrorMessage>
                 <Stack spacing={5}>
                     <Box overflow="hidden">

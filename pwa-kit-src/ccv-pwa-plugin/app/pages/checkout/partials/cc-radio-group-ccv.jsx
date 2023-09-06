@@ -22,12 +22,12 @@ const CCRadioGroupCCV = ({form, value = '', onPaymentIdChange = () => null}) => 
     return (
         <FormControl
             id="paymentInstrumentId"
-            isInvalid={form.errors?.paymentInstrumentId}
+            isInvalid={form.formState.errors?.paymentInstrumentId}
             isRequired={true}
         >
-            {form.errors?.paymentInstrumentId && (
+            {form.formState.errors?.paymentInstrumentId && (
                 <FormErrorMessage marginTop={0} marginBottom={4}>
-                    {form.errors?.paymentInstrumentId.message}
+                    {form.formState.errors?.paymentInstrumentId.message}
                 </FormErrorMessage>
             )}
 

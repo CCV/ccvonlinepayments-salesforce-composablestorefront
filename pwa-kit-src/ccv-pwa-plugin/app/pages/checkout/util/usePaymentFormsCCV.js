@@ -31,7 +31,7 @@ const usePaymentFormsCCV = () => {
         'updateBillingAddressForBasket'
     )
 
-    const {form: paymentMethodForm, setCreditCardData} = useCCVPayment()
+    const {form: paymentMethodForm, setCreditCardData, paymentMethods} = useCCVPayment()
     // This local state value manages the 'checked' state of the billing address form's
     // checkbox for `Same as shipping address`. We initialize its value by checking if the
     // currently applied billing address matches the currently applied shipping address.
@@ -107,7 +107,8 @@ const usePaymentFormsCCV = () => {
      * @param {Object} payment
      */
     async function setPaymentCCV(payment) {
-        const {paymentMethodId, ccvIssuerID, ccvMethodId} = payment
+        const {paymentMethodId, ccvIssuerID} = payment
+        const ccvMethodId = paymentMethods.find((paymentMethod) => paymentMethod.id === paymentMethodId)?.c_ccvMethodId
 
         const paymentInstrument = {
             paymentMethodId
