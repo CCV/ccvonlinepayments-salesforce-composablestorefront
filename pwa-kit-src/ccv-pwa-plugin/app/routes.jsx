@@ -26,6 +26,10 @@ const CheckoutRedirect = loadable(() => import('./pages/checkout-redirect'), {
     fallback
 })
 
+const CheckoutConfirmation = loadable(() => import('./pages/checkout/confirmation'), {
+    fallback
+})
+
 const routes = [
     {
         path: '/checkout',
@@ -36,6 +40,10 @@ const routes = [
         path: '/checkout/handleShopperRedirect',
         component: CheckoutRedirect,
         exact: true
+    },
+    {
+        path: '/checkout/confirmation/:orderNo',
+        component: CheckoutConfirmation
     },
     ..._routes
 ]

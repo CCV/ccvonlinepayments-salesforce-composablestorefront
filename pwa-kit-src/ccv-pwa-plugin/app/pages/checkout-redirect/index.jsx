@@ -6,7 +6,6 @@ import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
 
 const CheckoutRedirect = () => {
     const navigate = useNavigation()
-    // const {setBasket} = useContext(BasketContext)
     const api = useCommerceApi()
     const {getTokenWhenReady} = useAccessToken()
 
@@ -44,12 +43,6 @@ const CheckoutRedirect = () => {
         }
 
         if ((retries >= MAX_RETRIES && order.status === 'created') || order.status === 'new') {
-            // we will update the c_order_status_pending on the confirmation page, to ensure the basket
-            // update doesn't happen before we redirect
-            // await setBasket({
-            //     ...order,
-            //     c_order_status_pending: true
-            // })
             navigate(`/checkout/confirmation/${orderNo}`)
             return
         }
@@ -63,9 +56,6 @@ const CheckoutRedirect = () => {
         }
 
         if (order.status === 'failed') {
-            // the old basket should have been reopened by the webook, so we want to reload it
-            // await setBasket({c_order_status_pending: false})
-
             var errorMsg = order.c_ccv_failure_code
             navigate('/checkout', 'push', {paymentErrorMsg: errorMsg})
             return
@@ -78,24 +68,12 @@ const CheckoutRedirect = () => {
                 throw new Error('missing order ref')
             }
 
-            // update the basket with c_order_status_pending so the loaded() check
-            // on the basket will pass and we won't create a new basket
-            // await setBasket({
-            //     c_order_status_pending: true
-            // })
-
             order = await getOrder(orderNo)
-
-            // await setBasket({
-            //     ...order,
-            //     c_order_status_pending: true
-            // })
 
             checkOrderStatus(orderNo, order)
         } catch (error) {
             console.log('handle shopper redirect error')
             console.log(error)
-            // await setBasket({c_order_status_pending: false})
 
             navigate('/')
         }

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-import React, {useEffect, useContext, useState, Fragment} from 'react'
+import React, {Fragment, useEffect} from 'react'
 import {FormattedMessage, FormattedNumber} from 'react-intl'
 import {
     Box,
@@ -19,11 +19,11 @@ import {
     Alert,
     AlertIcon,
     Divider
-} from '@chakra-ui/react'
+} from '@salesforce/retail-react-app/app/components/shared/ui'
 import {useForm} from 'react-hook-form'
+import {useParams} from 'react-router-dom'
+import {useOrder, useProducts, useAuthHelper, AuthHelpers} from '@salesforce/commerce-sdk-react'
 import {getCreditCardIcon} from '@salesforce/retail-react-app/app/utils/cc-utils'
-import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
-import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
 import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
 import Link from '@salesforce/retail-react-app/app/components/link'
 import AddressDisplay from '@salesforce/retail-react-app/app/components/address-display'
@@ -34,48 +34,42 @@ import CartItemVariantImage from '@salesforce/retail-react-app/app/components/it
 import CartItemVariantName from '@salesforce/retail-react-app/app/components/item-variant/item-name'
 import CartItemVariantAttributes from '@salesforce/retail-react-app/app/components/item-variant/item-attributes'
 import CartItemVariantPrice from '@salesforce/retail-react-app/app/components/item-variant/item-price'
-import {BasketContext} from '@salesforce/retail-react-app/app/contexts'
+import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
+import {API_ERROR_MESSAGE} from '@salesforce/retail-react-app/app/constants'
 import {PaymentMethodIcons} from './util/payment-components-ccv'
 
+const onClient = typeof window !== 'undefined'
+
 const CheckoutConfirmation = () => {
+    const {orderNo} = useParams()
     const navigate = useNavigation()
-    const { data: basket } = useCurrentBasket()
-    const { data: customer } = useCurrentCustomer()
-    const {setBasket} = useContext(BasketContext)
-
-    // The order data will initially be stored as our basket when first coming to this
-    // page. We capture it in local state to use for our UI. A new basket will be automatically
-    // created so we should only reference our captured order data here.
-    const [order] = useState(basket)
-
-    const form = useForm({
-        defaultValues: {
-            email: customer?.email || order?.customerInfo?.email || '',
-            password: '',
-            firstName: customer.firstName || order?.billingAddress?.firstName,
-            lastName: customer.lastName || order?.billingAddress?.lastName
+    const {data: customer} = useCurrentCustomer()
+    const register = useAuthHelper(AuthHelpers.Register)
+    const {data: order} = useOrder(
+        {
+            parameters: {orderNo}
+        },
+        {
+            enabled: !!orderNo && onClient
         }
-    })
+    )
+    const itemIds = order?.productItems.map((item) => item.productId)
+    const {data: products} = useProducts({parameters: {ids: itemIds?.join(',')}})
+    const productItemsMap = products?.data.reduce((map, item) => ({...map, [item.id]: item}), {})
+    const form = useForm()
 
-    // If we don't have an order object on first render we need to transition back to a
-    // different page. Fow now, we push to the homepage.
     useEffect(() => {
-        if (!order || order._type !== 'order') {
-            navigate('/')
-        }
+        form.reset({
+            email: order?.customerInfo?.email || '',
+            password: '',
+            firstName: order?.billingAddress?.firstName,
+            lastName: order?.billingAddress?.lastName
+        })
     }, [order])
 
     if (!order || !order.orderNo) {
         return null
     }
-
-    // we remove c_order_status_pending to unblock the creation of a new basket
-    useEffect(() => {
-        setBasket({
-            ...order,
-            c_order_status_pending: false
-        })
-    }, [])
 
     /**
      * c_ccv_landingpage_method - Payment method used inside Landing page
@@ -98,8 +92,25 @@ const CheckoutConfirmation = () => {
 
     const submitForm = async (data) => {
         try {
-            await customer.registerCustomer(data)
+            const body = {
+                customer: {
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email,
+                    login: data.email
+                },
+                password: data.password
+            }
+            await register.mutateAsync(body)
+
+            navigate(`/account`)
         } catch (error) {
+            if (!error.response) {
+                form.setError('global', {type: 'manual', message: API_ERROR_MESSAGE})
+                return
+            }
+            const json = await error.response.json()
+
             const existingAccountMessage = (
                 <Fragment>
                     <FormattedMessage
@@ -116,18 +127,12 @@ const CheckoutConfirmation = () => {
                 </Fragment>
             )
 
-            const message = /the login is already in use/i.test(error.message)
+            const message = /the login is already in use/i.test(json.detail)
                 ? existingAccountMessage
-                : error.message
+                : API_ERROR_MESSAGE
 
             form.setError('global', {type: 'manual', message})
-            return
         }
-
-        // Customer is successfully registered with a new account,
-        // and the recent order would be associated with this account too.
-        // Now redirect to the Account page.
-        navigate(`/account`)
     }
 
     return (
@@ -166,7 +171,6 @@ const CheckoutConfirmation = () => {
                                                 defaultMessage="We will send an email to <b>{email}</b> with your confirmation number and receipt shortly."
                                                 id="checkout_confirmation.message.will_email_shortly"
                                                 values={{
-                                                    // eslint-disable-next-line react/display-name
                                                     b: (chunks) => <b>{chunks}</b>,
                                                     email: order.customerInfo.email
                                                 }}
@@ -204,10 +208,10 @@ const CheckoutConfirmation = () => {
 
                                 <form onSubmit={form.handleSubmit(submitForm)}>
                                     <Stack spacing={4}>
-                                        {form.errors?.global && (
+                                        {form.formState.errors?.global && (
                                             <Alert status="error">
                                                 <AlertIcon />
-                                                {form.errors.global.message}
+                                                {form.formState.errors.global.message}
                                             </Alert>
                                         )}
 
@@ -305,14 +309,14 @@ const CheckoutConfirmation = () => {
                                             divider={<Divider />}
                                         >
                                             {order.productItems?.map((product, idx) => {
+                                                const productDetail =
+                                                    productItemsMap?.[product.productId] || {}
                                                 const variant = {
                                                     ...product,
-                                                    ...(order._productItemsDetail &&
-                                                        order._productItemsDetail[
-                                                            product.productId
-                                                        ]),
+                                                    ...productDetail,
                                                     price: product.price
                                                 }
+
                                                 return (
                                                     <ItemVariantProvider
                                                         key={product.productId}
