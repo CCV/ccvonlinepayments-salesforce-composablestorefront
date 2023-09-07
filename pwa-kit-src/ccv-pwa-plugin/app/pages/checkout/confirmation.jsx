@@ -23,7 +23,6 @@ import {
 import {useForm} from 'react-hook-form'
 import {useParams} from 'react-router-dom'
 import {useOrder, useProducts, useAuthHelper, AuthHelpers} from '@salesforce/commerce-sdk-react'
-import {getCreditCardIcon} from '@salesforce/retail-react-app/app/utils/cc-utils'
 import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
 import Link from '@salesforce/retail-react-app/app/components/link'
 import AddressDisplay from '@salesforce/retail-react-app/app/components/address-display'
@@ -37,6 +36,7 @@ import CartItemVariantPrice from '@salesforce/retail-react-app/app/components/it
 import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
 import {API_ERROR_MESSAGE} from '@salesforce/retail-react-app/app/constants'
 import {PaymentMethodIcons} from './util/payment-components-ccv'
+import {getCreditCardIcon} from '../../utils/cc-utils'
 
 const onClient = typeof window !== 'undefined'
 
@@ -84,6 +84,8 @@ const CheckoutConfirmation = () => {
         (paymentMethodId === 'card' ||
         !!order.paymentInstruments[0].paymentCard ||
         !!order.paymentInstruments[0].c_ccv_card_type)
+
+    console.log(order.paymentInstruments[0])
 
     const cardType =
         order.paymentInstruments[0].paymentCard?.cardType ||
