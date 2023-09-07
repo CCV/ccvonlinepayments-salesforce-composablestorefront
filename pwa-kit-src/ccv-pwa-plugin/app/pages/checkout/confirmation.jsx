@@ -80,9 +80,10 @@ const CheckoutConfirmation = () => {
         order.paymentInstruments[0]?.paymentMethodId
 
     const isCardPayment =
-        paymentMethodId === 'card' ||
+        paymentMethodId !== 'CCV_BANCONTACT' &&
+        (paymentMethodId === 'card' ||
         !!order.paymentInstruments[0].paymentCard ||
-        !!order.paymentInstruments[0].c_ccv_card_type
+        !!order.paymentInstruments[0].c_ccv_card_type)
 
     const cardType =
         order.paymentInstruments[0].paymentCard?.cardType ||
@@ -517,34 +518,6 @@ const CheckoutConfirmation = () => {
                                             {isCardPayment ? (
                                                 <Box>
                                                     {CardIcon && <CardIcon layerStyle="ccIcon" />}
-
-                                                    {order.paymentInstruments[0].paymentCard && (
-                                                        <Box>
-                                                            <Stack direction="row">
-                                                                <Text>
-                                                                    &bull;&bull;&bull;&bull;{' '}
-                                                                    {
-                                                                        order.paymentInstruments[0]
-                                                                            .paymentCard
-                                                                            ?.numberLastDigits
-                                                                    }
-                                                                </Text>
-                                                                <Text>
-                                                                    {
-                                                                        order.paymentInstruments[0]
-                                                                            .paymentCard
-                                                                            ?.expirationMonth
-                                                                    }
-                                                                    /
-                                                                    {
-                                                                        order.paymentInstruments[0]
-                                                                            .paymentCard
-                                                                            ?.expirationYear
-                                                                    }
-                                                                </Text>
-                                                            </Stack>
-                                                        </Box>
-                                                    )}
                                                 </Box>
                                             ) : (
                                                 <Box>
