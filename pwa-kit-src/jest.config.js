@@ -6,7 +6,7 @@
  */
 
 const path = require('path')
-const base = require('pwa-kit-dev/configs/jest/jest.config.js')
+const base = require('@salesforce/pwa-kit-dev/configs/jest/jest.config.js')
 
 module.exports = {
     ...base,
@@ -37,5 +37,6 @@ module.exports = {
             functions: 78,
             lines: 83
         }
-    }
+    },
+    transformIgnorePatterns: [],
 }
