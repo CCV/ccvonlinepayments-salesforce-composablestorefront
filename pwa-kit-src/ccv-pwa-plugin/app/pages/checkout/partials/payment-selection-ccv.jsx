@@ -9,7 +9,6 @@ import {useIntl} from 'react-intl'
 import PropTypes from 'prop-types'
 import {Box, RadioGroup, Stack, FormErrorMessage, FormControl, Skeleton} from '@chakra-ui/react'
 import {useForm, Controller} from 'react-hook-form'
-import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 import {CCVPaymentMethodRadio} from './payment-method-radio-ccv'
 
 import {useCCVPayment} from '../util/ccv-context'
@@ -18,6 +17,7 @@ const PaymentSelection = ({form}) => {
     const {formatMessage} = useIntl()
 
     const paymentFormRef = useRef()
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     form = form || useForm()
 
     const {onPaymentMethodChange, getPaymentMethods} = useCCVPayment()
@@ -56,7 +56,8 @@ const PaymentSelection = ({form}) => {
                                     {/* dynamic payment methods */}
                                     <Stack gap={1}>
                                         {paymentMethods ? (
-                                            paymentMethods.map((paymentMethod) => {
+                                            paymentMethods
+                                                .map((paymentMethod) => {
                                                     return (
                                                         <CCVPaymentMethodRadio
                                                             key={paymentMethod.id}

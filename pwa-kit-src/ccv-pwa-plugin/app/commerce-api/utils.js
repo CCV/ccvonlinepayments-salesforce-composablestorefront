@@ -160,6 +160,7 @@ export const createOcapiFetch =
         const convertedResponse = keysToCamel(response)
         if (convertedResponse.fault) {
             const error = convertOcapiFaultToCapiError(convertedResponse.fault)
+            // eslint-disable-next-line no-undef
             throw new HTTPError(httpStatus, error.detail)
         } else {
             return convertedResponse

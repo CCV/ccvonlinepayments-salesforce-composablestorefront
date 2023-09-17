@@ -1,5 +1,9 @@
 import React, {useMemo} from 'react'
 import PropTypes from 'prop-types'
+import {Button} from '@chakra-ui/react'
+import {Box, Stack, Text} from '@chakra-ui/react'
+import {useIntl, FormattedMessage} from 'react-intl'
+import {getCreditCardIcon} from '@salesforce/retail-react-app/app/utils/cc-utils'
 
 import {
     AmexIcon,
@@ -16,12 +20,7 @@ import {
     KlarnaIcon,
     ApplePayIcon
 } from '../../../components/icons'
-import {Button} from '@chakra-ui/react'
-import {FormattedMessage} from 'react-intl'
-import {useIntl} from 'react-intl'
 
-import {Box, Stack, Text} from '@chakra-ui/react'
-import {getCreditCardIcon} from '@salesforce/retail-react-app/app/utils/cc-utils'
 /**
  * Returns a map of applicable payment methods keyed by payment method ID
  * @returns {Object} map of applicable payment methods
@@ -137,6 +136,11 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
 export const PaymentMethodIcons = ({paymentMethodId, iconHeight}) => {
     if (!paymentMethodId) return null
     return getPaymentIcons(paymentMethodId, iconHeight)
+}
+
+PaymentMethodIcons.propTypes = {
+    paymentMethodId: PropTypes.string,
+    iconHeight: PropTypes.string
 }
 
 export const PlaceOrderButton = (props) => {

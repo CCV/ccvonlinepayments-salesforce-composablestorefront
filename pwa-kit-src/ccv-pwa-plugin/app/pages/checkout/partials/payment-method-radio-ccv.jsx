@@ -3,16 +3,14 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import {Box, Radio, Stack, Spacer} from '@chakra-ui/react'
 
-import {CreditCardOptions} from './payment-method-options/options-cc'
 import {GiropayOptions} from './payment-method-options/options-giropay'
 import {IdealOptions} from './payment-method-options/options-ideal'
 import {CreditCardInlineOptions} from './payment-method-options/options-cc-inline'
 import {useCCVPayment} from '../util/ccv-context'
 import {PaymentMethodIcons} from '../util/payment-components-ccv'
-import {useCurrentCustomer} from "@salesforce/retail-react-app/app/hooks/use-current-customer";
 
 export const CCVPaymentMethodRadio = function ({paymentMethod, isSelected}) {
-    const {form, applePayLoaded} = useCCVPayment()
+    const {applePayLoaded} = useCCVPayment()
 
     if (paymentMethod.id === 'CCV_APPLE_PAY') {
         if (!applePayLoaded || !('ApplePaySession' in window)) {

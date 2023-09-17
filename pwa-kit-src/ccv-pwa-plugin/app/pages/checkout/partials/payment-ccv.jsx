@@ -8,26 +8,26 @@ import React, {useEffect, useState, useRef} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 import {Box, Button, Checkbox, Container, Heading, Stack, Text, Divider} from '@chakra-ui/react'
 import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
-import {ToggleCard, ToggleCardEdit, ToggleCardSummary} from '@salesforce/retail-react-app/app/components/toggle-card'
-import CCVPaymentSelection from './payment-selection-ccv'
+import {
+    ToggleCard,
+    ToggleCardEdit,
+    ToggleCardSummary
+} from '@salesforce/retail-react-app/app/components/toggle-card'
 import ShippingAddressSelection from '@salesforce/retail-react-app/app/pages/checkout/partials/shipping-address-selection'
 import AddressDisplay from '@salesforce/retail-react-app/app/components/address-display'
 import {PromoCode, usePromoCode} from '@salesforce/retail-react-app/app/components/promo-code'
 import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
 import {useShopperBasketsMutation} from '@salesforce/commerce-sdk-react'
-import usePaymentFormsCCV from '../util/usePaymentFormsCCV'
-import {PaymentSummaryCCV} from '../util/payment-components-ccv'
 import {useCCVPayment} from '../util/ccv-context'
 import {CCVPaymentError} from './payment-error-ccv'
+import CCVPaymentSelection from './payment-selection-ccv'
+import usePaymentFormsCCV from '../util/usePaymentFormsCCV'
+import {PaymentSummaryCCV} from '../util/payment-components-ccv'
 
 const CCVPayment = () => {
     const {formatMessage} = useIntl()
     const {data: basket} = useCurrentBasket()
-    const {
-        step,
-        STEPS: checkoutSteps,
-        goToStep,
-    } = useCheckout()
+    const {step, STEPS: checkoutSteps, goToStep} = useCheckout()
     const {mutateAsync: removePaymentInstrumentFromBasket} = useShopperBasketsMutation(
         'removePaymentInstrumentFromBasket'
     )
@@ -45,6 +45,7 @@ const CCVPayment = () => {
         reviewOrder
     } = usePaymentFormsCCV()
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {removePromoCode, ...promoCodeProps} = usePromoCode()
 
     const paymentErrorRef = useRef()

@@ -2,9 +2,9 @@ import React from 'react'
 import {useIntl} from 'react-intl'
 import {Box, Stack} from '@chakra-ui/react'
 import {Controller} from 'react-hook-form'
-import CCRadioGroupCCV from '../cc-radio-group-ccv'
 
 import Field from '@salesforce/retail-react-app/app/components/field'
+import CCRadioGroupCCV from '../cc-radio-group-ccv'
 import {useCCVPayment} from '../../util/ccv-context'
 
 export const CreditCardOptions = function () {

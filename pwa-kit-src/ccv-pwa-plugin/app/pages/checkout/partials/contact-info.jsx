@@ -43,7 +43,7 @@ import {
     useShopperBasketsMutation,
     useCustomerId,
     useCustomerType,
-    useCustomerBaskets,
+    useCustomerBaskets
 } from '@salesforce/commerce-sdk-react'
 
 const ContactInfo = () => {
@@ -59,7 +59,7 @@ const ContactInfo = () => {
     const {step, STEPS, goToStep, goToNextStep} = useCheckout()
 
     const customerId = useCustomerId()
-    const {isRegistered, customerType} = useCustomerType()
+    const {customerType} = useCustomerType()
     const prevAuthType = usePrevious(customerType)
     const {data: baskets} = useCustomerBaskets(
         {parameters: {customerId}},

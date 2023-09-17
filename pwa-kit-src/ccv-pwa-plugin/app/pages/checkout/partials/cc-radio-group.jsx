@@ -23,22 +23,23 @@ import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-cur
 import {useShopperCustomersMutation} from '@salesforce/commerce-sdk-react'
 
 const CCRadioGroup = ({
-                          form,
-                          value = '',
-                          isEditingPayment = false,
-                          togglePaymentEdit = () => null,
-                          onPaymentIdChange = () => null
-                      }) => {
+    form,
+    value = '',
+    isEditingPayment = false,
+    togglePaymentEdit = () => null,
+    onPaymentIdChange = () => null
+}) => {
     const {data: customer} = useCurrentCustomer()
     const {mutateAsync: deleteCustomerPaymentInstrument} = useShopperCustomersMutation(
         'deleteCustomerPaymentInstrument'
     )
-    const handleRemove = (customerId, paymentInstrumentId) => deleteCustomerPaymentInstrument({
-        parameters: {
-            customerId,
-            paymentInstrumentId
-        }
-    })
+    const handleRemove = (customerId, paymentInstrumentId) =>
+        deleteCustomerPaymentInstrument({
+            parameters: {
+                customerId,
+                paymentInstrumentId
+            }
+        })
 
     return (
         <FormControl
@@ -81,7 +82,17 @@ const CCRadioGroup = ({
                                             </Stack>
 
                                             <Box>
-                                                <Button variant="link" size="sm" colorScheme="red" onClick={() => handleRemove(customer.customerId, payment.paymentInstrumentId)}>
+                                                <Button
+                                                    variant="link"
+                                                    size="sm"
+                                                    colorScheme="red"
+                                                    onClick={() =>
+                                                        handleRemove(
+                                                            customer.customerId,
+                                                            payment.paymentInstrumentId
+                                                        )
+                                                    }
+                                                >
                                                     <FormattedMessage
                                                         defaultMessage="Remove"
                                                         id="cc_radio_group.action.remove"
@@ -104,7 +115,7 @@ const CCRadioGroup = ({
                                 minHeight={['44px', '44px', '154px']}
                                 rounded="base"
                                 fontWeight="medium"
-                                leftIcon={<PlusIcon boxSize={'15px'}/>}
+                                leftIcon={<PlusIcon boxSize={'15px'} />}
                                 onClick={togglePaymentEdit}
                             >
                                 <FormattedMessage

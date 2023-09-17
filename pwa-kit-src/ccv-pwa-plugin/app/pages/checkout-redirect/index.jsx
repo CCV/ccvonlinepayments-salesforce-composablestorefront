@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useCallback} from 'react'
-import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
-import CheckoutSkeleton from '@salesforce/retail-react-app/app/pages/checkout/partials/checkout-skeleton'
 import {Box, Text} from '@chakra-ui/react'
 import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
+import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
+import CheckoutSkeleton from '@salesforce/retail-react-app/app/pages/checkout/partials/checkout-skeleton'
 
 const CheckoutRedirect = () => {
     const navigate = useNavigation()
@@ -21,16 +21,14 @@ const CheckoutRedirect = () => {
 
     const getOrder = async (orderNo) => {
         const token = await getTokenWhenReady()
-        const order = await api.shopperOrders.getOrder(
-            {
-                parameters: {
-                    orderNo
-                },
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+        const order = await api.shopperOrders.getOrder({
+            parameters: {
+                orderNo
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
             }
-        )
+        })
 
         return order
     }
@@ -56,9 +54,7 @@ const CheckoutRedirect = () => {
         }
 
         if (order.status === 'failed') {
-            var errorMsg = order.c_ccv_failure_code
-            navigate('/checkout', 'push', {paymentErrorMsg: errorMsg})
-            return
+            navigate('/checkout', 'push', {paymentErrorMsg: order.c_ccv_failure_code})
         }
     })
 
@@ -70,7 +66,7 @@ const CheckoutRedirect = () => {
 
             order = await getOrder(orderNo)
 
-            checkOrderStatus(orderNo, order)
+            await checkOrderStatus(orderNo, order)
         } catch (error) {
             console.log('handle shopper redirect error')
             console.log(error)

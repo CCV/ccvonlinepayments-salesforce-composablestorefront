@@ -1,23 +1,21 @@
 import {useEffect, useState} from 'react'
 import {useForm} from 'react-hook-form'
-import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
-import {getPaymentInstrumentCardType} from '@salesforce/retail-react-app/app/utils/cc-utils'
 import {useShopperBasketsMutation} from '@salesforce/commerce-sdk-react'
 import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
+import {getPaymentInstrumentCardType} from '@salesforce/retail-react-app/app/utils/cc-utils'
+import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
+
 import {useCCVPayment} from './ccv-context'
+
 /**
  * A hook for managing and coordinating the billing address and payment method forms.
  * @returns {Object}
  */
 const usePaymentFormsCCV = () => {
-    const {
-        selectedPayment,
-        isBillingSameAsShipping,
-        goToNextStep
-    } = useCheckout()
+    const {selectedPayment, isBillingSameAsShipping, goToNextStep} = useCheckout()
     const {data: basket} = useCurrentBasket()
-    const selectedShippingAddress = basket?.shipments[0]?.shippingAddress;
-    const selectedBillingAddress = basket?.billingAddress;
+    const selectedShippingAddress = basket?.shipments[0]?.shippingAddress
+    const selectedBillingAddress = basket?.billingAddress
 
     const {mutateAsync: updatePaymentInstrumentInBasket} = useShopperBasketsMutation(
         'updatePaymentInstrumentInBasket'
@@ -68,17 +66,11 @@ const usePaymentFormsCCV = () => {
     }
 
     const submitBillingAddressForm = async (address) => {
-        const addressSource = billingSameAsShipping ? selectedShippingAddress : address;
+        const addressSource = billingSameAsShipping ? selectedShippingAddress : address
 
-        const {
-            id,
-            preferred,
-            creationDate,
-            lastModified,
-            addressId,
-            addressName,
-            ...addressToSet
-        } = addressSource
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const {id, preferred, creationDate, lastModified, addressId, addressName, ...addressToSet} =
+            addressSource
 
         await updateBillingAddressForBasket({
             body: addressToSet,
@@ -108,7 +100,9 @@ const usePaymentFormsCCV = () => {
      */
     async function setPaymentCCV(payment) {
         const {paymentMethodId, ccvIssuerID} = payment
-        const ccvMethodId = paymentMethods.find((paymentMethod) => paymentMethod.id === paymentMethodId)?.c_ccvMethodId
+        const ccvMethodId = paymentMethods.find(
+            (paymentMethod) => paymentMethod.id === paymentMethodId
+        )?.c_ccvMethodId
 
         const paymentInstrument = {
             paymentMethodId
@@ -163,7 +157,10 @@ const usePaymentFormsCCV = () => {
             })
         } else {
             await updatePaymentInstrumentInBasket({
-                parameters: {basketId: basket?.basketId, paymentInstrumentId: basket.paymentInstruments[0].paymentInstrumentId},
+                parameters: {
+                    basketId: basket?.basketId,
+                    paymentInstrumentId: basket.paymentInstruments[0].paymentInstrumentId
+                },
                 body: paymentInstrument
             })
         }

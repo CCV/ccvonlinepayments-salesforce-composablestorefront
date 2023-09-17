@@ -33,7 +33,11 @@ export const IdealOptions = () => {
             }}
             render={({field}) => {
                 return (
-                    <FormControl id="ccvIssuerID" isInvalid={form.formState.errors?.ccvIssuerID} padding="20px">
+                    <FormControl
+                        id="ccvIssuerID"
+                        isInvalid={form.formState.errors?.ccvIssuerID}
+                        padding="20px"
+                    >
                         <Select {...field}>
                             <option value="">
                                 {formatMessage({
@@ -46,7 +50,10 @@ export const IdealOptions = () => {
                                     <optgroup label={countryGroup} key={countryGroup}>
                                         {countryGroups[countryGroup].map((issuer) => {
                                             return (
-                                                <option value={issuer.issuerid} key={issuer.issuerid}>
+                                                <option
+                                                    value={issuer.issuerid}
+                                                    key={issuer.issuerid}
+                                                >
                                                     {issuer.issuerdescription}
                                                 </option>
                                             )
@@ -55,7 +62,9 @@ export const IdealOptions = () => {
                                 )
                             })}
                         </Select>
-                        <FormErrorMessage>{form.formState.errors?.ccvIssuerID?.message}</FormErrorMessage>
+                        <FormErrorMessage>
+                            {form.formState.errors?.ccvIssuerID?.message}
+                        </FormErrorMessage>
                     </FormControl>
                 )
             }}

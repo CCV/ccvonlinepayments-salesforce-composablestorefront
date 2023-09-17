@@ -1,6 +1,10 @@
 import {getAppOrigin} from '@salesforce/pwa-kit-react-sdk/utils/url'
-import {checkRequiredParameters, createOcapiFetch, camelCaseKeysToUnderscore} from '../../../commerce-api/utils'
 import {getConfig} from '@salesforce/pwa-kit-runtime/utils/ssr-config'
+import {
+    checkRequiredParameters,
+    createOcapiFetch,
+    camelCaseKeysToUnderscore
+} from '../../../commerce-api/utils'
 
 class OcapiCCV {
     constructor() {

@@ -17,8 +17,6 @@ import {
     Text
 } from '@salesforce/retail-react-app/app/components/shared/ui'
 import {useForm, Controller} from 'react-hook-form'
-import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
-import {ChevronDownIcon} from '@salesforce/retail-react-app/app/components/icons'
 import {
     ToggleCard,
     ToggleCardEdit,
@@ -28,8 +26,10 @@ import {
     useShippingMethodsForShipment,
     useShopperBasketsMutation
 } from '@salesforce/commerce-sdk-react'
-import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
 import {useCurrency} from '@salesforce/retail-react-app/app/hooks'
+import {ChevronDownIcon} from '@salesforce/retail-react-app/app/components/icons'
+import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
+import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 
 export default function ShippingOptions() {
     const {formatMessage} = useIntl()
@@ -49,7 +49,8 @@ export default function ShippingOptions() {
         }
     )
 
-    const isMethodApplicable = (methodId, methods) => !!methods?.find(method => method.id === methodId)
+    const isMethodApplicable = (methodId, methods) =>
+        !!methods?.find((method) => method.id === methodId)
     const selectedShippingMethod = basket?.shipments?.[0]?.shippingMethod
     const selectedShippingAddress = basket?.shipments?.[0]?.shippingAddress
 
@@ -62,15 +63,21 @@ export default function ShippingOptions() {
 
     useEffect(() => {
         const defaultMethodId = shippingMethods?.defaultShippingMethodId
-        const isDefaultApplicable = isMethodApplicable(defaultMethodId, shippingMethods?.applicableShippingMethods)
-        const isSelectedApplicable = isMethodApplicable(selectedShippingMethod?.id, shippingMethods?.applicableShippingMethods)
+        const isDefaultApplicable = isMethodApplicable(
+            defaultMethodId,
+            shippingMethods?.applicableShippingMethods
+        )
+        const isSelectedApplicable = isMethodApplicable(
+            selectedShippingMethod?.id,
+            shippingMethods?.applicableShippingMethods
+        )
 
         if (isSelectedApplicable) {
             form.reset({shippingMethodId: selectedShippingMethod.id})
         } else if (isDefaultApplicable) {
             form.reset({shippingMethodId: defaultMethodId})
         } else {
-            form.reset({shippingMethodId:  shippingMethods?.applicableShippingMethods[0]?.id})
+            form.reset({shippingMethodId: shippingMethods?.applicableShippingMethods[0]?.id})
         }
     }, [selectedShippingMethod, shippingMethods])
 

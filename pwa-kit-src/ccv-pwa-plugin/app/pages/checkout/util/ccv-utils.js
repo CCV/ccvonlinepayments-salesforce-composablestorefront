@@ -43,7 +43,7 @@ export const createApplePayRequest = (basket, formatMessage, locale) => {
         })
     }
 
-    var total = {
+    const total = {
         label: ccvConfig.applePayMerchantLabel,
         type: 'final',
         amount: basket?.orderTotal

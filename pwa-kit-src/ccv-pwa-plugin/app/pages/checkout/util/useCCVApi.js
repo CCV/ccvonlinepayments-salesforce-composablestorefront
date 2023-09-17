@@ -1,11 +1,12 @@
-import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
-import {getAppOrigin} from '@salesforce/pwa-kit-react-sdk/utils/url'
 import {useIntl} from 'react-intl'
-import { useCurrentBasket } from '@salesforce/retail-react-app/app/hooks/use-current-basket'
-import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
-import {createApplePayRequest} from './ccv-utils'
+import {getAppOrigin} from '@salesforce/pwa-kit-react-sdk/utils/url'
 import {getConfig} from '@salesforce/pwa-kit-runtime/utils/ssr-config'
+import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
+import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
+import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
+
 import OcapiCCV from './ocapi-ccv'
+import {createApplePayRequest} from './ccv-utils'
 
 const useCCVApi = () => {
     const api = useCommerceApi()

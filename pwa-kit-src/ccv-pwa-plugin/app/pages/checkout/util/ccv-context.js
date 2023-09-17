@@ -2,7 +2,6 @@ import React, {useState} from 'react'
 import PropTypes from 'prop-types'
 import {useLocation} from 'react-router-dom'
 import {useCCVPaymentMethodsMap} from './payment-components-ccv'
-import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
 import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
 import {usePaymentMethodsForBasket} from '@salesforce/commerce-sdk-react'
@@ -15,14 +14,12 @@ export const CCVPaymentProvider = ({children}) => {
     const {data: basket} = useCurrentBasket()
     const {data: customer} = useCurrentCustomer()
     const location = useLocation()
-    const {data: paymentMethodsResponse} = usePaymentMethodsForBasket(
-        {
-            parameters: {
-                basketId: basket?.basketId,
-                shipmentId: 'me'
-            }
+    const {data: paymentMethodsResponse} = usePaymentMethodsForBasket({
+        parameters: {
+            basketId: basket?.basketId,
+            shipmentId: 'me'
         }
-    )
+    })
 
     const paymentMethods = paymentMethodsResponse?.applicablePaymentMethods
 
@@ -46,17 +43,16 @@ export const CCVPaymentProvider = ({children}) => {
         })
     }
 
-     const getPaymentMethods = () => {
-        const {data: paymentMethodsResponse} = usePaymentMethodsForBasket(
-            {
-                parameters: {
-                    basketId: basket?.basketId,
-                    shipmentId: 'me'
-                }
+    const getPaymentMethods = () => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const {data: paymentMethodsResponse} = usePaymentMethodsForBasket({
+            parameters: {
+                basketId: basket?.basketId,
+                shipmentId: 'me'
             }
-        )
+        })
 
-         return paymentMethodsResponse?.applicablePaymentMethods || []
+        return paymentMethodsResponse?.applicablePaymentMethods || []
     }
 
     const togglePaymentEdit = () => {
@@ -96,9 +92,7 @@ export const CCVPaymentProvider = ({children}) => {
         paymentMethods
     }
 
-    return (
-        <CCVPaymentContext.Provider value={ctx}>{children}</CCVPaymentContext.Provider>
-    )
+    return <CCVPaymentContext.Provider value={ctx}>{children}</CCVPaymentContext.Provider>
 }
 
 CCVPaymentProvider.propTypes = {

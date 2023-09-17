@@ -4,10 +4,13 @@ import {useIntl} from 'react-intl'
 import {Alert, AlertIcon} from '@chakra-ui/react'
 
 export const CCVPaymentError = ({msg, innerRef}) => {
-    if (!msg) return null
-
     const {formatMessage} = useIntl()
-    let formattedMsg
+
+    if (!msg) {
+        return null
+    }
+
+    let formattedMsg = null
 
     if (msg === 'card_refused') {
         formattedMsg = formatMessage({
@@ -45,8 +48,6 @@ export const CCVPaymentError = ({msg, innerRef}) => {
 }
 
 CCVPaymentError.propTypes = {
-    /** Error msg text */
     msg: PropTypes.string,
-    /** Ref */
     innerRef: PropTypes.object
 }

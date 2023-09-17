@@ -6,17 +6,21 @@
  */
 import React, {useEffect, useState} from 'react'
 import {Alert, AlertIcon, Box, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
-import {CheckoutProvider, useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
-import ShippingAddress from '@salesforce/retail-react-app/app/pages/checkout/partials/shipping-address'
-import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
-import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
-import CheckoutSkeleton from '@salesforce/retail-react-app/app/pages/checkout/partials/checkout-skeleton'
+import {
+    CheckoutProvider,
+    useCheckout
+} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 import OrderSummary from '@salesforce/retail-react-app/app/components/order-summary'
-import {PlaceOrderButton} from './util/payment-components-ccv'
-import ShippingOptions from './partials/shipping-options'
-import ContactInfo from './partials/contact-info'
-import CCVPayment from './partials/payment-ccv'
+import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
+import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-current-customer'
+import ShippingAddress from '@salesforce/retail-react-app/app/pages/checkout/partials/shipping-address'
+import CheckoutSkeleton from '@salesforce/retail-react-app/app/pages/checkout/partials/checkout-skeleton'
+
 import useCCVApi from './util/useCCVApi'
+import CCVPayment from './partials/payment-ccv'
+import ContactInfo from './partials/contact-info'
+import ShippingOptions from './partials/shipping-options'
+import {PlaceOrderButton} from './util/payment-components-ccv'
 
 import {CCVPaymentProvider, useCCVPayment} from './util/ccv-context'
 
@@ -113,7 +117,11 @@ const Checkout = () => {
                     </GridItem>
 
                     <GridItem py={6} px={[4, 4, 4, 0]}>
-                        <OrderSummary basket={basket} showTaxEstimationForm={false} showCartItems={true} />
+                        <OrderSummary
+                            basket={basket}
+                            showTaxEstimationForm={false}
+                            showCartItems={true}
+                        />
 
                         {step === 4 && (
                             <Box display={{base: 'none', lg: 'block'}} pt={2}>
