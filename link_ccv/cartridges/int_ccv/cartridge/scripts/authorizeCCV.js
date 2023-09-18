@@ -11,6 +11,7 @@ var authorizationHandlers = require('*/cartridge/scripts/authorizationHandlers.j
 exports.authorizeCCV = function (order, context) {
     var ccvTransactionReference = order.custom.ccvTransactionReference;
     var transactionStatusResponse;
+    var childTransactionStatusResponse;
 
     if (!ccvTransactionReference) {
         ccvLogger.warn(`No CCV transaction reference found for order ${order.orderNo}`);
@@ -29,6 +30,29 @@ exports.authorizeCCV = function (order, context) {
     // childReferenceId is present only when paying with Landing page payments
     order.custom.ccvChildTransactionReference = transactionStatusResponse.childReferenceId || ''; // eslint-disable-line no-param-reassign
 
+    /**
+     * Cannot retrieve LP payment method
+     * without requesting child transaction information
+     */
+    if (transactionStatusResponse.childReferenceId) {
+        try {
+            childTransactionStatusResponse = checkCCVTransaction(transactionStatusResponse.childReferenceId);
+        } catch (error) {
+            return { error };
+        }
+    }
+
+    var isLandingPage = transactionStatusResponse.method === 'landingpage';
+    var childPaymentMethodId = (isLandingPage && childTransactionStatusResponse.method) || '';
+
+    /**
+     * Format the payment method as in BM, to match payment method ID
+     * Used for payment icons on the storefront
+     */
+    var childPaymentMethodFormatted = childPaymentMethodId ? ('CCV_' + childPaymentMethodId).toUpperCase() : '';
+
+    paymentInstrument.custom.ccv_card_type = transactionStatusResponse.brand || (childTransactionStatusResponse && childTransactionStatusResponse.brand) || '';
+    paymentInstrument.custom.ccv_landingpage_method = childPaymentMethodFormatted;
     paymentInstrument.paymentTransaction.custom.ccv_transaction_status = status;
     paymentInstrument.paymentTransaction.custom.ccv_failure_code = transactionStatusResponse.failureCode || null;
 

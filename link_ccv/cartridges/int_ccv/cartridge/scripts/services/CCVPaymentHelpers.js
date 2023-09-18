@@ -186,7 +186,7 @@ function refundCCVPayment({ order, amount, description }) {
     var childRef = order.custom.ccvChildTransactionReference;
 
     var requestBody = {
-        reference: !empty(childRef) ? childRef : ref,
+        reference: childRef || ref,
         description: description,
         webhookUrl: webhookUrl.toString()
     };
