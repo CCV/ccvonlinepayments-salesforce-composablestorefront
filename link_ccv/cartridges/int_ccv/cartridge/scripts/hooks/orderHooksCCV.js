@@ -25,6 +25,7 @@ var languageMap = {
 exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
+    var metadata = request.httpParameters.metadata && request.httpParameters.metadata.pop()
 
     // ============= CREATE CCV PAYMENT REQUEST =============
     var requestLanguage = request.locale.split('_')[0];
@@ -48,7 +49,8 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         merchantOrderReference: order.orderNo,
         description: orderDescription,
         language: languageMap[requestLanguage],
-        details: {}
+        details: {},
+        metadata
     };
 
     if ((selectedMethodCCVId === 'ideal') && ccv_issuer_id) {

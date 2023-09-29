@@ -7,6 +7,7 @@ import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-curre
 
 import OcapiCCV from './ocapi-ccv'
 import {createApplePayRequest} from './ccv-utils'
+import ccvConfig from '../../../../ccvConfig'
 
 const useCCVApi = () => {
     const api = useCommerceApi()
@@ -24,7 +25,7 @@ const useCCVApi = () => {
         // based on useBasket#createOrder
         async createOrder({applePayValidationUrl} = {}) {
             let ccvReturnUrl = `${getAppOrigin()}/checkout/handleShopperRedirect`
-
+            const metadata = ccvConfig.version
             if (redirectWithLocale) {
                 let localeAsQueryParam = localeConfig === 'query_param'
 
@@ -36,7 +37,8 @@ const useCCVApi = () => {
             }
 
             const parameters = {
-                ccvReturnUrl
+                ccvReturnUrl,
+                metadata
             }
 
             if (applePayValidationUrl) {
