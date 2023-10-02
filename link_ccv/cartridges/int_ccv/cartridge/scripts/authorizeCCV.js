@@ -43,7 +43,7 @@ exports.authorizeCCV = function (order, context) {
     }
 
     var isLandingPage = transactionStatusResponse.method === 'landingpage';
-    var childPaymentMethodId = (isLandingPage && childTransactionStatusResponse.method) || '';
+    var childPaymentMethodId = (isLandingPage && childTransactionStatusResponse && childTransactionStatusResponse.method) || ''
 
     /**
      * Format the payment method as in BM, to match payment method ID
