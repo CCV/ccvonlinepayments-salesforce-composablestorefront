@@ -27,7 +27,7 @@ class OcapiCCV {
         }
 
         const {
-            parameters: {ccvReturnUrl, applePayDomainName, applePayValidationUrl},
+            parameters: {ccvReturnUrl, applePayDomainName, applePayValidationUrl, metadata},
             body
         } = args[0]
 
@@ -35,6 +35,7 @@ class OcapiCCV {
 
         if (applePayDomainName) path += `&applePayDomainName=${applePayDomainName}`
         if (applePayValidationUrl) path += `&applePayValidationUrl=${applePayValidationUrl}`
+        if (metadata) path += `&metadata=${metadata}`
 
         const underscoreBody = camelCaseKeysToUnderscore(body)
         const res = await this.fetch(path, 'POST', args, 'createOrder', underscoreBody)
