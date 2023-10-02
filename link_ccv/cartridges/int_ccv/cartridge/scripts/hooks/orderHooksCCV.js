@@ -99,6 +99,7 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 
     // KLARNA
     if (paymentInstrument.paymentMethod === 'CCV_KLARNA') {
+        requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE
         var { getKlarnaOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
         requestBody.orderLines = getKlarnaOrderLines(order);
     }
