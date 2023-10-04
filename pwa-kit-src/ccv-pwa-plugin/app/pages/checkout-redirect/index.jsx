@@ -3,12 +3,13 @@ import {Box, Text} from '@chakra-ui/react'
 import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
 import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
 import CheckoutSkeleton from '@salesforce/retail-react-app/app/pages/checkout/partials/checkout-skeleton'
+import {useQueryClient} from '@tanstack/react-query'
 
 const CheckoutRedirect = () => {
     const navigate = useNavigation()
     const api = useCommerceApi()
     const {getTokenWhenReady} = useAccessToken()
-
+    const queryClient = useQueryClient()
     const MAX_RETRIES = 10
     const TIME_BETWEEN_RETRIES = 1000
     let retries = 0
@@ -54,6 +55,11 @@ const CheckoutRedirect = () => {
         }
 
         if (order.status === 'failed') {
+            // During the order cancellation we are redirected to the accelerator website, but if the cancel notification(CVV webhook) and the basket restoration takes longer
+            // the useCurrentBasket hook is called before and an undefined basket is always returned, then the checkout component is never rendered
+            queryClient.invalidateQueries({
+                predicate: (query) => query.queryKey.includes('/baskets')
+            })
             navigate('/checkout', 'push', {paymentErrorMsg: order.c_ccv_failure_code})
         }
     })
