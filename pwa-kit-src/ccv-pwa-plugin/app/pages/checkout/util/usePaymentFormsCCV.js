@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useState} from 'react'
 import {useForm} from 'react-hook-form'
 import {useShopperBasketsMutation} from '@salesforce/commerce-sdk-react'
 import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
@@ -12,10 +12,11 @@ import {useCCVPayment} from './ccv-context'
  * @returns {Object}
  */
 const usePaymentFormsCCV = () => {
-    const {selectedPayment, isBillingSameAsShipping, goToNextStep} = useCheckout()
+    const {goToNextStep} = useCheckout()
     const {data: basket} = useCurrentBasket()
     const selectedShippingAddress = basket?.shipments[0]?.shippingAddress
     const selectedBillingAddress = basket?.billingAddress
+    const selectedPayment = basket?.paymentInstruments && basket.paymentInstruments[0]
 
     const {mutateAsync: updatePaymentInstrumentInBasket} = useShopperBasketsMutation(
         'updatePaymentInstrumentInBasket'
@@ -30,27 +31,13 @@ const usePaymentFormsCCV = () => {
     )
 
     const {form: paymentMethodForm, setCreditCardData, paymentMethods} = useCCVPayment()
-    // This local state value manages the 'checked' state of the billing address form's
-    // checkbox for `Same as shipping address`. We initialize its value by checking if the
-    // currently applied billing address matches the currently applied shipping address.
-    const [billingSameAsShipping, setBillingSameAsShipping] = useState(isBillingSameAsShipping)
+    const [billingSameAsShipping, setBillingSameAsShipping] = useState(true)
 
     const billingAddressForm = useForm({
         mode: 'onChange',
         shouldUnregister: false,
         defaultValues: {...selectedBillingAddress}
     })
-
-    // This effect watches for changes to our basket's shipping/billing address. If they
-    // are applied to the basket and they match, we update our local state value for the
-    // `Same as shipping address` checkbox. This is necessary because when we initialized
-    // `billingSameAsShipping` in `useState`, we may not have had the basket data yet, so
-    // this ensures its properly set and in sync with our basket's state.
-    useEffect(() => {
-        if (!billingSameAsShipping && isBillingSameAsShipping) {
-            setBillingSameAsShipping(true)
-        }
-    }, [isBillingSameAsShipping])
 
     const submitPaymentMethodForm = async (payment) => {
         // Make sure we only apply the payment if there isnt already one applied.
