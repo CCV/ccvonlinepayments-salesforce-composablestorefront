@@ -1,5 +1,7 @@
+const ccvVersion  = require('../package.json').version
+
 const ccvConfig = {
-    version: '1.0.0',
+    ccvVersion: `CCVOnlinePayments:${ccvVersion}`,
     applePayMerchantLabel: 'Merchant Name',
     applePaySupportedNetworks: ['MasterCard', 'Visa']
 }

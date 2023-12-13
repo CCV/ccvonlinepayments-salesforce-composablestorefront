@@ -25,7 +25,7 @@ const useCCVApi = () => {
         // based on useBasket#createOrder
         async createOrder({applePayValidationUrl} = {}) {
             let ccvReturnUrl = `${getAppOrigin()}/checkout/handleShopperRedirect`
-            const metadata = ccvConfig.version
+            const metadata = ccvConfig.ccvVersion
             if (redirectWithLocale) {
                 let localeAsQueryParam = localeConfig === 'query_param'
 
