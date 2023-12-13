@@ -41,8 +41,6 @@ class OcapiCCV {
 
         const underscoreBody = camelCaseKeysToUnderscore(body)
 
-        let res;
-
         try {
             return await this.fetch(path, 'POST', args, 'createOrder', underscoreBody)
         } catch (e) {
