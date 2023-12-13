@@ -143,8 +143,14 @@ export const createOcapiFetch =
             'x-dw-client-id': commerceAPIConfig.parameters.clientId
         }
 
+        if (!commerceAPIConfig.ocapiVersion) {
+            throw Error(`The ocapiVersion is not set in the config. Please set the ocapiVersion in the 'CommerceAPI' config.`);
+        }
+
+        const ocapiVersion = commerceAPIConfig.ocapiVersion;
+
         let response
-        response = await fetch(`${host}/s/${siteId}/dw/shop/v21_3/${endpoint}`, {
+        response = await fetch(`${host}/s/${siteId}/dw/shop/${ocapiVersion}/${endpoint}`, {
             method: method,
             headers: headers,
             ...(body && {

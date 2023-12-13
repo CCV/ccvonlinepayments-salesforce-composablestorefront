@@ -35,12 +35,20 @@ class OcapiCCV {
 
         if (applePayDomainName) path += `&applePayDomainName=${applePayDomainName}`
         if (applePayValidationUrl) path += `&applePayValidationUrl=${applePayValidationUrl}`
-        if (metadata) path += `&metadata=${metadata}`
+
+        const ocapiVersion = `CommerceCloudOcapi:${getConfig()?.app?.commerceAPI?.ocapiVersion}`
+        if (metadata) path += `&metadata=${encodeURIComponent(metadata + ';' + ocapiVersion)}`
 
         const underscoreBody = camelCaseKeysToUnderscore(body)
-        const res = await this.fetch(path, 'POST', args, 'createOrder', underscoreBody)
 
-        return res
+        let res;
+
+        try {
+            return await this.fetch(path, 'POST', args, 'createOrder', underscoreBody)
+        } catch (e) {
+            console.error(e.message)
+            return null;
+        }
     }
 
     async postApplePayToken(...args) {
@@ -65,7 +73,12 @@ class OcapiCCV {
             parameters: {basketId}
         } = args[0]
 
-        return this.fetch(`baskets/${basketId}`, 'GET', args, 'getBasketData')
+        try {
+            return this.fetch(`baskets/${basketId}`, 'GET', args, 'getBasketData')
+        } catch (e) {
+            console.error(e.message)
+            return null;
+        }
     }
 }
 

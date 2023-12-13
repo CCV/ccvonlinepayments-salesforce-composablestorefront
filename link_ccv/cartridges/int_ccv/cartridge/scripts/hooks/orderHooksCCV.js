@@ -25,7 +25,7 @@ var languageMap = {
 exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
     var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
-    var metadata = request.httpParameters.metadata && request.httpParameters.metadata.pop()
+    var metadata = request.httpParameters.metadata && decodeURIComponent(request.httpParameters.metadata.pop());
 
     // ============= CREATE CCV PAYMENT REQUEST =============
     var requestLanguage = request.locale.split('_')[0];
