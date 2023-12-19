@@ -21,6 +21,7 @@ module.exports = {
         // Commerce api config
         commerceAPI: {
             proxyPath: `/mobify/proxy/api`,
+            ocapiVersion: 'v21_3',
             parameters: {
                 clientId: 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
                 organizationId: 'f_ecom_zziu_002',

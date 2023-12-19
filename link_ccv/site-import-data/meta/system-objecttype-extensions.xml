@@ -37,6 +37,12 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="ccvChildTransactionReference">
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
             <attribute-definition attribute-id="ccvRefunds">
                 <type>text</type>
                 <mandatory-flag>false</mandatory-flag>
@@ -93,6 +99,7 @@
             <attribute-group group-id="ccv">
                 <display-name xml:lang="x-default">CCV</display-name>
                 <attribute attribute-id="ccvTransactionReference"/>
+                <attribute attribute-id="ccvChildTransactionReference"/>
                 <attribute attribute-id="ccvRefunds"/>
                 <attribute attribute-id="ccvHasPendingRefunds"/>
                 <attribute attribute-id="ccvManualIntervention"/>
@@ -144,6 +151,22 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="ccv_card_type">
+                <display-name xml:lang="x-default">CCV card type</display-name>
+                <description xml:lang="x-default">Card type of saved CCV card</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_landingpage_method">
+                <display-name xml:lang="x-default">CCV LP Payment method</display-name>
+                <description xml:lang="x-default">Payment method used in landing page</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
             <attribute-definition attribute-id="ccvVaultAccessToken">
                 <display-name xml:lang="x-default">CCV vault access token</display-name>
                 <description xml:lang="x-default">CCV token of the payment method</description>
@@ -158,6 +181,8 @@
                 <display-name xml:lang="x-default">CCV payment processor</display-name>
                 <attribute attribute-id="ccv_issuer_id"/>
                 <attribute attribute-id="ccv_method_id"/>
+                <attribute attribute-id="ccv_card_type"/>
+                <attribute attribute-id="ccv_landingpage_method"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
@@ -187,9 +212,32 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="ccv_card_type">
+                <display-name xml:lang="x-default">CCV card type</display-name>
+                <description xml:lang="x-default">Card type of saved CCV card</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_landingpage_method">
+                <display-name xml:lang="x-default">CCV LP Payment method</display-name>
+                <description xml:lang="x-default">Payment method used in landing page</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
             <attribute-definition attribute-id="ccvVaultAccessToken">
                 <display-name xml:lang="x-default">CCV vault access token</display-name>
                 <description xml:lang="x-default">CCV token of the payment method</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccv_failure_code">
+                <display-name xml:lang="x-default">CCV Failure Code</display-name>
                 <type>string</type>
                 <mandatory-flag>false</mandatory-flag>
                 <externally-managed-flag>false</externally-managed-flag>
@@ -201,6 +249,8 @@
                 <display-name xml:lang="x-default">CCV payment processor</display-name>
                 <attribute attribute-id="ccv_issuer_id"/>
                 <attribute attribute-id="ccv_method_id"/>
+                <attribute attribute-id="ccv_card_type"/>
+                <attribute attribute-id="ccv_landingpage_method"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

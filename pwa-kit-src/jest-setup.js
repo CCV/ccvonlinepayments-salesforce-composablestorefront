@@ -2,8 +2,11 @@
  * Copyright (c) 2021, salesforce.com, inc.
  * All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
+ *
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
+/* eslint-env jest */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path')
 const mockConfig = require(path.join(__dirname, 'config/mocks/default.js'))
 require('raf/polyfill') // fix requestAnimationFrame issue with polyfill
@@ -15,7 +18,7 @@ const {
     mockCategory,
     mockedRegisteredCustomer,
     exampleTokenReponse
-} = require('./app/commerce-api/mock-data')
+} = require('@salesforce/retail-react-app/app/mocks/mock-data')
 
 /**
  * Set up an API mocking server for testing purposes.
@@ -68,18 +71,9 @@ afterAll(() => {
 })
 
 // Mock the application configuration to be used in all tests.
-jest.mock('pwa-kit-runtime/utils/ssr-config', () => {
+jest.mock('@salesforce/pwa-kit-runtime/utils/ssr-config', () => {
     return {
         getConfig: () => mockConfig
-    }
-})
-
-// Mock isTokenValid globally
-jest.mock('./app/commerce-api/utils', () => {
-    const originalModule = jest.requireActual('./app/commerce-api/utils')
-    return {
-        ...originalModule,
-        isTokenValid: jest.fn().mockReturnValue(true)
     }
 })
 

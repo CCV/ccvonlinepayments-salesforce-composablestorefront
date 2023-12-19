@@ -175,8 +175,18 @@ function refundCCVPayment({ order, amount, description }) {
     var tokenParam = new URLParameter('orderToken', order.orderToken);
     var webhookUrl = URLUtils.abs(urlAction, orderParam, tokenParam);
 
+    /**
+     * Landing page payments create child references
+     * Landing page payment (main ref)
+     * Payment method used in Landing page (child ref)
+     *
+     * Landing page payments must be refunded using the child ref
+     */
+    var ref = order.custom.ccvTransactionReference;
+    var childRef = order.custom.ccvChildTransactionReference;
+
     var requestBody = {
-        reference: order.custom.ccvTransactionReference,
+        reference: childRef || ref,
         description: description,
         webhookUrl: webhookUrl.toString()
     };
