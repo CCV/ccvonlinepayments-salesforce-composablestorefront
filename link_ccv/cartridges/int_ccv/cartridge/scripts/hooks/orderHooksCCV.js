@@ -53,10 +53,6 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         metadata
     };
 
-    if ((selectedMethodCCVId === 'ideal') && ccv_issuer_id) {
-        requestBody.issuer = ccv_issuer_id;
-    }
-
     if (selectedMethodCCVId === 'giropay' && ccv_issuer_id) {
         requestBody.details.bic = ccv_issuer_id;
     }
