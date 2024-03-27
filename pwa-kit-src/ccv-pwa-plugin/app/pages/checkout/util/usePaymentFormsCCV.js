@@ -76,7 +76,7 @@ const usePaymentFormsCCV = () => {
     // TODO: Figure out how to run the form validations simultaneously before
     // submitting the forms, so one doesn't need to wait on the other to check for
     // client-side validation errors.
-    const reviewOrder = () => {
+    const reviewOrder = async () => {
         return paymentMethodForm.handleSubmit(submitPaymentMethodForm)()
     }
 
