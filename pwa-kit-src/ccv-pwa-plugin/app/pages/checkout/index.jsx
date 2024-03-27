@@ -29,7 +29,7 @@ const Checkout = () => {
     const [isLoading, setIsLoading] = useState(false)
     const ccv = useCCVApi()
     const {data: basket} = useCurrentBasket()
-    const {paymentError, setPaymentError, applePayLoaded, setApplePayLoaded} = useCCVPayment()
+    const {paymentError, setPaymentError, applePayLoaded, setApplePayLoaded, creditCardData} = useCCVPayment()
 
     const isApplePay =
         basket.paymentInstruments &&
@@ -74,7 +74,7 @@ const Checkout = () => {
         ccv.onApplePayButtonClicked({setPaymentError, setIsLoading})
     }
 
-    const submitOrder = async () => ccv.submitOrderCCV({setIsLoading, setPaymentError})
+    const submitOrder = async () => ccv.submitOrderCCV({setIsLoading, setPaymentError, creditCardData})
 
     return (
         <Box background="gray.50" flex="1">
