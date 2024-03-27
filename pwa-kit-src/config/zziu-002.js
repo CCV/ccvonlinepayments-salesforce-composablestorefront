@@ -1,4 +1,3 @@
-// Rename this to local.js to use as config for npm run start
 const sites = require('./sites.js')
 module.exports = {
     app: {
@@ -24,11 +23,12 @@ module.exports = {
             proxyPath: `/mobify/proxy/api`,
             ocapiVersion: 'v21_3',
             parameters: {
-                clientId: '{{clientId}}',
-                organizationId: '{{organizationId}}',
+                clientId: 'a6312b78-e141-43ad-bb91-cffc4e9b32a7',
+                organizationId: 'f_ecom_zziu_002',
                 shortCode: 'kv7kzm78',
                 siteId: 'RefArch'
-            }
+            },
+            usePageDesignerCompatibilityMode: false
         },
         // Einstein api config
         einsteinAPI: {
@@ -64,11 +64,11 @@ module.exports = {
         ssrFunctionNodeVersion: '20.x',
         proxyConfigs: [
             {
-                host: '{{shortCode}}.api.commercecloud.salesforce.com',
+                host: 'kv7kzm78.api.commercecloud.salesforce.com',
                 path: 'api'
             },
             {
-                host: '{{sandboxId}}.dx.commercecloud.salesforce.com',
+                host: 'zziu-002.dx.commercecloud.salesforce.com',
                 path: 'ocapi'
             }
         ]
