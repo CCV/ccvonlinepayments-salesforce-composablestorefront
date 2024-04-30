@@ -4,7 +4,6 @@ import PropTypes from 'prop-types'
 import {Box, Radio, Stack, Spacer} from '@chakra-ui/react'
 
 import {GiropayOptions} from './payment-method-options/options-giropay'
-import {IdealOptions} from './payment-method-options/options-ideal'
 import {CreditCardInlineOptions} from './payment-method-options/options-cc-inline'
 import {useCCVPayment} from '../util/ccv-context'
 import {PaymentMethodIcons} from '../util/payment-components-ccv'
@@ -59,9 +58,6 @@ export const CCVMethodOptions = function ({paymentMethodId}) {
         }
         case 'CCV_CREDIT_CARD_INLINE': {
             return <CreditCardInlineOptions />
-        }
-        case 'CCV_IDEAL': {
-            return <IdealOptions />
         }
         case 'CCV_GIROPAY': {
             return <GiropayOptions />

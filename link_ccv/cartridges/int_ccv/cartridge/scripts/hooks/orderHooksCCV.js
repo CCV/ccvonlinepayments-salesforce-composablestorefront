@@ -53,10 +53,6 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         metadata
     };
 
-    if ((selectedMethodCCVId === 'ideal') && ccv_issuer_id) {
-        requestBody.issuer = ccv_issuer_id;
-    }
-
     if (selectedMethodCCVId === 'giropay' && ccv_issuer_id) {
         requestBody.details.bic = ccv_issuer_id;
     }
@@ -147,6 +143,11 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         order.custom.ccvCardDataUrl = paymentResponse.cardDataUrl; // eslint-disable-line no-param-reassign
     }
 
+    // INLINE CREDIT CARD
+    if (order.paymentInstrument.paymentMethod === 'CCV_CREDIT_CARD_INLINE') {
+        order.custom.ccvCardDataUrl = paymentResponse.cardDataUrl; // eslint-disable-line no-param-reassign
+    }
+
     // ============= set CCV properties =============
     order.custom.ccvTransactionReference = paymentResponse.reference; // eslint-disable-line no-param-reassign
     order.custom.ccvPayUrl = paymentResponse.payUrl; // eslint-disable-line no-param-reassign
@@ -172,6 +173,10 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 exports.modifyPOSTResponse = function (order, orderResponse) {
     orderResponse.c_applePayPaymentSession = request.custom.applePayPaymentSession; // eslint-disable-line no-param-reassign
     orderResponse.c_appleTokenSubmitUrl = URLUtils.url('CCV-SubmitApplePayToken').toString(); // eslint-disable-line no-param-reassign
+
+    if (order.custom.ccvCardDataUrl && order.paymentInstrument.paymentMethod === 'CCV_CREDIT_CARD_INLINE') {
+        orderResponse.c_card_data_url = order.custom.ccvCardDataUrl;  // eslint-disable-line no-param-reassign
+    }
 };
 
 /**
