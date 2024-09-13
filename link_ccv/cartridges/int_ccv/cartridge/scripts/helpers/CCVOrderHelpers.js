@@ -4,6 +4,7 @@ var ShippingLineItem = require('dw/order/ShippingLineItem');
 var ProductShippingLineItem = require('dw/order/ProductShippingLineItem');
 var PriceAdjustment = require('dw/order/PriceAdjustment');
 var { CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+var collections = require('*/cartridge/scripts/util/collections');
 
 /**
  * Returns amount eligible for refund for the given order
@@ -83,18 +84,45 @@ function getSCAFields(order) {
 }
 
 /**
+ * Calculates the total value of the order promotions
+ *
+ * @param {dw.order.Order} order - sfcc order
+ * @returns {number} Total value of order promotions
+ */
+function getOrderPromotionTotal(order) {
+    var orderPromotionTotal = 0;
+
+    collections.forEach(order.allLineItems, (lineItem) => {
+        if (Object.hasOwnProperty.call(lineItem, 'promotion')) {
+            if (lineItem.promotion.promotionClass.equals(Promotion.PROMOTION_CLASS_ORDER)) {
+                orderPromotionTotal += lineItem.priceValue;
+            }
+        }
+    });
+
+    return orderPromotionTotal;
+}
+
+
+/**
  *
  * @param {dw.order.Order} order sfcc order
  * @returns {Array} array of order lines used for klarna payments
  */
 function getKlarnaOrderLines(order) {
-    var collections = require('*/cartridge/scripts/util/collections');
     var lineItems = [];
 
+    collections.forEach(order.allLineItems, (lineItem) => {
+        if (!Object.hasOwnProperty.call(lineItem, 'promotion')) {
+            lineItems.push(getKlarnaOrderLineModel(lineItem));
+        }
+    });
 
-    collections.forEach(order.allLineItems, (lineItem => {
-        lineItems.push(getKlarnaOrderLineModel(lineItem));
-    }));
+    var orderPromotionTotal = getOrderPromotionTotal(order);
+
+    if (orderPromotionTotal < 0) {
+        lineItems.push(new KlarnaDiscountLineModel(orderPromotionTotal));
+    }
 
     return lineItems;
 }
@@ -112,11 +140,11 @@ function getKlarnaOrderLineModel(lineItem) {
 
     if (lineItem instanceof ProductLineItem) {
         return new KlarnaProductLineModel(lineItem);
-    } else if (lineItem instanceof ShippingLineItem
-        || lineItem instanceof ProductShippingLineItem) {
+    } else if (
+        lineItem instanceof ShippingLineItem ||
+        lineItem instanceof ProductShippingLineItem
+    ) {
         return new KlarnaShippingLineModel(lineItem);
-    } else if (lineItem instanceof PriceAdjustment) {
-        return new KlarnaDiscountLineModel(lineItem);
     }
     return null;
 }
