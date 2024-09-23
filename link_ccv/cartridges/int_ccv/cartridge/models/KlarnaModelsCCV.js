@@ -8,6 +8,21 @@ var KLARNA_CONST = {
 };
 
 /**
+ * Calculates the total product discount for the given line item
+ * @param {dw.order.ProductLineItem} lineItem product line item
+ * 
+ * @returns {number} calculated total product discount
+ */
+function getProductDiscount (lineItem) {
+    var totalDiscount = 0;
+    collections.forEach(lineItem.priceAdjustments, (priceAdjusment) => {
+        var priceValue = Number(priceAdjusment.priceValue);
+        totalDiscount += Math.abs(priceValue);
+    })
+    return totalDiscount;
+}
+
+/**
  * Klarna product order line model
  * @param {dw.order.ProductLineItem} lineItem product line item
  */
@@ -19,12 +34,14 @@ function KlarnaProductLineModel(lineItem) {
     this.unit = lineItem.quantity.unit || 'pc';
     this.unitPrice = lineItem.basePrice.value;
     this.totalPrice = lineItem.adjustedGrossPrice.value;
-    // this.discount = '';
     this.vatRate = lineItem.taxRate * 100;
     this.vat = lineItem.tax.value;
     // this.url: '';
     // this.imageUrl: '';
     // this.brand: '';
+    if (Object.hasOwnProperty.call(lineItem, 'priceAdjustments') && lineItem.priceAdjustments.length > 0) {
+        this.discount = KlarnaModelsCCV.getProductDiscount(lineItem);
+    }
 }
 
 /**
@@ -43,14 +60,14 @@ function KlarnaShippingLineModel(lineItem) {
 
 /**
  * Klarna discount order line model
- * @param {dw.order.ProductLineItem} lineItem product line item
+ * @param {number} discountValue discount value
  */
-function KlarnaDiscountLineModel(lineItem) {
-    this.type = lineItem.priceValue < 0 ? KLARNA_CONST.TYPES.DISCOUNT : KLARNA_CONST.TYPES.SURCHARGE;
-    this.name = lineItem.lineItemText;
-    this.quantity = lineItem.quantity || 1;
-    this.totalPrice = lineItem.grossPrice.value;
-    this.unitPrice = (lineItem.grossPrice.divide(this.quantity)).value;
+function KlarnaDiscountLineModel(discountValue) {
+    this.type = discountValue < 0 ? KLARNA_CONST.TYPES.DISCOUNT : KLARNA_CONST.TYPES.SURCHARGE;
+    this.name = 'DISCOUNT';
+    this.quantity = 1;
+    this.totalPrice = discountValue;
+    this.unitPrice = discountValue;
 }
 
 module.exports = {
