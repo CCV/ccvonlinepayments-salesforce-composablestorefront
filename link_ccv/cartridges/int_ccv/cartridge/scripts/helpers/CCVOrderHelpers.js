@@ -5,6 +5,7 @@ var ProductShippingLineItem = require('dw/order/ProductShippingLineItem');
 var PriceAdjustment = require('dw/order/PriceAdjustment');
 var { CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 var collections = require('*/cartridge/scripts/util/collections');
+var KlarnaDiscountLineModel = require('*/cartridge/models/KlarnaModelsCCV').KlarnaDiscountLineModel;
 
 /**
  * Returns amount eligible for refund for the given order
@@ -94,7 +95,7 @@ function getOrderPromotionTotal(order) {
 
     collections.forEach(order.allLineItems, (lineItem) => {
         if (Object.hasOwnProperty.call(lineItem, 'promotion')) {
-            if (lineItem.promotion.promotionClass.equals(Promotion.PROMOTION_CLASS_ORDER)) {
+            if (lineItem.promotion.promotionClass.equals(dw.campaign.Promotion.PROMOTION_CLASS_ORDER)) {
                 orderPromotionTotal += lineItem.priceValue;
             }
         }
