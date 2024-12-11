@@ -6,6 +6,25 @@ var KLARNA_CONST = {
         DISCOUNT: 'DISCOUNT'
     }
 };
+var preferences = require('*/cartridge/config/preferences');
+var IMAGE_SIZE = preferences.imageSize ? preferences.imageSize : 'medium';
+
+/**
+ * Get Image URL from given Product ID
+ *
+ * @param {dw.catalog.Product} productID - Suggested product ID
+ * @return {string} - Image URL
+ */
+function getImageUrlFromProductID(productID) {
+    var ProductMgr = require('dw/catalog/ProductMgr');
+    var product = ProductMgr.getProduct(productID);
+    if (!product) { return null; }
+    var imageProduct = product;
+    if (product.master) {
+        imageProduct = product.variationModel.defaultVariant;
+    }
+    return imageProduct.getImage(IMAGE_SIZE).httpsURL.toString();
+}
 
 /**
  * Calculates the total product discount for the given line item
@@ -37,7 +56,7 @@ function KlarnaProductLineModel(lineItem) {
     this.vatRate = lineItem.taxRate * 100;
     this.vat = lineItem.tax.value;
     // this.url: '';
-    // this.imageUrl: '';
+    this.imageUrl = getImageUrlFromProductID(lineItem.productID) || '';
     // this.brand: '';
     if (Object.hasOwnProperty.call(lineItem, 'priceAdjustments') && lineItem.priceAdjustments.length > 0) {
         this.discount = KlarnaModelsCCV.getProductDiscount(lineItem);
