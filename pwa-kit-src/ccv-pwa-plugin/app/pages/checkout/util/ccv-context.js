@@ -33,6 +33,8 @@ export const CCVPaymentProvider = ({children}) => {
 
     const [applePayLoaded, setApplePayLoaded] = useState(false)
 
+    const [URLintent, setURLintent] = useState()
+
     const onPaymentIdChange = (value) => {
         if (value && isEditingPayment) {
             togglePaymentEdit()
@@ -89,7 +91,9 @@ export const CCVPaymentProvider = ({children}) => {
         applePayLoaded,
         setApplePayLoaded,
         getPaymentMethods,
-        paymentMethods
+        paymentMethods,
+        URLintent,
+        setURLintent
     }
 
     return <CCVPaymentContext.Provider value={ctx}>{children}</CCVPaymentContext.Provider>
