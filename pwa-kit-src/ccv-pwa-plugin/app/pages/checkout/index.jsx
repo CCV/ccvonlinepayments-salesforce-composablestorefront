@@ -81,7 +81,7 @@ const Checkout = () => {
             // Redirect the customer to the native BMC app module via a URL intent
             window.location.href = URLintent.toString()
         } else {
-            submitOrder()
+            await submitOrder()
         }
     }
 

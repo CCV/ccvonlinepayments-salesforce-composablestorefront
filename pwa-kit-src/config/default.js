@@ -30,6 +30,12 @@ module.exports = {
                 siteId: 'RefArch'
             }
         },
+        CCV: {
+            polling: { 
+              maxRetries: 100,
+              timeBetweenRetries: 3000
+            }
+        },
         // Einstein api config
         einsteinAPI: {
             host: 'https://api.cquotient.com',
