@@ -80,6 +80,20 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="ccvQrCode">
+                <display-name xml:lang="x-default">CCV QR Code</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="ccvUrlIntent">
+                <display-name xml:lang="x-default">CCV URL intent</display-name>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
             <attribute-definition attribute-id="ccvCardDataUrl">
                 <display-name xml:lang="x-default">CCV Card Data URL</display-name>
                 <type>string</type>

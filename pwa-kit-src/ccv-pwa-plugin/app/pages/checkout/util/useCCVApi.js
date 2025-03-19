@@ -88,6 +88,23 @@ const useCCVApi = () => {
                 setPaymentError(message)
             }
         },
+        async initiateOrderCCV({setIsLoading, setPaymentError}) {
+            setIsLoading(true)
+            setPaymentError(null)
+
+            try {
+                const orderResponse = await this.createOrder()
+                return orderResponse
+
+            } catch (error) {
+                const message = formatMessage({
+                    id: 'checkout.message.generic_error',
+                    defaultMessage: 'An unexpected error occurred during checkout.'
+                })
+
+                setPaymentError(message)
+            }
+        },
         async submitApplePayOrderCCV({setIsLoading, setPaymentError, applePayValidationUrl}) {
             setIsLoading(true)
             setPaymentError(null)

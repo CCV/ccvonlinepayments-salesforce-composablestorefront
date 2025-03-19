@@ -213,6 +213,9 @@
   "checkout_confirmation.button.create_account": {
     "defaultMessage": "Create Account"
   },
+  "checkout_payment.qrcode.alert": {
+    "defaultMessage": "Continue by scanning the QR code"
+  },
   "checkout_confirmation.heading.billing_address": {
     "defaultMessage": "Billing Address"
   },
