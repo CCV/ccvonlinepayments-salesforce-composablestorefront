@@ -81,6 +81,7 @@ const CheckoutConfirmation = () => {
 
     const isCardPayment =
         paymentMethodId !== 'CCV_BANCONTACT' &&
+        paymentMethodId !== 'CCV_GOOGLE_PAY' &&
         (paymentMethodId === 'card' ||
             !!order.paymentInstruments[0].paymentCard ||
             !!order.paymentInstruments[0].c_ccv_card_type)

@@ -31,10 +31,6 @@ const Checkout = () => {
     const {data: basket} = useCurrentBasket()
     const {paymentError, setPaymentError, applePayLoaded, setApplePayLoaded, creditCardData, URLintent, setURLintent} = useCCVPayment()
 
-    const isApplePay =
-        basket.paymentInstruments &&
-        basket.paymentInstruments[0].paymentMethodId === 'CCV_APPLE_PAY' &&
-        applePayLoaded
     // Scroll to the top when we get a global error
 
     useEffect(() => {
@@ -107,7 +103,7 @@ const Checkout = () => {
                             <ShippingAddress />
                             <ShippingOptions />
                             <CCVPayment />
-
+                            {/* PLACE ORDER BUTTON - BOTTOM OF PAGE */}
                             {(URLintent && step === 4) && (
                                 <Box pt={3} display={{base: 'none', lg: 'none', md: 'none'}}>
                                     <Container variant="form">
@@ -115,7 +111,6 @@ const Checkout = () => {
                                             submitOrderHandler={submitOrRedirect}
                                             submitApplePayOrderHandler={onApplePayButtonClicked}
                                             isLoading={isLoading}
-                                            isApplePay={isApplePay}
                                             basket={basket}
                                             data-testid="sf-checkout-place-order-btn"
                                         />
@@ -129,7 +124,6 @@ const Checkout = () => {
                                             submitOrderHandler={submitOrRedirect}
                                             submitApplePayOrderHandler={onApplePayButtonClicked}
                                             isLoading={isLoading}
-                                            isApplePay={isApplePay}
                                             basket={basket}
                                             data-testid="sf-checkout-place-order-btn"
                                         />
@@ -145,14 +139,13 @@ const Checkout = () => {
                             showTaxEstimationForm={false}
                             showCartItems={true}
                         />
-
+                        {/* PLACE ORDER BUTTON - SIDEBAR */}
                         {URLintent && step === 4 && (
                             <Box display={{base: 'none', lg: 'none', md: 'none'}} pt={2}>
                                     <PlaceOrderButton
                                     submitOrderHandler={submitOrRedirect}
                                     submitApplePayOrderHandler={onApplePayButtonClicked}
                                     isLoading={isLoading}
-                                    isApplePay={isApplePay}
                                     basket={basket}
                                 />
                             </Box>
@@ -163,7 +156,6 @@ const Checkout = () => {
                                     submitOrderHandler={submitOrRedirect}
                                     submitApplePayOrderHandler={onApplePayButtonClicked}
                                     isLoading={isLoading}
-                                    isApplePay={isApplePay}
                                     basket={basket}
                                 />
                             </Box>
@@ -172,6 +164,7 @@ const Checkout = () => {
                 </Grid>
             </Container>
 
+            {/* PLACE ORDER BUTTON - MOBILE */}
             {URLintent && step === 4 && (
                 <Box
                     display={{lg: 'none', md: 'none'}}
@@ -189,7 +182,6 @@ const Checkout = () => {
                             submitOrderHandler={submitOrRedirect}
                             submitApplePayOrderHandler={onApplePayButtonClicked}
                             isLoading={isLoading}
-                            isApplePay={isApplePay}
                             basket={basket}
                             dataTestid="sf-checkout-place-order-btn"
                         />
@@ -213,7 +205,6 @@ const Checkout = () => {
                             submitOrderHandler={submitOrRedirect}
                             submitApplePayOrderHandler={onApplePayButtonClicked}
                             isLoading={isLoading}
-                            isApplePay={isApplePay}
                             basket={basket}
                             dataTestid="sf-checkout-place-order-btn"
                         />
