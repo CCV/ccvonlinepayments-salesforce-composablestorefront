@@ -11,9 +11,23 @@ import {useCCVPayment} from '../../pages/checkout/util/ccv-context'
 
 const IdealFastButton = ({variant}) => {
     const {createOrder} = useCCVApi()
-    const {isCCVError, setIsCCVError, isCCVSubmitting, setIsCCVSubmitting} = useCCVPayment()
+    const {
+        isCCVError,
+        setIsCCVError,
+        isCCVSubmitting,
+        setIsCCVSubmitting,
+        idealFastCheckoutEnabled
+    } = useCCVPayment()
     const errorRef = useRef(null)
     const styles = useMultiStyleConfig('IdealFastButton', {variant})
+
+    useEffect(() => {
+        if (isCCVError && errorRef.current) {
+            errorRef.current.scrollIntoView({behavior: 'smooth', block: 'center'})
+        }
+    }, [isCCVError])
+
+    if (!idealFastCheckoutEnabled) return null
 
     const handleIdealFastCheckout = async () => {
         setIsCCVError(false)
@@ -29,12 +43,6 @@ const IdealFastButton = ({variant}) => {
         }
         setIsCCVSubmitting(false)
     }
-    useEffect(() => {
-        if (isCCVError && errorRef.current) {
-            errorRef.current.scrollIntoView({behavior: 'smooth', block: 'center'})
-        }
-    }, [isCCVError])
-
     return (
         <>
             <Button

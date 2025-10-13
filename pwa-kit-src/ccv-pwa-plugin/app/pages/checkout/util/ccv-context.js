@@ -35,6 +35,10 @@ export const CCVPaymentProvider = ({children}) => {
 
     const [URLintent, setURLintent] = useState()
 
+    const idealFastCheckoutEnabled = paymentMethods?.some(
+        (method) => method.id === 'CCV_IDEAL' && method.c_ccvFastCheckoutEnabled
+    )
+
     const onPaymentIdChange = (value) => {
         if (value && isEditingPayment) {
             togglePaymentEdit()
@@ -99,6 +103,7 @@ export const CCVPaymentProvider = ({children}) => {
         setIsCCVError,
         isCCVSubmitting,
         setIsCCVSubmitting,
+        idealFastCheckoutEnabled,
         URLintent,
         setURLintent
     }
