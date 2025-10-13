@@ -195,11 +195,102 @@ function checkRefundStatus(order) {
     }
 }
 
+/**
+ * Creates a payment instrument for iDeal fast checkout
+ * @param {dw.order.Basket} basket basket
+ */
+function createIdealFastCheckoutPayment(basket) {
+    // remove all payment instruments
+    if (basket.paymentInstruments.length > 0) {
+        basket.paymentInstruments.toArray().forEach(pi => basket.removePaymentInstrument(pi));
+    }
+    var newPI = basket.createPaymentInstrument('CCV_IDEAL', basket.totalGrossPrice);
+    newPI.custom.ccv_method_id = 'ideal';
+    newPI.custom.ccv_fast_checkout = true;
+}
+
+/**
+ * Adds placeholder billing/shipping data to the basket
+ * to allow placing an order with iDeal fast checkout
+ * @param {dw.order.Basket} basket basket
+ */
+function addPlaceholderDataToBasket(basket) {
+    if (!basket.billingAddress) {
+        var billingAddress = basket.createBillingAddress();
+        billingAddress.address1 = 'iDEAL pending';
+        billingAddress.lastName = 'iDEAL pending';
+        billingAddress.firstName = 'iDEAL pending';
+        billingAddress.city = 'iDEAL pending';
+        billingAddress.postalCode = 'iDEAL pending';
+        billingAddress.setCountryCode('NL');
+    }
+
+    if (!basket.defaultShipment.shippingAddress) {
+        var shippingAddress = basket.defaultShipment.createShippingAddress();
+        shippingAddress.address1 = 'iDEAL pending';
+        shippingAddress.lastName = 'iDEAL pending';
+        shippingAddress.firstName = 'iDEAL pending';
+        shippingAddress.city = 'iDEAL pending';
+        shippingAddress.postalCode = 'iDEAL pending';
+        shippingAddress.setCountryCode('NL');
+    }
+}
+
+/**
+ * Adds address details from the transaction status response to the order.
+ * Used in iDeal fast checkout payments.
+ * @param {Object} params parameters
+ * @param {Object} params.transactionStatusResponse transaction status response from CCV
+ * @param {dw.order.Order} params.order SFCC order
+ */
+function addAddressDetails({ transactionStatusResponse, order }) {
+    var { emailAddress, firstName, lastName } = transactionStatusResponse.consumer || {};
+
+    order.setCustomerEmail(emailAddress || '');
+    order.setCustomerName([firstName, lastName].filter(x => x).join(' '));
+
+    // ========== BILLNG ADDRESS ==========
+    var billingAddress = order.billingAddress;
+    if (!billingAddress) {
+        billingAddress = order.createBillingAddress();
+    }
+    billingAddress.address1 = [
+        transactionStatusResponse.billingAddress,
+        transactionStatusResponse.billingHouseNumber
+    ]
+    .filter(x => x)
+    .join('');
+    billingAddress.lastName = transactionStatusResponse.billingLastName || '';
+    billingAddress.firstName = transactionStatusResponse.billingFirstName || '';
+    billingAddress.city = transactionStatusResponse.billingCity || '';
+    billingAddress.postalCode = transactionStatusResponse.billingPostalCode || '';
+
+    // ========== SHIPPING ADDRESS =========
+    var shippingAddress = order.defaultShipment.shippingAddress;
+    if (!shippingAddress) {
+        shippingAddress = order.defaultShipment.createShippingAddress();
+    }
+    shippingAddress.address1 = [
+        transactionStatusResponse.shippingAddress,
+        transactionStatusResponse.shippingHouseNumber
+    ]
+        .filter(x => x)
+        .join(' ');
+
+    shippingAddress.lastName = transactionStatusResponse.shippingLastName || '';
+    shippingAddress.firstName = transactionStatusResponse.shippingFirstName || '';
+    shippingAddress.city = transactionStatusResponse.shippingCity || '';
+    shippingAddress.postalCode = transactionStatusResponse.shippingPostalCode || '';
+}
+
 module.exports = {
     getRefundAmountRemaining,
     updateOrderRefunds,
     getSCAFields,
     getKlarnaOrderLines,
     getKlarnaOrderLineModel,
+    createIdealFastCheckoutPayment,
+    addPlaceholderDataToBasket,
+    addAddressDetails,
     checkRefundStatus
 };

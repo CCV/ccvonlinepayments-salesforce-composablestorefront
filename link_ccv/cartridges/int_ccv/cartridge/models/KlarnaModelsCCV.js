@@ -6,8 +6,7 @@ var KLARNA_CONST = {
         DISCOUNT: 'DISCOUNT'
     }
 };
-var preferences = require('*/cartridge/config/preferences');
-var IMAGE_SIZE = preferences.imageSize ? preferences.imageSize : 'medium';
+var IMAGE_SIZE = 'medium';
 
 /**
  * Get Image URL from given Product ID
@@ -29,7 +28,7 @@ function getImageUrlFromProductID(productID) {
 /**
  * Calculates the total product discount for the given line item
  * @param {dw.order.ProductLineItem} lineItem product line item
- * 
+ *
  * @returns {number} calculated total product discount
  */
 function getProductDiscount (lineItem) {

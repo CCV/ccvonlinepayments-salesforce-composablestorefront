@@ -97,9 +97,27 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 
     // KLARNA
     if (paymentInstrument.paymentMethod === 'CCV_KLARNA') {
-        requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE
+        requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
         var { getKlarnaOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
         requestBody.orderLines = getKlarnaOrderLines(order);
+    }
+
+    // IDEAL FAST CHECKOUT
+    if (paymentInstrument.paymentMethod === 'CCV_IDEAL' && paymentInstrument.custom.ccv_fast_checkout === true) {
+        var { IdealOrderLine } = require('*/cartridge/models/IdealOrderLine');
+
+        // customer information to be returned via the webhook
+        requestBody.requestCheckoutDetails = [
+            'first_name',
+            'last_name',
+            'email',
+            'shipping',
+            'billing'
+        ];
+        // orderLines
+        requestBody.orderLines = order.allLineItems.toArray().map((lineItem) => {
+            return new IdealOrderLine(lineItem);
+        });
     }
 
     // BANCONTACT
@@ -164,6 +182,16 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 
     if (paymentInstrument.custom.ccvVaultAccessToken) {
         paymentInstrument.custom.ccvVaultAccessToken = '****';
+    }
+};
+
+exports.beforePOST = function (basket) {
+    var paymentMethodId = request.httpParameters.paymentMethodId && request.httpParameters.paymentMethodId[0];
+
+    if (paymentMethodId === 'idealFastCheckout') {
+        var { createIdealFastCheckoutPayment, addPlaceholderDataToBasket } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+        createIdealFastCheckoutPayment(basket);
+        addPlaceholderDataToBasket(basket);
     }
 };
 

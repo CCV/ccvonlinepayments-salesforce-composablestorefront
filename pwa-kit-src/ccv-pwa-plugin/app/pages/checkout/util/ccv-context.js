@@ -75,6 +75,9 @@ export const CCVPaymentProvider = ({children}) => {
         setPaymentError('')
     }
 
+    const [isCCVError, setIsCCVError] = useState()
+    const [isCCVSubmitting, setIsCCVSubmitting] = useState()
+
     const ctx = {
         form: paymentMethodForm,
         hasSavedCards,
@@ -92,6 +95,10 @@ export const CCVPaymentProvider = ({children}) => {
         setApplePayLoaded,
         getPaymentMethods,
         paymentMethods,
+        isCCVError,
+        setIsCCVError,
+        isCCVSubmitting,
+        setIsCCVSubmitting,
         URLintent,
         setURLintent
     }

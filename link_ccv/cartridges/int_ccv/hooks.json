@@ -5,6 +5,10 @@
             "script": "./cartridge/scripts/hooks/customObjectsHooks.js"
         },
         {
+            "name": "dw.ocapi.shop.order.beforePOST",
+            "script": "./cartridge/scripts/hooks/orderHooksCCV.js"
+        },
+        {
             "name": "dw.ocapi.shop.order.afterPOST",
             "script": "./cartridge/scripts/hooks/orderHooksCCV.js"
         },
