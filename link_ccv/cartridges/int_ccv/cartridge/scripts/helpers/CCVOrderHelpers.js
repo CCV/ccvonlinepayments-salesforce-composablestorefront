@@ -137,7 +137,7 @@ function getKlarnaOrderLines(order) {
 * @returns {Object|null} model
 */
 function getKlarnaOrderLineModel(lineItem) {
-    var { KlarnaProductLineModel, KlarnaShippingLineModel, KlarnaDiscountLineModel } = require('*/cartridge/models/KlarnaModelsCCV.js');
+    var { KlarnaProductLineModel, KlarnaShippingLineModel, KlarnaDiscountLineModel } = require('*/cartridge/models/KlarnaModelsCCV');
 
     if (lineItem instanceof ProductLineItem) {
         return new KlarnaProductLineModel(lineItem);

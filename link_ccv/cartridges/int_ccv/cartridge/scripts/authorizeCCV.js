@@ -1,6 +1,6 @@
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
 var { CCV_CONSTANTS, checkCCVTransaction } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
-var authorizationHandlers = require('*/cartridge/scripts/authorizationHandlers.js');
+var authorizationHandlers = require('*/cartridge/scripts/authorizationHandlers');
 /**
  * Authorizes an order with CCV payment, and updates order status accordingly.
  * Must be called in a transactional context.

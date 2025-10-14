@@ -21,6 +21,7 @@ const URLUtils = require('./dw/web/URLUtils');
 const URLParameter = require('./dw/web/URLParameter');
 const URLAction = require('./dw/web/URLAction');
 const UUIDUtils = require('./dw/util/UUIDUtils');
+const ProductMgr = require('./dw/catalog/ProductMgr.js');
 const Status = require('./dw/system/Status');
 const Money = require('./dw/value/Money');
 const StringUtils = require('./dw/util/StringUtils');
@@ -195,6 +196,7 @@ const dw = {
     ProductLineItem,
     ShippingLineItem,
     ProductShippingLineItem,
+    ProductMgr,
     PriceAdjustment,
     Money,
     MoneyMock,
@@ -264,6 +266,9 @@ const initMocks = function () {
     dw.OrderMgrMock.failOrder.returns(dw.statusMock);
 };
 
+const klarnaModelsMock = proxyquire('../../../../cartridges/int_ccv/cartridge/models/KlarnaModelsCCV', {
+    'dw/catalog/ProductMgr': dw.ProductMgr
+});
 const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/helpers/CCVOrderHelpers', {
     '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock,
     'dw/system/Site': dw.SiteMock,
@@ -275,7 +280,7 @@ const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scr
     'dw/order/ProductShippingLineItem': dw.ProductShippingLineItem,
     'dw/system/Logger': dw.loggerMock,
     'dw/order/PriceAdjustment': dw.PriceAdjustment,
-    '*/cartridge/models/KlarnaModelsCCV.js': require('../../../../cartridges/int_ccv/cartridge/models/KlarnaModelsCCV')
+    '*/cartridge/models/KlarnaModelsCCV': klarnaModelsMock
 });
 
 const authorizationHandlers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/authorizationHandlers', {
@@ -284,7 +289,8 @@ const authorizationHandlers = proxyquire('../../../../cartridges/int_ccv/cartrid
     'dw/order/OrderMgr': dw.OrderMgrMock,
     'dw/system/Site': dw.SiteMock,
     'dw/system/Logger': dw.loggerMock,
-    '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock
+    '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock,
+    '*/cartridge/scripts/helpers/CCVOrderHelpers': CCVOrderHelpers
 });
 
 module.exports = {

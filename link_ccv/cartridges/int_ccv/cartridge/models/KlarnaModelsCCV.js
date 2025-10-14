@@ -11,7 +11,7 @@ var IMAGE_SIZE = 'medium';
 /**
  * Get Image URL from given Product ID
  *
- * @param {dw.catalog.Product} productID - Suggested product ID
+ * @param {string} productID - Suggested product ID
  * @return {string} - Image URL
  */
 function getImageUrlFromProductID(productID) {
@@ -58,7 +58,7 @@ function KlarnaProductLineModel(lineItem) {
     this.imageUrl = getImageUrlFromProductID(lineItem.productID) || '';
     // this.brand: '';
     if (Object.hasOwnProperty.call(lineItem, 'priceAdjustments') && lineItem.priceAdjustments.length > 0) {
-        this.discount = KlarnaModelsCCV.getProductDiscount(lineItem);
+        this.discount = getProductDiscount(lineItem);
     }
 }
 

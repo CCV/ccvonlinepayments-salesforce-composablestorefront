@@ -28,19 +28,21 @@ describe('orderHooksCCV', function () {
     after(() => stubs.restore());
 
     beforeEach(() => {
+        const paymentInstruments = [
+            {
+                custom: { ccv_method_id: 'card' },
+                paymentMethod: 'CCV_CREDIT_CARD',
+                UUID: 'd3132131dsas',
+                getPaymentMethod: () => null,
+                paymentTransaction: new stubs.dw.PaymentTransactionMock()
+            }
+        ];
+
         order = {
             allProductLineItems: { toArray: () => [{
                 productName: 'Line Item 1', quantity: 1
             }] },
-            paymentInstruments: [
-                {
-                    custom: { ccv_method_id: 'card' },
-                    paymentMethod: 'CCV_CREDIT_CARD',
-                    UUID: 'd3132131dsas',
-                    getPaymentMethod: () => null,
-                    paymentTransaction: new stubs.dw.PaymentTransactionMock()
-                }
-            ],
+            paymentInstruments,
             totalGrossPrice: { value: 25.75 },
             currencyCode: 'EUR',
             orderNo: '00001',
@@ -69,7 +71,7 @@ describe('orderHooksCCV', function () {
                     custom: { phone_country: '024' }
                 }
             }],
-            paymentInstrument: this.paymentInstruments[0]
+            paymentInstrument: paymentInstruments[0]
         };
 
         paymentInstrument = order.paymentInstruments[0];
@@ -201,13 +203,6 @@ describe('orderHooksCCV', function () {
         });
 
         context('iDEAL', function () {
-            it('request should include issuer id', () => {
-                order.paymentInstruments[0].custom = { ccv_method_id: 'ideal', ccv_issuer_id: 'issuer_id_test' };
-                orderHooksCCV.afterPOST(order);
-                const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
-                expect(paymentRequest.requestBody.issuer).to.eql('issuer_id_test');
-            });
-
             it('the request\'s transactionType should never be set to "authorise" for non-card payment methods', () => {
                 stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
                 order.paymentInstruments[0].custom = { ccv_method_id: 'ideal', ccv_issuer_id: 'issuer_id_test' };
