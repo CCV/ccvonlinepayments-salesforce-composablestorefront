@@ -29,7 +29,17 @@ const Checkout = () => {
     const [isLoading, setIsLoading] = useState(false)
     const ccv = useCCVApi()
     const {data: basket} = useCurrentBasket()
-    const {paymentError, setPaymentError, applePayLoaded, setApplePayLoaded, creditCardData, URLintent, setURLintent} = useCCVPayment()
+    const {
+        paymentError,
+        setPaymentError,
+        applePayLoaded,
+        setApplePayLoaded,
+        creditCardData,
+        removePaymentMethod,
+        URLintent
+    } = useCCVPayment()
+
+    const hasFastCheckoutData = basket?.paymentInstruments?.[0]?.c_ccv_fast_checkout
 
     const isApplePay =
         basket.paymentInstruments &&
@@ -42,6 +52,14 @@ const Checkout = () => {
             window.scrollTo({top: 0})
         }
     }, [globalError, step])
+
+    useEffect(() => {
+        if (!hasFastCheckoutData) return
+        // for fast checkout we use placeholder billing/shipping data and skip the checkout
+        // So if the user still reached the checkout after a failed fast-checkout payment we need to
+        // clear the placeholder data and the fast-checkout payment instrument
+        removePaymentMethod(basket)
+    }, [hasFastCheckoutData])
 
     useEffect(() => {
         const script = document.createElement('script')

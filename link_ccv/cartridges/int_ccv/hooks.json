@@ -21,6 +21,10 @@
             "script": "./cartridge/scripts/hooks/orderHooksCCV.js"
         },
         {
+            "name": "dw.ocapi.shop.basket.payment_instrument.beforeDELETE",
+            "script": "./cartridge/scripts/hooks/paymentInstrumentHooksCCV.js"
+        },
+        {
             "name": "dw.ocapi.shop.basket.payment_methods.modifyGETResponse_v2",
             "script": "./cartridge/scripts/hooks/paymentMethodHooks.js"
         }

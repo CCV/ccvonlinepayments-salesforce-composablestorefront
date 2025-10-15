@@ -213,27 +213,32 @@ function createIdealFastCheckoutPayment(basket) {
  * Adds placeholder billing/shipping data to the basket
  * to allow placing an order with iDeal fast checkout
  * @param {dw.order.Basket} basket basket
+ * @param {string} placeholder placeholder text
  */
-function addPlaceholderDataToBasket(basket) {
-    if (!basket.billingAddress) {
-        var billingAddress = basket.createBillingAddress();
-        billingAddress.address1 = 'iDEAL pending';
-        billingAddress.lastName = 'iDEAL pending';
-        billingAddress.firstName = 'iDEAL pending';
-        billingAddress.city = 'iDEAL pending';
-        billingAddress.postalCode = 'iDEAL pending';
-        billingAddress.setCountryCode('NL');
-    }
+function addPlaceholderDataToBasket(basket, placeholder) {
+    var billingAddress = basket.billingAddress;
+    var shippingAddress = basket.defaultShipment.shippingAddress;
 
-    if (!basket.defaultShipment.shippingAddress) {
-        var shippingAddress = basket.defaultShipment.createShippingAddress();
-        shippingAddress.address1 = 'iDEAL pending';
-        shippingAddress.lastName = 'iDEAL pending';
-        shippingAddress.firstName = 'iDEAL pending';
-        shippingAddress.city = 'iDEAL pending';
-        shippingAddress.postalCode = 'iDEAL pending';
-        shippingAddress.setCountryCode('NL');
+    if (!billingAddress) {
+        billingAddress = basket.createBillingAddress();
     }
+    billingAddress.address1 = placeholder;
+    billingAddress.lastName = placeholder;
+    billingAddress.firstName = placeholder;
+    billingAddress.city = placeholder;
+    billingAddress.postalCode = placeholder;
+    billingAddress.setCountryCode('NL');
+
+
+    if (!shippingAddress) {
+        shippingAddress = basket.defaultShipment.createShippingAddress();
+    }
+    shippingAddress.address1 = placeholder;
+    shippingAddress.lastName = placeholder;
+    shippingAddress.firstName = placeholder;
+    shippingAddress.city = placeholder;
+    shippingAddress.postalCode = placeholder;
+    shippingAddress.setCountryCode('NL');
 }
 
 /**

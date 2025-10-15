@@ -62,7 +62,10 @@ describe('orderHooksCCV', function () {
                 countryCode: { value: 'BE' },
                 address2: '',
                 phone: '1234-1234-522',
-                custom: { phone_country: '024' }
+                custom: { phone_country: '024' },
+                setCountryCode: function (country) {
+                    this.countryCode = { value: country };
+                }
             },
             shipments: [{
                 shippingAddress: {
@@ -73,7 +76,10 @@ describe('orderHooksCCV', function () {
                     countryCode: { value: 'BE' },
                     address2: '',
                     phone: '1234-1234-522',
-                    custom: { phone_country: '024' }
+                    custom: { phone_country: '024' },
+                    setCountryCode: function (country) {
+                        this.countryCode = { value: country };
+                    }
                 }
             }],
             get allLineItems() {
