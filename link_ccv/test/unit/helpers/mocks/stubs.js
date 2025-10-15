@@ -167,6 +167,9 @@ const CCVOrderHelpersMock = {
     getRefundAmountRemaining: sandbox.stub(),
     updateOrderRefunds: sandbox.stub(),
     getSCAFields: sandbox.stub(),
+    addPlaceholderDataToBasket: sandbox.stub(),
+    createIdealFastCheckoutPayment: sandbox.stub(),
+    addAddressDetails: sandbox.stub(),
     getKlarnaOrderLines: sandbox.stub()
 };
 
@@ -266,9 +269,6 @@ const initMocks = function () {
     dw.OrderMgrMock.failOrder.returns(dw.statusMock);
 };
 
-const klarnaModelsMock = proxyquire('../../../../cartridges/int_ccv/cartridge/models/KlarnaModelsCCV', {
-    'dw/catalog/ProductMgr': dw.ProductMgr
-});
 const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/helpers/CCVOrderHelpers', {
     '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock,
     'dw/system/Site': dw.SiteMock,
@@ -280,7 +280,9 @@ const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scr
     'dw/order/ProductShippingLineItem': dw.ProductShippingLineItem,
     'dw/system/Logger': dw.loggerMock,
     'dw/order/PriceAdjustment': dw.PriceAdjustment,
-    '*/cartridge/models/KlarnaModelsCCV': klarnaModelsMock
+    '*/cartridge/models/KlarnaModelsCCV': proxyquire('../../../../cartridges/int_ccv/cartridge/models/KlarnaModelsCCV', {
+        'dw/catalog/ProductMgr': dw.ProductMgr
+    })
 });
 
 const authorizationHandlers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/authorizationHandlers', {

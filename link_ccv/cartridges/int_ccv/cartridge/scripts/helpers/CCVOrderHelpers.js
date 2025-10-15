@@ -201,7 +201,7 @@ function checkRefundStatus(order) {
  */
 function createIdealFastCheckoutPayment(basket) {
     // remove all payment instruments
-    if (basket.paymentInstruments.length > 0) {
+    if (basket.paymentInstruments && basket.paymentInstruments.length > 0) {
         basket.paymentInstruments.toArray().forEach(pi => basket.removePaymentInstrument(pi));
     }
     var newPI = basket.createPaymentInstrument('CCV_IDEAL', basket.totalGrossPrice);
