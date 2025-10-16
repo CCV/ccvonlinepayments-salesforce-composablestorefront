@@ -24,6 +24,7 @@ var languageMap = {
  */
 exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+    var { getKlarnaOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
     var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
     var metadata = request.httpParameters.metadata && decodeURIComponent(request.httpParameters.metadata.pop());
 
@@ -98,26 +99,23 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     // KLARNA
     if (paymentInstrument.paymentMethod === 'CCV_KLARNA') {
         requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
-        var { getKlarnaOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
         requestBody.orderLines = getKlarnaOrderLines(order);
     }
 
     // IDEAL FAST CHECKOUT
     if (paymentInstrument.paymentMethod === 'CCV_IDEAL' && paymentInstrument.custom.ccv_fast_checkout === true) {
-        var { IdealOrderLine } = require('*/cartridge/models/IdealOrderLine');
-
         // customer information to be returned via the webhook
         requestBody.requestCheckoutDetails = [
-            'first_name',
-            'last_name',
-            'email',
             'shipping',
-            'billing'
+            'billing',
+            'phone',
+            'email',
+            'first_name',
+            'last_name'
         ];
         // orderLines
-        requestBody.orderLines = order.allLineItems.toArray().map((lineItem) => {
-            return new IdealOrderLine(lineItem);
-        });
+            // return new IdealOrderLine(lineItem);
+        requestBody.orderLines = getKlarnaOrderLines(order);
     }
 
     // BANCONTACT

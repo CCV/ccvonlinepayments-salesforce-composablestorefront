@@ -14,9 +14,6 @@ const orderHooksCCV = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hoo
     'dw/system/Status': stubs.dw.Status,
     'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
     'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction,
-    '*/cartridge/models/IdealOrderLine': proxyquire('../../cartridges/int_ccv/cartridge/models/IdealOrderLine', {
-        'dw/order/ShippingLineItem': stubs.dw.ShippingLineItem
-    }),
     'dw/web/URLUtils': stubs.dw.URLUtilsMock
 
 });
@@ -245,10 +242,26 @@ describe('orderHooksCCV', function () {
             describe('Ideal Fast Checkout', function () {
                 beforeEach(() => {
                     global.request.httpParameters.paymentMethodId = ['idealFastCheckout'];
+                    var testOrderLines = [{
+                        type: 'PHYSICAL',
+                        name: 'Green and Gold Necklace',
+                        code: '013742003307M',
+                        quantity: 1,
+                        unit: 'pc',
+                        unitPrice: '25.92',
+                        totalPrice: 29.29,
+                        vatRate: 13,
+                        vat: 3.37
+                    }];
+                    const getKlarnaOrderLinesMock = stubs.sandbox.stub();
+                    const originalFunc = stubs.CCVOrderHelpers.getKlarnaOrderLines;
+                    stubs.CCVOrderHelpers.getKlarnaOrderLines = getKlarnaOrderLinesMock;
+                    getKlarnaOrderLinesMock.returns(testOrderLines);
 
                     order.paymentInstruments = [];
                     orderHooksCCV.beforePOST(order);
                     orderHooksCCV.afterPOST(order);
+                    stubs.CCVOrderHelpers.getKlarnaOrderLines = originalFunc;
                 });
 
                 it('should create a new payment instrument with payment method = CCV_IDEAL', () => {
