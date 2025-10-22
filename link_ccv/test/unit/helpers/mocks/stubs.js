@@ -170,7 +170,7 @@ const CCVOrderHelpersMock = {
     addPlaceholderDataToBasket: sandbox.stub(),
     createIdealFastCheckoutPayment: sandbox.stub(),
     addAddressDetails: sandbox.stub(),
-    getKlarnaOrderLines: sandbox.stub()
+    getCCVOrderLines: sandbox.stub()
 };
 
 const collectionsMock = {
@@ -280,8 +280,10 @@ const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scr
     'dw/order/ProductShippingLineItem': dw.ProductShippingLineItem,
     'dw/system/Logger': dw.loggerMock,
     'dw/order/PriceAdjustment': dw.PriceAdjustment,
-    '*/cartridge/models/KlarnaModelsCCV': proxyquire('../../../../cartridges/int_ccv/cartridge/models/KlarnaModelsCCV', {
-        'dw/catalog/ProductMgr': dw.ProductMgr
+    '*/cartridge/models/OrderLineModelsCCV': proxyquire('../../../../cartridges/int_ccv/cartridge/models/OrderLineModelsCCV', {
+        '*/cartridge/scripts/helpers/CCVModelHelpers': proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/helpers/CCVModelHelpers', {
+            'dw/catalog/ProductMgr': dw.ProductMgr
+        })
     })
 });
 

@@ -6,7 +6,7 @@ const {
     getRefundAmountRemaining,
     updateOrderRefunds,
     getSCAFields,
-    getKlarnaOrderLines
+    getCCVOrderLines
 } = stubs.CCVOrderHelpers;
 
 const Money = require('./helpers/mocks/dw/value/Money');
@@ -282,15 +282,15 @@ describe('CCVOrderHelpers', function () {
         });
     });
 
-    context('#getKlarnaOrderLines:', function () {
-        describe('should return correct Klarna line types:', function () {
+    context('#getCCVOrderLines:', function () {
+        describe('should return correct CCV line types:', function () {
             beforeEach(() => {
                 order.allLineItems = [...allLineItems];
             });
             it('should return a PHYSICAL product', () => {
                 const item0 = order.allLineItems[0];
 
-                const orderLines = getKlarnaOrderLines(order);
+                const orderLines = getCCVOrderLines(order);
                 expect(orderLines.length).to.eql(5);
                 const orderLine0 = orderLines[0];
                 expect(orderLine0.type).to.eql('PHYSICAL');
@@ -305,7 +305,7 @@ describe('CCVOrderHelpers', function () {
                 const item2 = order.allLineItems[2];
                 const item3 = order.allLineItems[3];
 
-                const orderLines = getKlarnaOrderLines(order);
+                const orderLines = getCCVOrderLines(order);
                 expect(orderLines.length).to.eql(5);
                 const line2 = orderLines[2];
                 const line3 = orderLines[3];
@@ -330,7 +330,7 @@ describe('CCVOrderHelpers', function () {
             // todo: logic for promotions has changed, need to rework this test
             it.skip('should return a DISCOUNT', () => {
                 order.adjustedMerchandizeTotalGrossPrice = new Money(78.17, 'EUR');
-                const orderLines = getKlarnaOrderLines(order);
+                const orderLines = getCCVOrderLines(order);
 
                 const line4 = orderLines[4];
                 const item4 = order.allLineItems[4];
@@ -357,7 +357,7 @@ describe('CCVOrderHelpers', function () {
             });
             order.allLineItems = [item1];
 
-            const orderLines = getKlarnaOrderLines(order);
+            const orderLines = getCCVOrderLines(order);
 
             expect(orderLines[0].type).to.eql('SURCHARGE');
         });
@@ -378,7 +378,7 @@ describe('CCVOrderHelpers', function () {
             });
             order.allLineItems = [item1];
 
-            const orderLines = getKlarnaOrderLines(order);
+            const orderLines = getCCVOrderLines(order);
 
             expect(orderLines[0].unit).to.eql('pc');
         });

@@ -24,7 +24,7 @@ var languageMap = {
  */
 exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
-    var { getKlarnaOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+    var { getCCVOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
     var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
     var metadata = request.httpParameters.metadata && decodeURIComponent(request.httpParameters.metadata.pop());
 
@@ -99,7 +99,7 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     // KLARNA
     if (paymentInstrument.paymentMethod === 'CCV_KLARNA') {
         requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
-        requestBody.orderLines = getKlarnaOrderLines(order);
+        requestBody.orderLines = getCCVOrderLines(order);
     }
 
     // IDEAL FAST CHECKOUT
@@ -115,7 +115,7 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         ];
         // orderLines
             // return new IdealOrderLine(lineItem);
-        requestBody.orderLines = getKlarnaOrderLines(order);
+        requestBody.orderLines = getCCVOrderLines(order);
     }
 
     // BANCONTACT

@@ -253,15 +253,15 @@ describe('orderHooksCCV', function () {
                         vatRate: 13,
                         vat: 3.37
                     }];
-                    const getKlarnaOrderLinesMock = stubs.sandbox.stub();
-                    const originalFunc = stubs.CCVOrderHelpers.getKlarnaOrderLines;
-                    stubs.CCVOrderHelpers.getKlarnaOrderLines = getKlarnaOrderLinesMock;
-                    getKlarnaOrderLinesMock.returns(testOrderLines);
+                    const getCCVOrderLinesMock = stubs.sandbox.stub();
+                    const originalFunc = stubs.CCVOrderHelpers.getCCVOrderLines;
+                    stubs.CCVOrderHelpers.getCCVOrderLines = getCCVOrderLinesMock;
+                    getCCVOrderLinesMock.returns(testOrderLines);
 
                     order.paymentInstruments = [];
                     orderHooksCCV.beforePOST(order);
                     orderHooksCCV.afterPOST(order);
-                    stubs.CCVOrderHelpers.getKlarnaOrderLines = originalFunc;
+                    stubs.CCVOrderHelpers.getCCVOrderLines = originalFunc;
                 });
 
                 it('should create a new payment instrument with payment method = CCV_IDEAL', () => {
@@ -320,15 +320,15 @@ describe('orderHooksCCV', function () {
                     vatRate: 13,
                     vat: 3.37
                 }];
-                const getKlarnaOrderLinesMock = stubs.sandbox.stub();
-                const originalFunc = stubs.CCVOrderHelpers.getKlarnaOrderLines;
-                stubs.CCVOrderHelpers.getKlarnaOrderLines = getKlarnaOrderLinesMock;
-                getKlarnaOrderLinesMock.returns(testOrderLines);
+                const getCCVOrderLinesMock = stubs.sandbox.stub();
+                const originalFunc = stubs.CCVOrderHelpers.getCCVOrderLines;
+                stubs.CCVOrderHelpers.getCCVOrderLines = getCCVOrderLinesMock;
+                getCCVOrderLinesMock.returns(testOrderLines);
                 orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.method).to.eql('klarna');
                 expect(paymentRequest.requestBody.orderLines).to.eql(testOrderLines);
-                stubs.CCVOrderHelpers.getKlarnaOrderLines = originalFunc;
+                stubs.CCVOrderHelpers.getCCVOrderLines = originalFunc;
             });
         });
     });

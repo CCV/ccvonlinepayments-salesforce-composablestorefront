@@ -2,10 +2,9 @@ var Site = require('dw/system/Site');
 var ProductLineItem = require('dw/order/ProductLineItem');
 var ShippingLineItem = require('dw/order/ShippingLineItem');
 var ProductShippingLineItem = require('dw/order/ProductShippingLineItem');
-var PriceAdjustment = require('dw/order/PriceAdjustment');
 var { CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 var collections = require('*/cartridge/scripts/util/collections');
-var KlarnaDiscountLineModel = require('*/cartridge/models/KlarnaModelsCCV').KlarnaDiscountLineModel;
+var DiscountLineModelCCV = require('*/cartridge/models/OrderLineModelsCCV').DiscountLineModelCCV;
 
 /**
  * Returns amount eligible for refund for the given order
@@ -108,44 +107,44 @@ function getOrderPromotionTotal(order) {
 /**
  *
  * @param {dw.order.Order} order sfcc order
- * @returns {Array} array of order lines used for klarna payments
+ * @returns {Array} array of order lines used for some CCV payments (klarna/ideal fast checkout)
  */
-function getKlarnaOrderLines(order) {
+function getCCVOrderLines(order) {
     var lineItems = [];
 
     collections.forEach(order.allLineItems, (lineItem) => {
         if (!Object.hasOwnProperty.call(lineItem, 'promotion')) {
-            lineItems.push(getKlarnaOrderLineModel(lineItem));
+            lineItems.push(getOrderLineModelCCV(lineItem));
         }
     });
 
     var orderPromotionTotal = getOrderPromotionTotal(order);
 
     if (orderPromotionTotal < 0) {
-        lineItems.push(new KlarnaDiscountLineModel(orderPromotionTotal));
+        lineItems.push(new DiscountLineModelCCV(orderPromotionTotal));
     }
 
     return lineItems;
 }
 
 /**
- * Returns an order line model used in Klarna payments
+ * Returns an order line model used in CCV payments
  * @param {dw.order.ProductLineItem
 * |dw.order.ProductShippingLineItem
 * |dw.order.ShippingLineItem
 * |dw.order.PriceAdjustment} lineItem lineitem
 * @returns {Object|null} model
 */
-function getKlarnaOrderLineModel(lineItem) {
-    var { KlarnaProductLineModel, KlarnaShippingLineModel, KlarnaDiscountLineModel } = require('*/cartridge/models/KlarnaModelsCCV');
+function getOrderLineModelCCV(lineItem) {
+    var { ProductLineModelCCV, ShippingLineModelCCV } = require('*/cartridge/models/OrderLineModelsCCV');
 
     if (lineItem instanceof ProductLineItem) {
-        return new KlarnaProductLineModel(lineItem);
+        return new ProductLineModelCCV(lineItem);
     } else if (
         lineItem instanceof ShippingLineItem ||
         lineItem instanceof ProductShippingLineItem
     ) {
-        return new KlarnaShippingLineModel(lineItem);
+        return new ShippingLineModelCCV(lineItem);
     }
     return null;
 }
@@ -292,8 +291,8 @@ module.exports = {
     getRefundAmountRemaining,
     updateOrderRefunds,
     getSCAFields,
-    getKlarnaOrderLines,
-    getKlarnaOrderLineModel,
+    getCCVOrderLines,
+    getOrderLineModelCCV,
     createIdealFastCheckoutPayment,
     addPlaceholderDataToBasket,
     addAddressDetails,
