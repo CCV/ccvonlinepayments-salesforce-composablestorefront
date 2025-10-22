@@ -1,44 +1,22 @@
-import {useState, useCallback, useRef} from 'react'
-import {useIntl} from 'react-intl'
-import {set, useForm} from 'react-hook-form'
+import {useState} from 'react'
+import {useForm} from 'react-hook-form'
 import {useShopperBasketsMutation} from '@salesforce/commerce-sdk-react'
 import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
 import {getPaymentInstrumentCardType} from '@salesforce/retail-react-app/app/utils/cc-utils'
 import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 
 import {useCCVPayment} from './ccv-context'
-import useCCVApi from './useCCVApi'
-import {useCommerceApi, useAccessToken} from '@salesforce/commerce-sdk-react'
-import useNavigation from '@salesforce/retail-react-app/app/hooks/use-navigation'
-import {useQueryClient} from '@tanstack/react-query'
 
 /**
  * A hook for managing and coordinating the billing address and payment method forms.
  * @returns {Object}
  */
 const usePaymentFormsCCV = () => {
-    const {goToNextStep, step, STEPS, goToStep} = useCheckout()
+    const {goToNextStep} = useCheckout()
     const {data: basket} = useCurrentBasket()
-    const {locale, formatMessage} = useIntl()
-    const ccv = useCCVApi()
     const selectedShippingAddress = basket?.shipments[0]?.shippingAddress
     const selectedBillingAddress = basket?.billingAddress
     const selectedPayment = basket?.paymentInstruments && basket.paymentInstruments[0]
-    const {getTokenWhenReady} = useAccessToken()
-    const api = useCommerceApi()
-    const navigate = useNavigation()
-    const {getConfig} = require('@salesforce/pwa-kit-runtime/utils/ssr-config')
-    const { app: { CCV } } = getConfig()
-
-    // Values can be changed under config/default.js
-    const MAX_RETRIES = CCV.polling.maxRetries || 100 // set to maximum 5min of polling time (BMC QR code lifecycle)
-    const TIME_BETWEEN_RETRIES = CCV.polling.timeBetweenRetries || 3000 // Polling to CCV every 3sec (BMC QR code)
-    
-    let retries = 0
-    let interval = useRef(null)
-    const queryClient = useQueryClient()
-
-    const [QRcode, setQRcode] = useState()
 
     const {mutateAsync: updatePaymentInstrumentInBasket} = useShopperBasketsMutation(
         'updatePaymentInstrumentInBasket'
@@ -52,8 +30,7 @@ const usePaymentFormsCCV = () => {
         'updateBillingAddressForBasket'
     )
 
-    const {form: paymentMethodForm, creditCardData, setCreditCardData, paymentMethods, setPaymentError, URLintent, setURLintent} = useCCVPayment()
-    const [isLoading, setIsLoading] = useState(false)
+    const {form: paymentMethodForm, setCreditCardData, paymentMethods} = useCCVPayment()
     const [billingSameAsShipping, setBillingSameAsShipping] = useState(true)
 
     const billingAddressForm = useForm({
@@ -62,58 +39,6 @@ const usePaymentFormsCCV = () => {
         defaultValues: {...selectedBillingAddress}
     })
 
-    const getOrder = async (orderNo) => {
-        const token = await getTokenWhenReady()
-        const order = await api.shopperOrders.getOrder({
-            parameters: {
-                orderNo
-            },
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
-
-        return order
-    }
-
-    const checkOrderStatus = useCallback(async (orderNo, order) => {
-        if (!order) {
-            order = await getOrder(orderNo)
-        }
-        if ((retries >= MAX_RETRIES && order.status === 'created')) {
-            // Customer is inactive and not responding on the QR code, because the lifetime of this QR is exceeded.
-            // we automatically reset and redirect the customer to a new session
-            clearInterval(interval)
-            navigate('/')
-            return
-        }
-        if ((order.status === 'created' || order.status === 'new') && order.paymentStatus === 'paid') {
-            clearInterval(interval)
-            navigate(`/checkout/confirmation/${orderNo}`)
-            return
-        }
-        if (order.status === 'failed') {
-            clearInterval(interval)
-            const message = formatMessage({
-                id: 'checkout.message.generic_error',
-                defaultMessage: 'An unexpected error occurred during checkout.'
-            })
-            // Throw error when payment is failed, even when a customer is returned from landingpage to the webshop
-            // By throwing this error, a paymentInstrument removal of the current basket will apply
-            setPaymentError(message)
-            return
-        }
-    })
-
-    const startOrderPolling = async (orderNo) => {
-        interval = setInterval(() => {
-            retries++
-            checkOrderStatus(orderNo)
-        }, TIME_BETWEEN_RETRIES)
-    }
-
-
-
     const submitPaymentMethodForm = async (payment) => {
         // Make sure we only apply the payment if there isnt already one applied.
         // This works because a payment cannot be edited, only removed. In the UI,
@@ -121,24 +46,6 @@ const usePaymentFormsCCV = () => {
         // the payment form.
         if (!selectedPayment) {
             await setPaymentCCV(payment)
-        }
-
-        if ((payment.paymentMethodId === 'CCV_BANCONTACT_QR') && !QRcode) {
-            const orderResponsePromise = ccv.initiateOrderCCV({setIsLoading, setPaymentError})
-    
-            orderResponsePromise.then((orderResponse) => {
-                if (!orderResponse) {
-                    console.log('Order initiation failed! Aborting payment session.')
-                    return null
-                }
-                const qrCodeData = orderResponse.c_ccvQrCode
-                const urlIntentData = orderResponse.c_ccvUrlIntent
-                const data = {QRcode: qrCodeData, URLintent: urlIntentData, orderNo: orderResponse.orderNo}
-
-                setQRcode(data.QRcode)
-                startOrderPolling(data.orderNo)
-                setURLintent(data.URLintent)
-            })
         }
 
         // Once the payment is applied to the basket, we submit the billing address.
@@ -251,9 +158,7 @@ const usePaymentFormsCCV = () => {
         billingAddressForm,
         billingSameAsShipping,
         setBillingSameAsShipping,
-        reviewOrder,
-        QRcode,
-        setQRcode
+        reviewOrder
     }
 }
 

@@ -107,7 +107,6 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
         CCV_PAYPAL: <PaypalIcon width="auto" height={iconHeight} />,
         CCV_IDEAL: <IdealIcon width="auto" height={iconHeight} />,
         CCV_BANCONTACT: <BanContactIcon width="auto" height={iconHeight} />,
-        CCV_BANCONTACT_QR: <BanContactIcon width="auto" height={iconHeight} />,
         CCV_GIROPAY: <GiropayIcon width="auto" height={iconHeight} />,
         CCV_CREDIT_CARD_INLINE: (
             <>
