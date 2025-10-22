@@ -1,0 +1,51 @@
+openapi: 3.0.0
+info:
+    version: 1.0.1
+    title: CCV Payments API
+components:
+    securitySchemes:
+        ShopperToken:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+paths:
+    /cancel-payment:
+        post:
+            summary: Cancel a payment
+            operationId: cancelPayment
+            parameters:
+              - in: query
+                name: siteId
+                required: true
+                schema:
+                  type: string
+                  minLength: 1
+              - in: query
+                name: locale
+                required: false
+                schema:
+                  type: string
+                  minLength: 1
+            requestBody:
+              content:
+                'application/json':
+                  schema:
+                    type: object
+                    properties:
+                      orderNo:
+                        type: string
+                        maxLength: 100
+                      orderToken:
+                        type: string
+                        maxLength: 100
+                    required:
+                    - orderNo
+                    - orderToken
+            responses:
+                "200":
+                    description: Paymend cancelled successfully
+                "400":
+                    description: A general error ocurred
+
+security:
+    - ShopperToken: ["sfcc.shopper-baskets-orders.rw"]
