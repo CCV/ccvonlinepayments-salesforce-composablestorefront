@@ -105,6 +105,10 @@ describe('orderHooksCCV', function () {
             type: 'sale',
             status: 'pending',
             payUrl: 'examplepayurl.com?ref=123123123123',
+            details: {
+                qrCode: 'https://shop-vpos.ccvlab.eu/bep/authenticate.html?secureTransferId=5f188b28-6f46-4955-9bfe-c9987fdc2cca&trm=50',
+                urlIntent: 'https://shop-vpos.ccvlab.eu/bep/authenticate.html?secureTransferId=5f188b28-6f46-4955-9bfe-c9987fdc2cca&trm=51'
+            },
             reference: 'CCVTransactionReference'
         };
 
@@ -302,6 +306,13 @@ describe('orderHooksCCV', function () {
                 orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.brand).to.eql('bcmc');
+            });
+            it('should save the qr code and the urlIntent to order', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'card' };
+                order.paymentInstruments[0].paymentMethod = 'CCV_BANCONTACT';
+                orderHooksCCV.afterPOST(order);
+                expect(order.custom.ccvUrlIntent).to.eql(createPaymentResponse.details.urlIntent);
+                expect(order.custom.ccvQrCode).to.eql(createPaymentResponse.details.qrCode);
             });
         });
 
