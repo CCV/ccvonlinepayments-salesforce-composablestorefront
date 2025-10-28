@@ -38,10 +38,6 @@ const Checkout = () => {
 
     const hasFastCheckoutData = basket?.paymentInstruments?.[0]?.c_ccv_fast_checkout
 
-    const isApplePay =
-        basket.paymentInstruments &&
-        basket.paymentInstruments[0].paymentMethodId === 'CCV_APPLE_PAY' &&
-        applePayLoaded
     // Scroll to the top when we get a global error
     useEffect(() => {
         if (globalError || (step === 4 && !paymentError)) {
@@ -131,7 +127,6 @@ const Checkout = () => {
                                             submitOrderHandler={submitOrder}
                                             submitApplePayOrderHandler={onApplePayButtonClicked}
                                             isLoading={isLoading}
-                                            isApplePay={isApplePay}
                                             basket={basket}
                                             data-testid="sf-checkout-place-order-btn"
                                         />
@@ -154,7 +149,6 @@ const Checkout = () => {
                                     submitOrderHandler={submitOrder}
                                     submitApplePayOrderHandler={onApplePayButtonClicked}
                                     isLoading={isLoading}
-                                    isApplePay={isApplePay}
                                     basket={basket}
                                 />
                             </Box>
@@ -181,7 +175,6 @@ const Checkout = () => {
                             submitOrderHandler={submitOrder}
                             submitApplePayOrderHandler={onApplePayButtonClicked}
                             isLoading={isLoading}
-                            isApplePay={isApplePay}
                             basket={basket}
                             dataTestid="sf-checkout-place-order-btn"
                         />
