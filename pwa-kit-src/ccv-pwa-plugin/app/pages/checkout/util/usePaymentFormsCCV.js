@@ -33,7 +33,6 @@ const usePaymentFormsCCV = () => {
     // Values can be changed under config/default.js
     const MAX_RETRIES = CCV.polling.maxRetries || 100 // set to maximum 5min of polling time (BMC QR code lifecycle)
     const TIME_BETWEEN_RETRIES = CCV.polling.timeBetweenRetries || 3000 // Polling to CCV every 3sec (BMC QR code)
-    
     let retries = 0
     let interval = useRef(null)
     const queryClient = useQueryClient()
@@ -112,8 +111,6 @@ const usePaymentFormsCCV = () => {
         }, TIME_BETWEEN_RETRIES)
     }
 
-
-
     const submitPaymentMethodForm = async (payment) => {
         // Make sure we only apply the payment if there isnt already one applied.
         // This works because a payment cannot be edited, only removed. In the UI,
@@ -125,7 +122,6 @@ const usePaymentFormsCCV = () => {
 
         if ((payment.paymentMethodId === 'CCV_BANCONTACT_QR') && !QRcode) {
             const orderResponsePromise = ccv.initiateOrderCCV({setIsLoading, setPaymentError})
-    
             orderResponsePromise.then((orderResponse) => {
                 if (!orderResponse) {
                     console.log('Order initiation failed! Aborting payment session.')

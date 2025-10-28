@@ -41,6 +41,7 @@ import MaestroSymbol from '../../assets/svg/maestro-logo.svg'
 import IdealFastSymbol from '../../assets/svg/ideal-fast-logo.svg'
 import KlarnaSymbol from '../../assets/svg/klarna-logo.svg'
 import ApplePaySymbol from '../../assets/svg/apple-pay-logo.svg'
+import GooglePaySymbol from '../../assets/svg/google-pay-logo.svg'
 
 IdealSymbol.viewBox = IdealSymbol.viewBox || '0 0 306.1 269.8'
 BancontactSymbol.viewBox = BancontactSymbol.viewBox || '0 0 326.1 230.5'
@@ -52,6 +53,8 @@ MaestroSymbol.viewBox = MaestroSymbol.viewBox || '0 0 125 120'
 IdealFastSymbol.viewBox = IdealFastSymbol.viewBox || '0 0 47 24'
 KlarnaSymbol.viewBox = KlarnaSymbol.viewBox || '0 0 100 40.4494'
 ApplePaySymbol.viewBox = ApplePaySymbol.viewBox || '0 0 165.52107 105.9651'
+GooglePaySymbol.viewBox = GooglePaySymbol.viewBox || '0 0 754 400'
+
 // Export Chakra icon components that use our SVG sprite symbol internally
 // For non-square SVGs, we can use the symbol data from the import to set the
 // proper viewBox attribute on the Icon wrapper.
@@ -65,5 +68,6 @@ export const MaestroIcon = icon('maestro-logo', {viewBox: MaestroSymbol.viewBox}
 export const KlarnaIcon = icon('klarna-logo', {viewBox: KlarnaSymbol.viewBox})
 export const ApplePayIcon = icon('apple-pay-logo', {viewBox: ApplePaySymbol.viewBox})
 export const IdealFastIcon = icon('ideal-fast-logo', {viewBox: IdealFastSymbol.viewBox})
+export const GooglePayIcon = icon('google-pay-logo', {viewBox: GooglePaySymbol.viewBox})
 
 export * from '@salesforce/retail-react-app/app/components/icons'
