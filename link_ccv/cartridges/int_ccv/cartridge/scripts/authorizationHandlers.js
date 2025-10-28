@@ -74,6 +74,7 @@ function handlePriceOrCurrencyMismatch(order, authResult) {
  */
 function handleSuccess(order, authResult) {
     var { CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+    var { addAddressDetails } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
     var Order = require('dw/order/Order');
 
     var orderTotal = order.totalGrossPrice;
@@ -91,6 +92,12 @@ function handleSuccess(order, authResult) {
         createCardPaymentInstrument(order, transactionStatusResponse);
     }
 
+    // update ideal fast checkout order shipping, billing, customer email
+    if (paymentInstrument.custom.ccv_fast_checkout) {
+        addAddressDetails({ transactionStatusResponse, order });
+    }
+
+
     OrderMgr.placeOrder(order);
 
     if (transactionStatusResponse.type === CCV_CONSTANTS.TRANSACTION_TYPE.SALE) {
@@ -104,14 +111,14 @@ function handleSuccess(order, authResult) {
 
     ccvLogger.info(`Successful transaction: orderNo: ${order.orderNo}`);
 }
+
 /**
  * Fails the order and calls a hook
  * @param {Object} obj object
  * @param {dw.order.Order} obj.order order
  * @param {string} obj.noteTitle order note title
  * @param {string} obj.noteMsg order note message
- * @param {string} obj.context context where the hook was called - storefront or job
- * @param {Object} obj.details additional details
+ * @param {Object} obj.authResult authorization result
  *
  */
 function failOrderWithHook({ order, noteTitle, noteMsg, authResult }) {

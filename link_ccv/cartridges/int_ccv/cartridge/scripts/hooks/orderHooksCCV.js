@@ -24,6 +24,7 @@ var languageMap = {
  */
 exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+    var { getCCVOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
     var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
     var metadata = request.httpParameters.metadata && decodeURIComponent(request.httpParameters.metadata.pop());
 
@@ -97,9 +98,24 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 
     // KLARNA
     if (paymentInstrument.paymentMethod === 'CCV_KLARNA') {
-        requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE
-        var { getKlarnaOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
-        requestBody.orderLines = getKlarnaOrderLines(order);
+        requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
+        requestBody.orderLines = getCCVOrderLines(order);
+    }
+
+    // IDEAL FAST CHECKOUT
+    if (paymentInstrument.paymentMethod === 'CCV_IDEAL' && paymentInstrument.custom.ccv_fast_checkout === true) {
+        // customer information to be returned via the webhook
+        requestBody.requestCheckoutDetails = [
+            'shipping',
+            'billing',
+            'phone',
+            'email',
+            'first_name',
+            'last_name'
+        ];
+        // orderLines
+            // return new IdealOrderLine(lineItem);
+        requestBody.orderLines = getCCVOrderLines(order);
     }
 
     // BANCONTACT
@@ -151,8 +167,8 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     // ============= set CCV properties =============
     order.custom.ccvTransactionReference = paymentResponse.reference; // eslint-disable-line no-param-reassign
     order.custom.ccvPayUrl = paymentResponse.payUrl; // eslint-disable-line no-param-reassign
-    order.custom.ccvQrCode = paymentResponse.details.qrCode;
-    order.custom.ccvUrlIntent = paymentResponse.details.urlIntent;
+    order.custom.ccvQrCode = paymentResponse.details && paymentResponse.details.qrCode;
+    order.custom.ccvUrlIntent = paymentResponse.details && paymentResponse.details.urlIntent;
 
     paymentInstrument.paymentTransaction.setTransactionID(paymentResponse.reference);
     paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
@@ -164,6 +180,16 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 
     if (paymentInstrument.custom.ccvVaultAccessToken) {
         paymentInstrument.custom.ccvVaultAccessToken = '****';
+    }
+};
+
+exports.beforePOST = function (basket) {
+    var paymentMethodId = request.httpParameters.paymentMethodId && request.httpParameters.paymentMethodId[0];
+
+    if (paymentMethodId === 'idealFastCheckout') {
+        var { createIdealFastCheckoutPayment, addPlaceholderDataToBasket } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+        createIdealFastCheckoutPayment(basket);
+        addPlaceholderDataToBasket(basket, 'iDEAL pending');
     }
 };
 

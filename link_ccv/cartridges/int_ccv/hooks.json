@@ -5,6 +5,10 @@
             "script": "./cartridge/scripts/hooks/customObjectsHooks.js"
         },
         {
+            "name": "dw.ocapi.shop.order.beforePOST",
+            "script": "./cartridge/scripts/hooks/orderHooksCCV.js"
+        },
+        {
             "name": "dw.ocapi.shop.order.afterPOST",
             "script": "./cartridge/scripts/hooks/orderHooksCCV.js"
         },
@@ -15,6 +19,10 @@
         {
             "name": "dw.ocapi.shop.order.modifyGETResponse",
             "script": "./cartridge/scripts/hooks/orderHooksCCV.js"
+        },
+        {
+            "name": "dw.ocapi.shop.basket.payment_instrument.beforeDELETE",
+            "script": "./cartridge/scripts/hooks/paymentInstrumentHooksCCV.js"
         },
         {
             "name": "dw.ocapi.shop.basket.payment_methods.modifyGETResponse_v2",

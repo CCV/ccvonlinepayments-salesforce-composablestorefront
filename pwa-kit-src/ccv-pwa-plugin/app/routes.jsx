@@ -26,11 +26,18 @@ const CheckoutRedirect = loadable(() => import('./pages/checkout-redirect'), {
     fallback
 })
 
+const Cart = loadable(() => import('./pages/cart'), {fallback})
+
 const CheckoutConfirmation = loadable(() => import('./pages/checkout/confirmation'), {
     fallback
 })
 
 const routes = [
+    {
+        path: '/cart',
+        component: Cart,
+        exact: true
+    },
     {
         path: '/checkout',
         component: Checkout,

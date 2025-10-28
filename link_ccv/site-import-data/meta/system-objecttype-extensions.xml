@@ -279,11 +279,19 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="ccvFastCheckoutEnabled">
+                <display-name xml:lang="x-default">Fast checkout enabled</display-name>
+                <description xml:lang="x-default">Only valid for iDEAL</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="ccv">
                 <display-name xml:lang="x-default">ccv</display-name>
                 <attribute attribute-id="ccvMethodId"/>
+                <attribute attribute-id="ccvFastCheckoutEnabled"/>
             </attribute-group>
         </group-definitions>
     </type-extension>

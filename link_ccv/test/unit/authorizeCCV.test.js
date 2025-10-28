@@ -12,7 +12,7 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
     'dw/system/Logger': stubs.dw.loggerMock,
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/HookMgr': stubs.dw.HookMgrMock,
-    '*/cartridge/scripts/authorizationHandlers.js': stubs.authorizationHandlers,
+    '*/cartridge/scripts/authorizationHandlers': stubs.authorizationHandlers,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock
 });
 
