@@ -51,7 +51,6 @@
     "last 4 ChromeAndroid versions"
   ],
   "dependencies": {
-    "html-to-image": "^1.11.11",
     "react-qr-code": "^2.0.15"
   }
 }

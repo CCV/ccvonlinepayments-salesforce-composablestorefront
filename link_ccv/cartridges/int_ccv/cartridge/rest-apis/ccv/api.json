@@ -1,0 +1,9 @@
+{
+    "endpoints": [
+        {
+            "endpoint": "cancelPayment",
+            "schema": "schema.yaml",
+            "implementation": "script"
+        }
+    ]
+}
