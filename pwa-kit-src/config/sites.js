@@ -10,10 +10,17 @@ module.exports = [
             supportedLocales: [
                 {
                     id: 'en-US',
+                    alias: 'us',
+                    preferredCurrency: 'EUR'
+                },
+                {
+                    id: 'nl-NL',
+                    alias: 'nl',
                     preferredCurrency: 'EUR'
                 },
                 {
                     id: 'nl-BE',
+                    alias: 'be',
                     preferredCurrency: 'EUR'
                 }
             ]

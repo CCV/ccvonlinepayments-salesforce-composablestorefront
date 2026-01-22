@@ -1,3 +1,4 @@
+// Rename this to local.js to use as config for npm run start
 const sites = require('./sites.js')
 module.exports = {
     app: {
@@ -23,12 +24,17 @@ module.exports = {
             proxyPath: `/mobify/proxy/api`,
             ocapiVersion: 'v21_3',
             parameters: {
-                clientId: 'd131f215-49ff-4676-b20d-d1ff67b63cf1',
-                organizationId: 'f_ecom_zziu_007',
+                clientId: '6dbf0e1e-724c-4599-b82f-899b0adaf60f',
+                organizationId: 'f_ecom_zyrh_001',
                 shortCode: 'kv7kzm78',
                 siteId: 'RefArch'
-            },
-            usePageDesignerCompatibilityMode: false
+            }
+        },
+        CCV: {
+            polling: {
+                maxRetries: 100,
+                timeBetweenRetries: 3000
+            }
         },
         // Einstein api config
         einsteinAPI: {
@@ -61,14 +67,14 @@ module.exports = {
     ],
     // Additional parameters that configure Express app behavior.
     ssrParameters: {
-        ssrFunctionNodeVersion: '20.x',
+        ssrFunctionNodeVersion: '22.x',
         proxyConfigs: [
             {
                 host: 'kv7kzm78.api.commercecloud.salesforce.com',
                 path: 'api'
             },
             {
-                host: 'zziu-007.dx.commercecloud.salesforce.com',
+                host: 'zyrh-001.dx.commercecloud.salesforce.com',
                 path: 'ocapi'
             }
         ]

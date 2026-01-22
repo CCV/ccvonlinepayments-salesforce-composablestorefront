@@ -30,6 +30,12 @@ module.exports = {
                 siteId: 'RefArch'
             }
         },
+        CCV: {
+            polling: {
+                maxRetries: 100,
+                timeBetweenRetries: 3000
+            }
+        },
         // Einstein api config
         einsteinAPI: {
             host: 'https://api.cquotient.com',
@@ -61,7 +67,7 @@ module.exports = {
     ],
     // Additional parameters that configure Express app behavior.
     ssrParameters: {
-        ssrFunctionNodeVersion: '20.x',
+        ssrFunctionNodeVersion: '22.x',
         proxyConfigs: [
             {
                 host: 'kv7kzm78.api.commercecloud.salesforce.com',
