@@ -92,8 +92,6 @@ function BancontactModal({setPlaceOrderBtnLoading}) {
 
     return (
         <>
-            <Button onClick={onBancontactModalOpen}>Open Modal</Button>
-
             <Modal
                 isOpen={isBancontactModalOpen}
                 onClose={onBancontactModalClose}
