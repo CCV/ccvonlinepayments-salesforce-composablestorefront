@@ -189,7 +189,7 @@ exports.beforePOST = function (basket) {
     if (paymentMethodId === 'idealFastCheckout') {
         var { createIdealFastCheckoutPayment, addPlaceholderDataToBasket } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
         createIdealFastCheckoutPayment(basket);
-        addPlaceholderDataToBasket(basket, 'iDEAL pending');
+        addPlaceholderDataToBasket(basket, 'iDEAL | Wero pending');
     }
 };
 

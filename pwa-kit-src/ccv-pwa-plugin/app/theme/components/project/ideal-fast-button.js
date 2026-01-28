@@ -1,5 +1,5 @@
 import React from 'react'
-import {IdealFastIcon} from '../../../components/icons'
+import {IdealWeroIcon} from '../../../components/icons'
 
 export default {
     baseStyle: {
@@ -13,7 +13,7 @@ export default {
             bgColor: '#cb0166',
             marginTop: 3,
             mb: 4,
-            leftIcon: <IdealFastIcon h="1.8rem" w="auto" />
+            leftIcon: <IdealWeroIcon h="1.8rem" w="auto" />
         },
         errorStyle: {
             color: 'red.500',
