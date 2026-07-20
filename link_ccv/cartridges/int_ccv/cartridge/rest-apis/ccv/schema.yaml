@@ -48,4 +48,4 @@ paths:
                     description: A general error ocurred
 
 security:
-    - ShopperToken: ["c_ccv_payments_rw"]
+    - ShopperToken: ["sfcc.shopper-baskets-orders.rw"]
