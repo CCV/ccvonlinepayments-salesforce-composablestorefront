@@ -287,6 +287,13 @@ describe('orderHooksCCV', function () {
                     expect(paymentRequest.requestBody.requestCheckoutDetails).to.include('shipping');
                     expect(paymentRequest.requestBody.requestCheckoutDetails).to.include('email');
                 });
+
+                it('should send scaReady but no address fields (address data is not yet available)', () => {
+                    const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
+                    expect(paymentRequest.requestBody.scaReady).to.exist;
+                    expect(paymentRequest.requestBody.billingAddress).to.be.undefined;
+                    expect(paymentRequest.requestBody.shippingAddress).to.be.undefined;
+                });
             });
         });
 
@@ -340,6 +347,64 @@ describe('orderHooksCCV', function () {
                 expect(paymentRequest.requestBody.method).to.eql('klarna');
                 expect(paymentRequest.requestBody.orderLines).to.eql(testOrderLines);
                 stubs.CCVOrderHelpers.getCCVOrderLines = originalFunc;
+            });
+        });
+
+        context('Address details', function () {
+            function getRequestBody() {
+                return stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0].requestBody;
+            }
+
+            it('should include billing and shipping address fields for card', () => {
+                orderHooksCCV.afterPOST(order);
+                const requestBody = getRequestBody();
+                expect(requestBody.billingAddress).to.eql(order.billingAddress.address1);
+                expect(requestBody.shippingAddress).to.eql(order.shipments[0].shippingAddress.address1);
+            });
+
+            it('should include billing and shipping address fields for non-card methods (iDEAL)', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'ideal' };
+                order.paymentInstruments[0].paymentMethod = 'CCV_IDEAL';
+                orderHooksCCV.afterPOST(order);
+                const requestBody = getRequestBody();
+                expect(requestBody.billingAddress).to.eql(order.billingAddress.address1);
+                expect(requestBody.shippingAddress).to.eql(order.shipments[0].shippingAddress.address1);
+            });
+        });
+
+        context('scaReady', function () {
+            function getRequestBody() {
+                return stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0].requestBody;
+            }
+
+            it('should be included for card', () => {
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvScaReadyEnabled').returns(true);
+                orderHooksCCV.afterPOST(order);
+                expect(getRequestBody().scaReady).to.eql('yes');
+            });
+
+            it('should be included for landingpage', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'landingpage' };
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvScaReadyEnabled').returns(false);
+                orderHooksCCV.afterPOST(order);
+                expect(getRequestBody().scaReady).to.eql('no');
+            });
+
+            it('should NOT be included for Klarna', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'klarna' };
+                order.paymentInstruments[0].paymentMethod = 'CCV_KLARNA';
+                const originalFunc = stubs.CCVOrderHelpers.getCCVOrderLines;
+                stubs.CCVOrderHelpers.getCCVOrderLines = stubs.sandbox.stub().returns([]);
+                orderHooksCCV.afterPOST(order);
+                expect(getRequestBody().scaReady).to.be.undefined;
+                stubs.CCVOrderHelpers.getCCVOrderLines = originalFunc;
+            });
+
+            it('should NOT be included for iDEAL', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'ideal' };
+                order.paymentInstruments[0].paymentMethod = 'CCV_IDEAL';
+                orderHooksCCV.afterPOST(order);
+                expect(getRequestBody().scaReady).to.be.undefined;
             });
         });
     });

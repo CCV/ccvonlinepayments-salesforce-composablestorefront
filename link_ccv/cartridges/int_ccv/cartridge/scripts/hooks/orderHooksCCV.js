@@ -89,11 +89,20 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         }
     }
 
-    if (selectedMethodCCVId === 'card' || paymentInstrument.paymentMethod === 'CCV_KLARNA') {
-        var { getSCAFields } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
-    // adding data required for 3DS frictionless flow and for Klarna
-        var scaFields = getSCAFields(order);
-        Object.assign(requestBody, scaFields);
+    var isFastCheckout = paymentInstrument.paymentMethod === 'CCV_IDEAL'
+        && paymentInstrument.custom.ccv_fast_checkout === true;
+
+    // Address details are shared across all payment methods so they appear on
+    // transaction level in CCV. iDEAL fast checkout has no address data yet.
+    if (!isFastCheckout) {
+        var { getAddressFields } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+        Object.assign(requestBody, getAddressFields(order));
+    }
+
+    // scaReady is only relevant for the 3DS frictionless flow (card & landingpage),
+    // plus the iDEAL fast checkout special case.
+    if (selectedMethodCCVId === 'card' || selectedMethodCCVId === 'landingpage' || isFastCheckout) {
+        requestBody.scaReady = Site.current.getCustomPreferenceValue('ccvScaReadyEnabled') ? 'yes' : 'no';
     }
 
     // KLARNA

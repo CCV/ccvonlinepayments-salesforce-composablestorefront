@@ -1,4 +1,3 @@
-var Site = require('dw/system/Site');
 var ProductLineItem = require('dw/order/ProductLineItem');
 var ShippingLineItem = require('dw/order/ShippingLineItem');
 var ProductShippingLineItem = require('dw/order/ProductShippingLineItem');
@@ -47,16 +46,14 @@ function updateOrderRefunds(order, ccvRefunds) {
 }
 
 /**
- * Extracts the fields required for 3DS frictionless flow
+ * Extracts the billing/shipping address fields shared across all CCV payment methods.
  * @param {dw.order.Order} order dw order
- * @returns {Object} sca fields
+ * @returns {Object} address fields
  */
-function getSCAFields(order) {
+function getAddressFields(order) {
     var billingAddress = order.billingAddress;
     var shippingAddress = order.shipments[0].shippingAddress;
     return {
-        scaReady: Site.current.getCustomPreferenceValue('ccvScaReadyEnabled') ? 'yes' : 'no',
-
         billingAddress: billingAddress.address1,
         billingCity: billingAddress.city,
         billingState: billingAddress.stateCode,
@@ -290,7 +287,7 @@ function addAddressDetails({ transactionStatusResponse, order }) {
 module.exports = {
     getRefundAmountRemaining,
     updateOrderRefunds,
-    getSCAFields,
+    getAddressFields,
     getCCVOrderLines,
     getOrderLineModelCCV,
     createIdealFastCheckoutPayment,
