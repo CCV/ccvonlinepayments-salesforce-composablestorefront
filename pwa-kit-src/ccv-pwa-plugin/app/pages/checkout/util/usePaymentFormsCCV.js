@@ -27,12 +27,10 @@ const usePaymentFormsCCV = () => {
     const {getTokenWhenReady} = useAccessToken()
     const api = useCommerceApi()
     const navigate = useNavigation()
-    const {getConfig} = require('@salesforce/pwa-kit-runtime/utils/ssr-config')
-    const { app: { CCV } } = getConfig()
 
-    // Values can be changed under config/default.js
-    const MAX_RETRIES = CCV.polling.maxRetries || 100 // set to maximum 5min of polling time (BMC QR code lifecycle)
-    const TIME_BETWEEN_RETRIES = CCV.polling.timeBetweenRetries || 3000 // Polling to CCV every 3sec (BMC QR code)
+    // TODO: Move to Sitepreference
+    const MAX_RETRIES = 100 // set to maximum 5min of polling time (BMC QR code lifecycle)
+    const TIME_BETWEEN_RETRIES = 3000 // Polling to CCV every 3sec (BMC QR code)
     
     let retries = 0
     let interval = useRef(null)
