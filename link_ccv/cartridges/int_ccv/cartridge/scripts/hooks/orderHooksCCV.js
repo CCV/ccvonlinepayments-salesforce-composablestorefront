@@ -119,7 +119,7 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     }
 
     // BANCONTACT
-    if (paymentInstrument.paymentMethod === 'CCV_BANCONTACT') {
+    if (paymentInstrument.paymentMethod === 'CCV_BANCONTACT' || paymentInstrument.paymentMethod === 'CCV_BANCONTACT_QR') {
         requestBody.brand = 'bcmc';
     }
 
@@ -167,8 +167,8 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     // ============= set CCV properties =============
     order.custom.ccvTransactionReference = paymentResponse.reference; // eslint-disable-line no-param-reassign
     order.custom.ccvPayUrl = paymentResponse.payUrl; // eslint-disable-line no-param-reassign
-    order.custom.ccvQrCode = paymentResponse.details && paymentResponse.details.qrCode; // eslint-disable-line no-param-reassign
-    order.custom.ccvUrlIntent = paymentResponse.details && paymentResponse.details.urlIntent; // eslint-disable-line no-param-reassign
+    order.custom.ccvQrCode = paymentResponse.details && paymentResponse.details.qrCode;
+    order.custom.ccvUrlIntent = paymentResponse.details && paymentResponse.details.urlIntent;
 
     paymentInstrument.paymentTransaction.setTransactionID(paymentResponse.reference);
     paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);

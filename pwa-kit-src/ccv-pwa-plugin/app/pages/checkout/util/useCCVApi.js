@@ -73,15 +73,10 @@ const useCCVApi = () => {
                         method: 'POST',
                         body: JSON.stringify(creditCardData),
                         headers: {
-                            'Content-Type': 'application/json'
-                        }
+                            "Content-Type": "application/json",
+                          },
                     })
                     console.log(cardDataResponse)
-                }
-
-                // const orderResponse = mockorder
-                if (orderResponse.c_ccvQrCode) {
-                    return orderResponse
                 }
                 // redirect to hosted payment page
                 window.location.href = orderResponse.c_ccvPayUrl
@@ -102,6 +97,7 @@ const useCCVApi = () => {
             try {
                 const orderResponse = await this.createOrder()
                 return orderResponse
+
             } catch (error) {
                 const message = formatMessage({
                     id: 'checkout.message.generic_error',

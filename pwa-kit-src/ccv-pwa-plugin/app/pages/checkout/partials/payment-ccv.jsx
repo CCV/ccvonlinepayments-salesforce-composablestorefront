@@ -6,7 +6,10 @@
  */
 import React, {useEffect, useState, useRef} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
-import {Box, Button, Checkbox, Container, Heading, Stack, Text, Divider} from '@chakra-ui/react'
+import {Box, Button, Checkbox, Container, Heading, Stack, Text, Divider, Alert,
+    AlertIcon,
+    AlertTitle,
+    AlertDescription} from '@chakra-ui/react'
 import {useCheckout} from '@salesforce/retail-react-app/app/pages/checkout/util/checkout-context'
 import {
     ToggleCard,
@@ -22,7 +25,8 @@ import {useCCVPayment} from '../util/ccv-context'
 import {CCVPaymentError} from './payment-error-ccv'
 import CCVPaymentSelection from './payment-selection-ccv'
 import usePaymentFormsCCV from '../util/usePaymentFormsCCV'
-import {PaymentSummaryCCV} from '../util/payment-components-ccv'
+import {PaymentSummaryCCV, PlaceOrderButton} from '../util/payment-components-ccv'
+import QRCode from "react-qr-code";
 
 const CCVPayment = () => {
     const {formatMessage} = useIntl()
@@ -42,7 +46,8 @@ const CCVPayment = () => {
         billingAddressForm,
         billingSameAsShipping,
         setBillingSameAsShipping,
-        reviewOrder
+        reviewOrder,
+        QRcode
     } = usePaymentFormsCCV()
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,6 +68,9 @@ const CCVPayment = () => {
             // because the PAN will be masked and unusable
             await removePaymentAndResetForm()
             goToStep(checkoutSteps.PAYMENT)
+        } else if (paymentError && selectedPayment && selectedPayment.paymentMethodId === 'CCV_BANCONTACT_QR') {
+            await removePaymentAndResetForm()
+            goToStep(checkoutSteps.REVIEW_ORDER)
         }
     }
 
@@ -103,7 +111,7 @@ const CCVPayment = () => {
                     defaultMessage: 'Payment',
                     id: 'checkout_payment.title.payment'
                 })}
-                editing={step === checkoutSteps.PAYMENT}
+                editing={QRcode ? false : (step === checkoutSteps.PAYMENT)}
                 isLoading={
                     paymentMethodForm.formState.isSubmitting ||
                     billingAddressForm.formState.isSubmitting ||
@@ -197,7 +205,22 @@ const CCVPayment = () => {
 
                 <ToggleCardSummary>
                     <Stack spacing={6}>
-                        {selectedPayment && (
+                        {QRcode && (
+                            <Alert status='info' hideBelow="md">
+                                <AlertIcon />
+                                <FormattedMessage
+                                        defaultMessage="Continue by scanning the QR code"
+                                        id="checkout_payment.qrcode.alert"
+                                    />
+                            </Alert>
+                        )}
+                        {QRcode && (
+                            <Box width="100%" display="flex" hideBelow="md" justifyContent="center">
+                                <QRCode value={QRcode} />
+                            </Box>
+                            
+                        )}
+                        {!QRcode && selectedPayment && (
                             <Stack spacing={3}>
                                 <Heading as="h3" fontSize="md">
                                     <PaymentSummaryCCV selectedPayment={selectedPayment} />

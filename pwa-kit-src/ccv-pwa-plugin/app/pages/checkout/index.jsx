@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ */
 import React, {useEffect, useState} from 'react'
 import {Alert, AlertIcon, Box, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
 import {
@@ -15,7 +21,6 @@ import CCVPayment from './partials/payment-ccv'
 import ContactInfo from './partials/contact-info'
 import ShippingOptions from './partials/shipping-options'
 import {PlaceOrderButton} from './util/payment-components-ccv'
-import BancontactModal from './partials/bancontact-modal'
 
 import {CCVPaymentProvider, useCCVPayment} from './util/ccv-context'
 
@@ -31,14 +36,13 @@ const Checkout = () => {
         setApplePayLoaded,
         creditCardData,
         removePaymentMethod,
-        setOrderResponse,
-        orderResponse,
-        onBancontactModalOpen
+        URLintent
     } = useCCVPayment()
 
     const hasFastCheckoutData = basket?.paymentInstruments?.[0]?.c_ccv_fast_checkout
 
     // Scroll to the top when we get a global error
+
     useEffect(() => {
         if (globalError || (step === 4 && !paymentError)) {
             window.scrollTo({top: 0})
@@ -84,16 +88,14 @@ const Checkout = () => {
         ccv.onApplePayButtonClicked({setPaymentError, setIsLoading})
     }
 
-    const submitOrder = async () => {
-        const orderResponse = await ccv.submitOrderCCV({
-            setIsLoading,
-            setPaymentError,
-            creditCardData
-        })
-        if (orderResponse?.c_ccvQrCode) {
-            // bancontact flow
-            setOrderResponse(orderResponse)
-            onBancontactModalOpen()
+    const submitOrder = async () => ccv.submitOrderCCV({setIsLoading, setPaymentError, creditCardData})
+
+    const submitOrRedirect = async () => {
+        if (URLintent) {
+            // Redirect the customer to the native BMC app module via a URL intent
+            window.location.href = URLintent.toString()
+        } else {
+            await submitOrder()
         }
     }
 
@@ -119,12 +121,26 @@ const Checkout = () => {
                             <ShippingAddress />
                             <ShippingOptions />
                             <CCVPayment />
-                            {/* PLACE ORDER BUTTON - BOTTOM OF PAGE */}
-                            {step === 4 && (
+
+                            {(URLintent && step === 4) && (
+                                <Box pt={3} display={{base: 'none', lg: 'none', md: 'none'}}>
+                                    <Container variant="form">
+                                        <PlaceOrderButton
+                                            submitOrderHandler={submitOrRedirect}
+                                            submitApplePayOrderHandler={onApplePayButtonClicked}
+                                            isLoading={isLoading}
+                                            isApplePay={isApplePay}
+                                            basket={basket}
+                                            data-testid="sf-checkout-place-order-btn"
+                                        />
+                                    </Container>
+                                </Box>
+                            )}
+                            {(!URLintent && step === 4) && (
                                 <Box pt={3} display={{base: 'none', lg: 'block'}}>
                                     <Container variant="form">
                                         <PlaceOrderButton
-                                            submitOrderHandler={submitOrder}
+                                            submitOrderHandler={submitOrRedirect}
                                             submitApplePayOrderHandler={onApplePayButtonClicked}
                                             isLoading={isLoading}
                                             basket={basket}
@@ -142,11 +158,22 @@ const Checkout = () => {
                             showTaxEstimationForm={false}
                             showCartItems={true}
                         />
-                        {/* PLACE ORDER BUTTON - SIDEBAR */}
-                        {step === 4 && (
+
+                        {URLintent && step === 4 && (
+                            <Box display={{base: 'none', lg: 'none', md: 'none'}} pt={2}>
+                                    <PlaceOrderButton
+                                    submitOrderHandler={submitOrRedirect}
+                                    submitApplePayOrderHandler={onApplePayButtonClicked}
+                                    isLoading={isLoading}
+                                    isApplePay={isApplePay}
+                                    basket={basket}
+                                />
+                            </Box>
+                        )}
+                        {!URLintent && step === 4 && (
                             <Box display={{base: 'none', lg: 'block'}} pt={2}>
-                                <PlaceOrderButton
-                                    submitOrderHandler={submitOrder}
+                                    <PlaceOrderButton
+                                    submitOrderHandler={submitOrRedirect}
                                     submitApplePayOrderHandler={onApplePayButtonClicked}
                                     isLoading={isLoading}
                                     basket={basket}
@@ -157,8 +184,31 @@ const Checkout = () => {
                 </Grid>
             </Container>
 
-            {/* PLACE ORDER BUTTON - MOBILE */}
-            {step === 4 && (
+            {URLintent && step === 4 && (
+                <Box
+                    display={{lg: 'none', md: 'none'}}
+                    position="sticky"
+                    bottom="0"
+                    px={4}
+                    pt={6}
+                    pb={11}
+                    background="white"
+                    borderTop="1px solid"
+                    borderColor="gray.100"
+                >
+                    <Container variant="form">
+                            <PlaceOrderButton
+                            submitOrderHandler={submitOrRedirect}
+                            submitApplePayOrderHandler={onApplePayButtonClicked}
+                            isLoading={isLoading}
+                            isApplePay={isApplePay}
+                            basket={basket}
+                            dataTestid="sf-checkout-place-order-btn"
+                        />
+                    </Container>
+                </Box>
+            )}
+            {!URLintent && step === 4 && (
                 <Box
                     display={{lg: 'none'}}
                     position="sticky"
@@ -171,8 +221,8 @@ const Checkout = () => {
                     borderColor="gray.100"
                 >
                     <Container variant="form">
-                        <PlaceOrderButton
-                            submitOrderHandler={submitOrder}
+                            <PlaceOrderButton
+                            submitOrderHandler={submitOrRedirect}
                             submitApplePayOrderHandler={onApplePayButtonClicked}
                             isLoading={isLoading}
                             basket={basket}
@@ -181,7 +231,6 @@ const Checkout = () => {
                     </Container>
                 </Box>
             )}
-            {orderResponse && <BancontactModal />}
         </Box>
     )
 }
