@@ -35,8 +35,7 @@ const Checkout = () => {
         applePayLoaded,
         setApplePayLoaded,
         creditCardData,
-        removePaymentMethod,
-        URLintent
+        removePaymentMethod
     } = useCCVPayment()
 
     const hasFastCheckoutData = basket?.paymentInstruments?.[0]?.c_ccv_fast_checkout
@@ -90,15 +89,6 @@ const Checkout = () => {
 
     const submitOrder = async () => ccv.submitOrderCCV({setIsLoading, setPaymentError, creditCardData})
 
-    const submitOrRedirect = async () => {
-        if (URLintent) {
-            // Redirect the customer to the native BMC app module via a URL intent
-            window.location.href = URLintent.toString()
-        } else {
-            submitOrder()
-        }
-    }
-
     return (
         <Box background="gray.50" flex="1">
             <Container
@@ -122,25 +112,11 @@ const Checkout = () => {
                             <ShippingOptions />
                             <CCVPayment />
 
-                            {(URLintent && step === 4) && (
-                                <Box pt={3} display={{base: 'none', lg: 'none', md: 'none'}}>
-                                    <Container variant="form">
-                                        <PlaceOrderButton
-                                            submitOrderHandler={submitOrRedirect}
-                                            submitApplePayOrderHandler={onApplePayButtonClicked}
-                                            isLoading={isLoading}
-                                            isApplePay={isApplePay}
-                                            basket={basket}
-                                            data-testid="sf-checkout-place-order-btn"
-                                        />
-                                    </Container>
-                                </Box>
-                            )}
-                            {(!URLintent && step === 4) && (
+                            {step === 4 && (
                                 <Box pt={3} display={{base: 'none', lg: 'block'}}>
                                     <Container variant="form">
                                         <PlaceOrderButton
-                                            submitOrderHandler={submitOrRedirect}
+                                            submitOrderHandler={submitOrder}
                                             submitApplePayOrderHandler={onApplePayButtonClicked}
                                             isLoading={isLoading}
                                             basket={basket}
@@ -159,21 +135,10 @@ const Checkout = () => {
                             showCartItems={true}
                         />
 
-                        {URLintent && step === 4 && (
-                            <Box display={{base: 'none', lg: 'none', md: 'none'}} pt={2}>
-                                    <PlaceOrderButton
-                                    submitOrderHandler={submitOrRedirect}
-                                    submitApplePayOrderHandler={onApplePayButtonClicked}
-                                    isLoading={isLoading}
-                                    isApplePay={isApplePay}
-                                    basket={basket}
-                                />
-                            </Box>
-                        )}
-                        {!URLintent && step === 4 && (
+                        {step === 4 && (
                             <Box display={{base: 'none', lg: 'block'}} pt={2}>
-                                    <PlaceOrderButton
-                                    submitOrderHandler={submitOrRedirect}
+                                <PlaceOrderButton
+                                    submitOrderHandler={submitOrder}
                                     submitApplePayOrderHandler={onApplePayButtonClicked}
                                     isLoading={isLoading}
                                     basket={basket}
@@ -184,31 +149,7 @@ const Checkout = () => {
                 </Grid>
             </Container>
 
-            {URLintent && step === 4 && (
-                <Box
-                    display={{lg: 'none', md: 'none'}}
-                    position="sticky"
-                    bottom="0"
-                    px={4}
-                    pt={6}
-                    pb={11}
-                    background="white"
-                    borderTop="1px solid"
-                    borderColor="gray.100"
-                >
-                    <Container variant="form">
-                            <PlaceOrderButton
-                            submitOrderHandler={submitOrRedirect}
-                            submitApplePayOrderHandler={onApplePayButtonClicked}
-                            isLoading={isLoading}
-                            isApplePay={isApplePay}
-                            basket={basket}
-                            dataTestid="sf-checkout-place-order-btn"
-                        />
-                    </Container>
-                </Box>
-            )}
-            {!URLintent && step === 4 && (
+            {step === 4 && (
                 <Box
                     display={{lg: 'none'}}
                     position="sticky"
@@ -221,8 +162,8 @@ const Checkout = () => {
                     borderColor="gray.100"
                 >
                     <Container variant="form">
-                            <PlaceOrderButton
-                            submitOrderHandler={submitOrRedirect}
+                        <PlaceOrderButton
+                            submitOrderHandler={submitOrder}
                             submitApplePayOrderHandler={onApplePayButtonClicked}
                             isLoading={isLoading}
                             basket={basket}
