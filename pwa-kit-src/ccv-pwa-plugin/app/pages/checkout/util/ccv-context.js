@@ -6,7 +6,6 @@ import {useCurrentCustomer} from '@salesforce/retail-react-app/app/hooks/use-cur
 import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-current-basket'
 import {usePaymentMethodsForBasket} from '@salesforce/commerce-sdk-react'
 import {useForm} from 'react-hook-form'
-import {useDisclosure} from '@salesforce/retail-react-app/app/components/shared/ui'
 const CCVPaymentContext = React.createContext()
 import {useShopperBasketsMutation} from '@salesforce/commerce-sdk-react'
 
@@ -35,13 +34,7 @@ export const CCVPaymentProvider = ({children}) => {
 
     const [applePayLoaded, setApplePayLoaded] = useState(false)
 
-    const [orderResponse, setOrderResponse] = useState()
-
-    const {
-        isOpen: isBancontactModalOpen,
-        onOpen: onBancontactModalOpen,
-        onClose: onBancontactModalClose
-    } = useDisclosure()
+    const [URLintent, setURLintent] = useState()
 
     const idealFastCheckoutEnabled = paymentMethods?.some(
         (method) => method.id === 'CCV_IDEAL' && method.c_ccvFastCheckoutEnabled
@@ -125,11 +118,8 @@ export const CCVPaymentProvider = ({children}) => {
         isCCVSubmitting,
         setIsCCVSubmitting,
         idealFastCheckoutEnabled,
-        isBancontactModalOpen,
-        onBancontactModalOpen,
-        onBancontactModalClose,
-        orderResponse,
-        setOrderResponse
+        URLintent,
+        setURLintent
     }
 
     return <CCVPaymentContext.Provider value={ctx}>{children}</CCVPaymentContext.Provider>

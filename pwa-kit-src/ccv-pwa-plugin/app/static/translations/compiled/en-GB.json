@@ -803,12 +803,6 @@
       "value": "Same as shipping address"
     }
   ],
-  "checkout_payment.qrcode.alert": [
-    {
-      "type": 0,
-      "value": "Continue by scanning the QR code"
-    }
-  ],
   "checkout_payment.title.payment": [
     {
       "type": 0,
