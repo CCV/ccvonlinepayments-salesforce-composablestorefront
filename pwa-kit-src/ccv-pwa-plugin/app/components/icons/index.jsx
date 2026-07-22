@@ -43,7 +43,7 @@ import KlarnaSymbol from '../../assets/svg/klarna-logo.svg'
 import ApplePaySymbol from '../../assets/svg/apple-pay-logo.svg'
 import GooglePaySymbol from '../../assets/svg/google-pay-logo.svg'
 
-BancontactSymbol.viewBox = BancontactSymbol.viewBox || '0 0 326.1 230.5'
+BancontactSymbol.viewBox = BancontactSymbol.viewBox || '0 0 1490 1056.1'
 GiropaySymbol.viewBox = GiropaySymbol.viewBox || '0 0 38 22'
 SofortSymbol.viewBox = SofortSymbol.viewBox || '0 0 746.1 286.2'
 EPSSymbol.viewBox = EPSSymbol.viewBox || '0 0 889 577'
