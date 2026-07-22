@@ -166,7 +166,7 @@ const ISMLMock = {
 const CCVOrderHelpersMock = {
     getRefundAmountRemaining: sandbox.stub(),
     updateOrderRefunds: sandbox.stub(),
-    getSCAFields: sandbox.stub(),
+    getAddressFields: sandbox.stub(),
     addPlaceholderDataToBasket: sandbox.stub(),
     createIdealFastCheckoutPayment: sandbox.stub(),
     addAddressDetails: sandbox.stub(),

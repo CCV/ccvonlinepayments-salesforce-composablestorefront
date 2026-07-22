@@ -5,7 +5,7 @@ const stubs = require('./helpers/mocks/stubs');
 const {
     getRefundAmountRemaining,
     updateOrderRefunds,
-    getSCAFields,
+    getAddressFields,
     getCCVOrderLines
 } = stubs.CCVOrderHelpers;
 
@@ -235,9 +235,9 @@ describe('CCVOrderHelpers', function () {
         });
     });
 
-    context('#getSCAFields:', function () {
+    context('#getAddressFields:', function () {
         it('return all billing and shipping fields', () => {
-            const fields = getSCAFields(order);
+            const fields = getAddressFields(order);
 
             const billingAddress = order.billingAddress;
             const shippingAddress = order.shipments[0].shippingAddress;
@@ -261,22 +261,10 @@ describe('CCVOrderHelpers', function () {
             expect(fields.shippingEmail).to.eql(order.customerEmail);
         });
 
-        it('should set scaReady to "yes" if ccvScaReadyEnabled site preference is enabled', () => {
-            stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvScaReadyEnabled').returns(true);
-
-            const fields = getSCAFields(order);
-            expect(fields.scaReady).to.eql('yes');
-        });
-        it('should set scaReady to "no" if ccvScaReadyEnabled site preference is enabled', () => {
-            stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvScaReadyEnabled').returns(false);
-
-            const fields = getSCAFields(order);
-            expect(fields.scaReady).to.eql('no');
-        });
         it('should set phone_country to "00" if it is not provided in the order', () => {
             order.billingAddress.custom.phone_country = null;
             order.shipments[0].shippingAddress.custom.phone_country = null;
-            const fields = getSCAFields(order);
+            const fields = getAddressFields(order);
             expect(fields.billingPhoneCountry).to.eql('00');
             expect(fields.shippingPhoneCountry).to.eql('00');
         });
