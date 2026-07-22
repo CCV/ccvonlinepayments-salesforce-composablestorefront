@@ -73,36 +73,15 @@ const useCCVApi = () => {
                         method: 'POST',
                         body: JSON.stringify(creditCardData),
                         headers: {
-                            'Content-Type': 'application/json'
-                        }
+                            "Content-Type": "application/json",
+                          },
                     })
                     console.log(cardDataResponse)
-                }
-
-                // const orderResponse = mockorder
-                if (orderResponse.c_ccvQrCode) {
-                    return orderResponse
                 }
                 // redirect to hosted payment page
                 window.location.href = orderResponse.c_ccvPayUrl
             } catch (error) {
                 setIsLoading(false)
-                const message = formatMessage({
-                    id: 'checkout.message.generic_error',
-                    defaultMessage: 'An unexpected error occurred during checkout.'
-                })
-
-                setPaymentError(message)
-            }
-        },
-        async initiateOrderCCV({setIsLoading, setPaymentError}) {
-            setIsLoading(true)
-            setPaymentError(null)
-
-            try {
-                const orderResponse = await this.createOrder()
-                return orderResponse
-            } catch (error) {
                 const message = formatMessage({
                     id: 'checkout.message.generic_error',
                     defaultMessage: 'An unexpected error occurred during checkout.'

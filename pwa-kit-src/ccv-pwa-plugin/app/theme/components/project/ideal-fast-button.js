@@ -22,5 +22,14 @@ export default {
             mt: {base: '-1rem', lg: 0}
         }
     },
-    parts: ['button', 'errorStyle']
+    parts: [
+        'container',
+        'inputContainer',
+        'heading',
+        'subtitle',
+        'input',
+        'image',
+        'submitBtn',
+        'errorStyle'
+    ]
 }

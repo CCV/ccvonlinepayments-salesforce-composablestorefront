@@ -177,11 +177,6 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     order.custom.ccvTransactionReference = paymentResponse.reference; // eslint-disable-line no-param-reassign
     order.custom.ccvPayUrl = paymentResponse.payUrl; // eslint-disable-line no-param-reassign
 
-    if (paymentInstrument.paymentMethod === 'CCV_BANCONTACT') {
-        order.custom.ccvQrCode = paymentResponse.details && paymentResponse.details.qrCode; // eslint-disable-line no-param-reassign
-        order.custom.ccvUrlIntent = paymentResponse.details && paymentResponse.details.urlIntent; // eslint-disable-line no-param-reassign
-    }
-
     paymentInstrument.paymentTransaction.setTransactionID(paymentResponse.reference);
     paymentInstrument.paymentTransaction.setPaymentProcessor(paymentProcessor);
     paymentInstrument.paymentTransaction.setType(

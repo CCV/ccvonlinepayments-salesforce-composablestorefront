@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ */
 import React, {useEffect, useState} from 'react'
 import {Alert, AlertIcon, Box, Container, Grid, GridItem, Stack} from '@chakra-ui/react'
 import {
@@ -15,7 +21,6 @@ import CCVPayment from './partials/payment-ccv'
 import ContactInfo from './partials/contact-info'
 import ShippingOptions from './partials/shipping-options'
 import {PlaceOrderButton} from './util/payment-components-ccv'
-import BancontactModal from './partials/bancontact-modal'
 
 import {CCVPaymentProvider, useCCVPayment} from './util/ccv-context'
 
@@ -30,15 +35,13 @@ const Checkout = () => {
         applePayLoaded,
         setApplePayLoaded,
         creditCardData,
-        removePaymentMethod,
-        setOrderResponse,
-        orderResponse,
-        onBancontactModalOpen
+        removePaymentMethod
     } = useCCVPayment()
 
     const hasFastCheckoutData = basket?.paymentInstruments?.[0]?.c_ccv_fast_checkout
 
     // Scroll to the top when we get a global error
+
     useEffect(() => {
         if (globalError || (step === 4 && !paymentError)) {
             window.scrollTo({top: 0})
@@ -84,18 +87,7 @@ const Checkout = () => {
         ccv.onApplePayButtonClicked({setPaymentError, setIsLoading})
     }
 
-    const submitOrder = async () => {
-        const orderResponse = await ccv.submitOrderCCV({
-            setIsLoading,
-            setPaymentError,
-            creditCardData
-        })
-        if (orderResponse?.c_ccvQrCode) {
-            // bancontact flow
-            setOrderResponse(orderResponse)
-            onBancontactModalOpen()
-        }
-    }
+    const submitOrder = async () => ccv.submitOrderCCV({setIsLoading, setPaymentError, creditCardData})
 
     return (
         <Box background="gray.50" flex="1">
@@ -119,7 +111,7 @@ const Checkout = () => {
                             <ShippingAddress />
                             <ShippingOptions />
                             <CCVPayment />
-                            {/* PLACE ORDER BUTTON - BOTTOM OF PAGE */}
+
                             {step === 4 && (
                                 <Box pt={3} display={{base: 'none', lg: 'block'}}>
                                     <Container variant="form">
@@ -142,7 +134,7 @@ const Checkout = () => {
                             showTaxEstimationForm={false}
                             showCartItems={true}
                         />
-                        {/* PLACE ORDER BUTTON - SIDEBAR */}
+
                         {step === 4 && (
                             <Box display={{base: 'none', lg: 'block'}} pt={2}>
                                 <PlaceOrderButton
@@ -157,7 +149,6 @@ const Checkout = () => {
                 </Grid>
             </Container>
 
-            {/* PLACE ORDER BUTTON - MOBILE */}
             {step === 4 && (
                 <Box
                     display={{lg: 'none'}}
@@ -181,7 +172,6 @@ const Checkout = () => {
                     </Container>
                 </Box>
             )}
-            {orderResponse && <BancontactModal />}
         </Box>
     )
 }
