@@ -245,7 +245,7 @@ function addPlaceholderDataToBasket(basket, placeholder) {
  * @param {dw.order.Order} params.order SFCC order
  */
 function addAddressDetails({ transactionStatusResponse, order }) {
-    var { emailAddress, firstName, lastName } = transactionStatusResponse.consumer || {};
+    var { emailAddress, firstName, lastName, phoneNumber } = transactionStatusResponse.consumer || {};
 
     order.setCustomerEmail(emailAddress || '');
     order.setCustomerName([firstName, lastName].filter(x => x).join(' '));
@@ -265,6 +265,7 @@ function addAddressDetails({ transactionStatusResponse, order }) {
     billingAddress.firstName = transactionStatusResponse.billingFirstName || '';
     billingAddress.city = transactionStatusResponse.billingCity || '';
     billingAddress.postalCode = transactionStatusResponse.billingPostalCode || '';
+    billingAddress.phone = phoneNumber || '';
 
     // ========== SHIPPING ADDRESS =========
     var shippingAddress = order.defaultShipment.shippingAddress;
@@ -282,6 +283,7 @@ function addAddressDetails({ transactionStatusResponse, order }) {
     shippingAddress.firstName = transactionStatusResponse.shippingFirstName || '';
     shippingAddress.city = transactionStatusResponse.shippingCity || '';
     shippingAddress.postalCode = transactionStatusResponse.shippingPostalCode || '';
+    shippingAddress.phone = phoneNumber || '';
 }
 
 module.exports = {
