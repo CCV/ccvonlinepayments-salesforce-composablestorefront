@@ -6,7 +6,8 @@ const {
     getRefundAmountRemaining,
     updateOrderRefunds,
     getAddressFields,
-    getCCVOrderLines
+    getCCVOrderLines,
+    addAddressDetails
 } = stubs.CCVOrderHelpers;
 
 const Money = require('./helpers/mocks/dw/value/Money');
@@ -371,5 +372,82 @@ describe('CCVOrderHelpers', function () {
             expect(orderLines[0].unit).to.eql('pc');
         });
     });
-});
 
+    context('#addAddressDetails', function () {
+        const PLACEHOLDER = 'iDEAL | Wero pending';
+        let order;
+        let billingAddress;
+        let shippingAddress;
+
+        beforeEach(() => {
+            billingAddress = {
+                address1: PLACEHOLDER,
+                firstName: PLACEHOLDER,
+                lastName: PLACEHOLDER,
+                city: PLACEHOLDER,
+                postalCode: PLACEHOLDER
+            };
+            shippingAddress = Object.assign({}, billingAddress);
+
+            order = {
+                billingAddress,
+                defaultShipment: { shippingAddress },
+                setCustomerEmail: stubs.sandbox.stub(),
+                setCustomerName: stubs.sandbox.stub()
+            };
+        });
+
+        it('should apply the consumer details and report the data as complete', () => {
+            const complete = addAddressDetails({
+                order,
+                transactionStatusResponse: {
+                    consumer: {
+                        emailAddress: 'jack@sparrow.com',
+                        firstName: 'Jack',
+                        lastName: 'Sparrow',
+                        phoneNumber: '0612345678'
+                    },
+                    billingAddress: 'Hoofdstraat',
+                    billingHouseNumber: '12',
+                    billingCity: 'Amsterdam'
+                }
+            });
+
+            expect(complete).to.be.true;
+            expect(order.setCustomerEmail).to.have.been.calledOnceWith('jack@sparrow.com');
+            expect(order.setCustomerName).to.have.been.calledOnceWith('Jack Sparrow');
+            expect(billingAddress.city).to.eql('Amsterdam');
+            expect(billingAddress.phone).to.eql('0612345678');
+            expect(billingAddress.address1).to.eql('Hoofdstraat 12');
+        });
+
+        it('should report the data as incomplete when the consumer container is missing', () => {
+            const complete = addAddressDetails({
+                order,
+                transactionStatusResponse: { billingCity: 'Amsterdam' }
+            });
+
+            expect(complete).to.be.false;
+            expect(billingAddress.city).to.eql('Amsterdam');
+            expect(order.setCustomerEmail).to.have.been.calledOnceWith('');
+        });
+
+        it('should clear the placeholder rather than showing it on the placed order', () => {
+            // CCV has not returned any address data yet - the placeholder must not survive
+            addAddressDetails({
+                order,
+                transactionStatusResponse: { consumer: { emailAddress: 'jack@sparrow.com' } }
+            });
+
+            expect(billingAddress.city).to.eql('');
+            expect(shippingAddress.postalCode).to.eql('');
+        });
+
+        it('should stay blank across repeated calls when there is still no data', () => {
+            addAddressDetails({ order, transactionStatusResponse: {} });
+            addAddressDetails({ order, transactionStatusResponse: { consumer: { emailAddress: 'jack@sparrow.com' } } });
+
+            expect(billingAddress.city).to.eql('');
+        });
+    });
+});

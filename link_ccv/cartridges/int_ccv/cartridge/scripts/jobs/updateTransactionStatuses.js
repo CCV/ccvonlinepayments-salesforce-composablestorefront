@@ -21,13 +21,16 @@ exports.execute = function (args) {
  * @param {dw.order.Order} order order
  */
 function checkOrderStatus(order) {
-    Transaction.wrap(function () {
-        try {
-            var authResult = authorizeCCV(order, 'job');
+    try {
+        // the CCV service calls are made outside of the transaction, so the order is not locked
+        // for the duration of the request to CCV
+        var authResult = authorizeCCV(order, 'job');
+
+        Transaction.wrap(function () {
             handleAuthorizationResult(authResult, order);
-        } catch (error) {
-            ccvLogger.error(`Error updating status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
-        }
-    });
+        });
+    } catch (error) {
+        ccvLogger.error(`Error updating status for order ${order.orderNo}: \n ${error.message}\n${error.stack}`);
+    }
 }
 

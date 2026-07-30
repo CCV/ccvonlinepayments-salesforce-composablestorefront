@@ -173,6 +173,14 @@ const CCVOrderHelpersMock = {
     getCCVOrderLines: sandbox.stub()
 };
 
+const ccvOrderEnrichmentMock = {
+    CO_TYPE: 'CCVOrderEnrichment',
+    MAX_ATTEMPTS: 10,
+    enqueue: sandbox.stub(),
+    getPending: sandbox.stub(),
+    remove: sandbox.stub()
+};
+
 const collectionsMock = {
     map: (collection, callback) => collection.map(callback),
     forEach: (collection, callback) => collection.forEach(callback)
@@ -253,6 +261,7 @@ const initMocks = function () {
     Object.keys(ISMLMock).map(i => ISMLMock[i].reset());
     Object.keys(ocapiServiceMock).map(i => ocapiServiceMock[i].reset());
     Object.keys(authorizeCCVMock).map(i => authorizeCCVMock[i].reset());
+    Object.keys(ccvOrderEnrichmentMock).map(i => ccvOrderEnrichmentMock[i].reset && ccvOrderEnrichmentMock[i].reset());
 
 
     // INITIALIZE
@@ -294,7 +303,12 @@ const authorizationHandlers = proxyquire('../../../../cartridges/int_ccv/cartrid
     'dw/system/Site': dw.SiteMock,
     'dw/system/Logger': dw.loggerMock,
     '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock,
-    '*/cartridge/scripts/helpers/CCVOrderHelpers': CCVOrderHelpers
+    '*/cartridge/scripts/helpers/CCVOrderHelpers': CCVOrderHelpers,
+    '*/cartridge/scripts/helpers/ccvOrderEnrichment': ccvOrderEnrichmentMock
+});
+
+const ccvOrderEnrichment = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/helpers/ccvOrderEnrichment', {
+    'dw/object/CustomObjectMgr': dw.CustomObjectMgrMock
 });
 
 module.exports = {
@@ -307,6 +321,8 @@ module.exports = {
     CCV_CONSTANTS,
     authorizeCCVMock,
     authorizationHandlers,
+    ccvOrderEnrichment,
+    ccvOrderEnrichmentMock,
     collectionsMock,
     reset: initMocks,
     init: () => {
