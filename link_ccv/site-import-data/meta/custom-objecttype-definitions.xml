@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
-    <custom-type type-id="CCVOrderEnrichment">
-        <display-name xml:lang="x-default">CCV Order Enrichment</display-name>
-        <description xml:lang="x-default">Queue of iDEAL fast checkout orders waiting for the consumer details (email, name, phone) to become available on the CCV transaction. Drained by the CCVPayment-ProcessOrderEnrichments job.</description>
+    <custom-type type-id="CCVWebhookTransactions">
+        <display-name xml:lang="x-default">CCV Webhook Transaction</display-name>
+        <description xml:lang="x-default">Queue of iDEAL fast checkout orders waiting for the consumer details (email, name, phone) to become available on the CCV transaction. Drained by the CCVPayment-ProcessWebhookTransactions job.</description>
         <staging-mode>no-staging</staging-mode>
         <storage-scope>site</storage-scope>
         <retention-days>3</retention-days>

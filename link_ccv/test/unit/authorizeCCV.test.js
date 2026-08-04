@@ -364,7 +364,7 @@ describe('authorizeCCV.js', function () {
 
                 expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.calledOnce;
                 expect(order.setCustomerEmail).to.have.been.calledOnceWith('jack@sparrow.com');
-                expect(stubs.ccvOrderEnrichmentMock.enqueue).to.not.have.been.called;
+                expect(stubs.ccvWebhookTransactionsMock.enqueue).to.not.have.been.called;
             });
 
             it('should still place the order and queue it when the consumer data is missing', () => {
@@ -382,7 +382,7 @@ describe('authorizeCCV.js', function () {
 
                 expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.calledOnce;
                 expect(order.paymentStatus).to.eql(Order.PAYMENT_STATUS_PAID);
-                expect(stubs.ccvOrderEnrichmentMock.enqueue).to.have.been.calledOnceWith(order);
+                expect(stubs.ccvWebhookTransactionsMock.enqueue).to.have.been.calledOnceWith(order);
             });
 
             it('should not queue non fast-checkout orders', () => {
@@ -392,7 +392,7 @@ describe('authorizeCCV.js', function () {
                 handleAuthorizationResult(result, order);
 
                 expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.calledOnce;
-                expect(stubs.ccvOrderEnrichmentMock.enqueue).to.not.have.been.called;
+                expect(stubs.ccvWebhookTransactionsMock.enqueue).to.not.have.been.called;
             });
         });
 

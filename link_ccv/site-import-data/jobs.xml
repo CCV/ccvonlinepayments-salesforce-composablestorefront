@@ -25,7 +25,7 @@
         </triggers>
     </job>
 
-    <job job-id="CCVPayment-ProcessOrderEnrichments" priority="0">
+    <job job-id="CCVPayment-ProcessWebhookTransactions" priority="0">
         <description>
             Adds the iDEAL fast checkout consumer details (email, name, phone) to orders that were
             placed before CCV had processed them onto the transaction.
@@ -33,7 +33,7 @@
         <parameters/>
         <flow>
             <context site-id="RefArch"/>
-            <step step-id="CCVProcessOrderEnrichments" type="custom.CCV.ProcessOrderEnrichments" enforce-restart="false">
+            <step step-id="CCVProcessWebhookTransactions" type="custom.CCV.ProcessWebhookTransactions" enforce-restart="false">
                 <description/>
                 <parameters/>
             </step>

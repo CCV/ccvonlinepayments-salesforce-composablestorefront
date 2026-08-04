@@ -122,11 +122,11 @@ function handleSuccess(order, authResult) {
         if (!consumerDataApplied) {
             /**
              * CCV has not put the consumer details on the transaction yet. Queue the order so
-             * CCVPayment-ProcessOrderEnrichments can pick them up shortly, rather than holding
+             * CCVPayment-ProcessWebhookTransactions can pick them up shortly, rather than holding
              * up the order (and the shopper waiting on the redirect page) here.
              */
-            var ccvOrderEnrichment = require('*/cartridge/scripts/helpers/ccvOrderEnrichment');
-            ccvOrderEnrichment.enqueue(order);
+            var ccvWebhookTransactions = require('*/cartridge/scripts/helpers/ccvWebhookTransactions');
+            ccvWebhookTransactions.enqueue(order);
             ccvLogger.info(`CCV: consumer data not available yet for order ${order.orderNo}, queued for enrichment.`);
         }
     }

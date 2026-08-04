@@ -36,12 +36,12 @@
 			 }
 		  },
 		  {
-			 "@type-id":"custom.CCV.ProcessOrderEnrichments",
+			 "@type-id":"custom.CCV.ProcessWebhookTransactions",
 			 "@supports-parallel-execution":"false",
 			 "@supports-site-context":"true",
 			 "@supports-organization-context":"false",
 			 "description":"Adds the iDEAL fast checkout consumer details to orders that were placed before CCV had processed them",
-			 "module":"int_ccv/cartridge/scripts/jobs/processOrderEnrichments.js",
+			 "module":"int_ccv/cartridge/scripts/jobs/processWebhookTransactions.js",
 			 "function":"execute",
 			 "transactional":"false",
 			 "timeout-in-seconds":"900",

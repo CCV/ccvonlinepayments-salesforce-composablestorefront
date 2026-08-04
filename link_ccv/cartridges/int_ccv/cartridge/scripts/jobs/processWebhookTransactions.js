@@ -5,7 +5,7 @@ var Transaction = require('dw/system/Transaction');
 var OrderMgr = require('dw/order/OrderMgr');
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
 
-var ccvOrderEnrichment = require('*/cartridge/scripts/helpers/ccvOrderEnrichment');
+var ccvWebhookTransactions = require('*/cartridge/scripts/helpers/ccvWebhookTransactions');
 var { addAddressDetails } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
 var { checkCCVTransaction } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
 
@@ -18,7 +18,7 @@ var { checkCCVTransaction } = require('*/cartridge/scripts/services/CCVPaymentHe
 exports.execute = function () {
     // read the queue into an array so the iterator is closed before we start writing to the records
     var pending = [];
-    var queue = ccvOrderEnrichment.getPending();
+    var queue = ccvWebhookTransactions.getPending();
 
     try {
         while (queue.hasNext()) {
@@ -52,7 +52,7 @@ function processEnrichment(enrichment) {
 
     Transaction.wrap(function () {
         if (transactionStatusResponse && addAddressDetails({ transactionStatusResponse, order })) {
-            ccvOrderEnrichment.remove(enrichment);
+            ccvWebhookTransactions.remove(enrichment);
             ccvLogger.info(`CCV: consumer data applied to order ${orderNo}.`);
             return;
         }
@@ -60,8 +60,8 @@ function processEnrichment(enrichment) {
         var attempts = (enrichment.custom.attempts || 0) + 1;
         enrichment.custom.attempts = attempts; // eslint-disable-line no-param-reassign
 
-        if (attempts >= ccvOrderEnrichment.MAX_ATTEMPTS) {
-            ccvOrderEnrichment.remove(enrichment);
+        if (attempts >= ccvWebhookTransactions.MAX_ATTEMPTS) {
+            ccvWebhookTransactions.remove(enrichment);
             ccvLogger.error(`CCV: giving up on the consumer data for order ${orderNo} after ${attempts} attempts.`);
         }
     });
