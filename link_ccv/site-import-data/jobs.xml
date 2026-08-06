@@ -25,6 +25,32 @@
         </triggers>
     </job>
 
+    <job job-id="CCVPayment-ProcessWebhookTransactions" priority="0">
+        <description>
+            Adds the iDEAL fast checkout consumer details (email, name, phone) to orders that were
+            placed before CCV had processed them onto the transaction.
+        </description>
+        <parameters/>
+        <flow>
+            <context site-id="RefArch"/>
+            <step step-id="CCVProcessWebhookTransactions" type="custom.CCV.ProcessWebhookTransactions" enforce-restart="false">
+                <description/>
+                <parameters/>
+            </step>
+        </flow>
+        <rules/>
+        <triggers>
+            <run-recurring enabled="true">
+                <recurrence>
+                    <date-from>2019-10-25Z</date-from>
+                    <start-time>04:00:00.000Z</start-time>
+                    <interval>2m</interval>
+                    <day-of-week/>
+                </recurrence>
+            </run-recurring>
+        </triggers>
+    </job>
+
     <job job-id="CCVPayment-ProcessRefunds" priority="0">
         <description>
             Updates refund status on orders with pending refunds

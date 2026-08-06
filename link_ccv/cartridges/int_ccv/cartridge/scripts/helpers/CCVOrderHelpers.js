@@ -240,9 +240,16 @@ function addPlaceholderDataToBasket(basket, placeholder) {
 /**
  * Adds address details from the transaction status response to the order.
  * Used in iDeal fast checkout payments.
+ *
+ * Always writes every field - a real value if CCV has one, blank otherwise - the same as before
+ * this could be called more than once. That's safe here because it's only ever called again (by
+ * the enrichment job) when a field was blank; CCV's transaction data only gets more complete over
+ * time, so a later call is never missing something an earlier call already had.
+ *
  * @param {Object} params parameters
  * @param {Object} params.transactionStatusResponse transaction status response from CCV
  * @param {dw.order.Order} params.order SFCC order
+ * @returns {boolean} true if the consumer details (email, name, phone) were available
  */
 function addAddressDetails({ transactionStatusResponse, order }) {
     var { emailAddress, firstName, lastName, phoneNumber } = transactionStatusResponse.consumer || {};
@@ -260,7 +267,7 @@ function addAddressDetails({ transactionStatusResponse, order }) {
         transactionStatusResponse.billingHouseNumber
     ]
     .filter(x => x)
-    .join('');
+    .join(' ');
     billingAddress.lastName = transactionStatusResponse.billingLastName || '';
     billingAddress.firstName = transactionStatusResponse.billingFirstName || '';
     billingAddress.city = transactionStatusResponse.billingCity || '';
@@ -284,6 +291,8 @@ function addAddressDetails({ transactionStatusResponse, order }) {
     shippingAddress.city = transactionStatusResponse.shippingCity || '';
     shippingAddress.postalCode = transactionStatusResponse.shippingPostalCode || '';
     shippingAddress.phone = phoneNumber || '';
+
+    return !!emailAddress;
 }
 
 module.exports = {

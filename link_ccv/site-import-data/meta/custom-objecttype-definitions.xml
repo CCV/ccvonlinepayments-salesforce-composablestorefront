@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://www.demandware.com/xml/impex/metadata/2006-10-31">
+    <custom-type type-id="CCVWebhookTransactions">
+        <display-name xml:lang="x-default">CCV Webhook Transaction</display-name>
+        <description xml:lang="x-default">Queue of iDEAL fast checkout orders waiting for the consumer details (email, name, phone) to become available on the CCV transaction. Drained by the CCVPayment-ProcessWebhookTransactions job.</description>
+        <staging-mode>no-staging</staging-mode>
+        <storage-scope>site</storage-scope>
+        <retention-days>3</retention-days>
+        <key-definition attribute-id="orderNo">
+            <display-name xml:lang="x-default">Order No</display-name>
+            <description xml:lang="x-default">Order number. One record per order.</description>
+            <type>string</type>
+            <min-length>0</min-length>
+        </key-definition>
+        <attribute-definitions>
+            <attribute-definition attribute-id="transactionReference">
+                <display-name xml:lang="x-default">CCV Transaction Reference</display-name>
+                <description xml:lang="x-default">Reference used to re-read the transaction from CCV.</description>
+                <type>string</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <min-length>0</min-length>
+            </attribute-definition>
+            <attribute-definition attribute-id="attempts">
+                <display-name xml:lang="x-default">Attempts</display-name>
+                <description xml:lang="x-default">Number of times the job tried to fetch the consumer details.</description>
+                <type>int</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+            </attribute-definition>
+        </attribute-definitions>
+        <group-definitions>
+            <attribute-group group-id="ccv">
+                <display-name xml:lang="x-default">ccv</display-name>
+                <attribute attribute-id="orderNo"/>
+                <attribute attribute-id="transactionReference"/>
+                <attribute attribute-id="attempts"/>
+            </attribute-group>
+        </group-definitions>
+    </custom-type>
+</metadata>

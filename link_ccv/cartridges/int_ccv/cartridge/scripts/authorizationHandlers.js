@@ -4,6 +4,29 @@ var Site = require('dw/system/Site');
 var ccvLogger = require('dw/system/Logger').getLogger('CCV', 'ccv');
 
 /**
+ * Writes the transaction details read from CCV onto the order and its payment instrument.
+ * Must be called in a transactional context.
+ *
+ * @param {dw.order.Order} order order being processed
+ * @param {Object} authResult authorization result object
+ */
+function applyTransactionDetails(order, authResult) {
+    var details = authResult.transactionDetails;
+
+    if (!details) {
+        return;
+    }
+
+    var paymentInstrument = order.paymentInstruments[0];
+
+    order.custom.ccvChildTransactionReference = details.ccvChildTransactionReference; // eslint-disable-line no-param-reassign
+    paymentInstrument.custom.ccv_card_type = details.ccv_card_type;
+    paymentInstrument.custom.ccv_landingpage_method = details.ccv_landingpage_method;
+    paymentInstrument.paymentTransaction.custom.ccv_transaction_status = details.ccv_transaction_status;
+    paymentInstrument.paymentTransaction.custom.ccv_failure_code = details.ccv_failure_code;
+}
+
+/**
  * Handler for orders with CCV payment status = failed
  * @param {dw.order.Order} order order being processed
  * @param {Object} authResult authorization result object
@@ -94,7 +117,18 @@ function handleSuccess(order, authResult) {
 
     // update ideal fast checkout order shipping, billing, customer email
     if (paymentInstrument.custom.ccv_fast_checkout) {
-        addAddressDetails({ transactionStatusResponse, order });
+        var consumerDataApplied = addAddressDetails({ transactionStatusResponse, order });
+
+        if (!consumerDataApplied) {
+            /**
+             * CCV has not put the consumer details on the transaction yet. Queue the order so
+             * CCVPayment-ProcessWebhookTransactions can pick them up shortly, rather than holding
+             * up the order (and the shopper waiting on the redirect page) here.
+             */
+            var ccvWebhookTransactions = require('*/cartridge/scripts/helpers/ccvWebhookTransactions');
+            ccvWebhookTransactions.enqueue(order);
+            ccvLogger.info(`CCV: consumer data not available yet for order ${order.orderNo}, queued for enrichment.`);
+        }
     }
 
 
@@ -150,6 +184,7 @@ function createCardPaymentInstrument(order, transactionStatusResponse) {
 }
 
 module.exports = {
+    applyTransactionDetails,
     handleFailed,
     handleManualIntervention,
     handlePriceOrCurrencyMismatch,
