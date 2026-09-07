@@ -29,12 +29,17 @@ const Checkout = () => {
     const [isLoading, setIsLoading] = useState(false)
     const ccv = useCCVApi()
     const {data: basket} = useCurrentBasket()
-    const {paymentError, setPaymentError, applePayLoaded, setApplePayLoaded, creditCardData} = useCCVPayment()
+    const {
+        paymentError,
+        setPaymentError,
+        applePayLoaded,
+        setApplePayLoaded,
+        creditCardData,
+        removePaymentMethod
+    } = useCCVPayment()
 
-    const isApplePay =
-        basket.paymentInstruments &&
-        basket.paymentInstruments[0].paymentMethodId === 'CCV_APPLE_PAY' &&
-        applePayLoaded
+    const hasFastCheckoutData = basket?.paymentInstruments?.[0]?.c_ccv_fast_checkout
+
     // Scroll to the top when we get a global error
 
     useEffect(() => {
@@ -42,6 +47,14 @@ const Checkout = () => {
             window.scrollTo({top: 0})
         }
     }, [globalError, step])
+
+    useEffect(() => {
+        if (!hasFastCheckoutData) return
+        // for fast checkout we use placeholder billing/shipping data and skip the checkout
+        // So if the user still reached the checkout after a failed fast-checkout payment we need to
+        // clear the placeholder data and the fast-checkout payment instrument
+        removePaymentMethod(basket)
+    }, [hasFastCheckoutData])
 
     useEffect(() => {
         const script = document.createElement('script')
@@ -106,7 +119,6 @@ const Checkout = () => {
                                             submitOrderHandler={submitOrder}
                                             submitApplePayOrderHandler={onApplePayButtonClicked}
                                             isLoading={isLoading}
-                                            isApplePay={isApplePay}
                                             basket={basket}
                                             data-testid="sf-checkout-place-order-btn"
                                         />
@@ -129,7 +141,6 @@ const Checkout = () => {
                                     submitOrderHandler={submitOrder}
                                     submitApplePayOrderHandler={onApplePayButtonClicked}
                                     isLoading={isLoading}
-                                    isApplePay={isApplePay}
                                     basket={basket}
                                 />
                             </Box>
@@ -155,7 +166,6 @@ const Checkout = () => {
                             submitOrderHandler={submitOrder}
                             submitApplePayOrderHandler={onApplePayButtonClicked}
                             isLoading={isLoading}
-                            isApplePay={isApplePay}
                             basket={basket}
                             dataTestid="sf-checkout-place-order-btn"
                         />

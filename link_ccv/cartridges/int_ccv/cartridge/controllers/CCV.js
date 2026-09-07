@@ -43,8 +43,11 @@ server.post('WebhookStatus', function (req, res, next) { // eslint-disable-line 
     var { authorizeCCV, handleAuthorizationResult } = require('*/cartridge/scripts/authorizeCCV');
 
     try {
+        // the CCV service calls are made outside of the transaction, so the order is not locked
+        // for the duration of the request to CCV
+        var authResult = authorizeCCV(order, 'webhook');
+
         Transaction.wrap(function () {
-            var authResult = authorizeCCV(order, 'webhook');
             handleAuthorizationResult(authResult, order);
         });
     } catch (error) {

@@ -12,7 +12,7 @@ const { authorizeCCV, handleAuthorizationResult } = proxyquire('../../cartridges
     'dw/system/Logger': stubs.dw.loggerMock,
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/HookMgr': stubs.dw.HookMgrMock,
-    '*/cartridge/scripts/authorizationHandlers.js': stubs.authorizationHandlers,
+    '*/cartridge/scripts/authorizationHandlers': stubs.authorizationHandlers,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock
 });
 
@@ -338,6 +338,86 @@ describe('authorizeCCV.js', function () {
                 'afterOrderAuthorized',
                 { order, authResult }
             );
+        });
+
+        context('iDEAL fast checkout consumer data (CCC-144 / CCC-161):', function () {
+            beforeEach(() => {
+                paymentInstrument.custom.ccv_fast_checkout = true;
+                order.billingAddress = {};
+                order.defaultShipment = { shippingAddress: {} };
+                order.setCustomerEmail = stubs.sandbox.stub();
+                order.setCustomerName = stubs.sandbox.stub();
+            });
+
+            it('should place the order straight away when the consumer data is already there', () => {
+                stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                    amount: 50.00,
+                    currency: 'eur',
+                    method: 'ideal',
+                    type: 'sale',
+                    status: 'success',
+                    consumer: { emailAddress: 'jack@sparrow.com', firstName: 'Jack', lastName: 'Sparrow' }
+                });
+
+                const result = authorizeCCV(order, 'webhook');
+                handleAuthorizationResult(result, order);
+
+                expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.calledOnce;
+                expect(order.setCustomerEmail).to.have.been.calledOnceWith('jack@sparrow.com');
+                expect(stubs.ccvWebhookTransactionsMock.enqueue).to.not.have.been.called;
+            });
+
+            it('should still place the order and queue it when the consumer data is missing', () => {
+                stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                    amount: 50.00,
+                    currency: 'eur',
+                    method: 'ideal',
+                    type: 'sale',
+                    status: 'success',
+                    billingCity: 'Amsterdam'
+                });
+
+                const result = authorizeCCV(order, 'webhook');
+                handleAuthorizationResult(result, order);
+
+                expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.calledOnce;
+                expect(order.paymentStatus).to.eql(Order.PAYMENT_STATUS_PAID);
+                expect(stubs.ccvWebhookTransactionsMock.enqueue).to.have.been.calledOnceWith(order);
+            });
+
+            it('should not queue non fast-checkout orders', () => {
+                paymentInstrument.custom.ccv_fast_checkout = false;
+
+                const result = authorizeCCV(order, 'webhook');
+                handleAuthorizationResult(result, order);
+
+                expect(stubs.dw.OrderMgrMock.placeOrder).to.have.been.calledOnce;
+                expect(stubs.ccvWebhookTransactionsMock.enqueue).to.not.have.been.called;
+            });
+        });
+
+        it('should write the transaction details onto the order and payment instrument', () => {
+            stubs.CCVPaymentHelpersMock.checkCCVTransaction.returns({
+                amount: 50.00,
+                currency: 'eur',
+                method: 'card',
+                type: 'sale',
+                status: 'success',
+                brand: 'mastercard',
+                failureCode: null
+            });
+
+            paymentInstrument.custom.ccv_card_type = 'untouched';
+
+            const result = authorizeCCV(order, 'webhook');
+
+            // authorizeCCV only reads - nothing is written until handleAuthorizationResult runs
+            expect(paymentInstrument.custom.ccv_card_type).to.eql('untouched');
+
+            handleAuthorizationResult(result, order);
+
+            expect(paymentInstrument.custom.ccv_card_type).to.eql('mastercard');
+            expect(paymentInstrument.paymentTransaction.custom.ccv_transaction_status).to.eql('success');
         });
 
         it('should call ccv.order.update.afterOrderFailed hook with correct context after failed order', () => {

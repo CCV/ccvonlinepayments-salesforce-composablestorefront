@@ -27,7 +27,13 @@ class OcapiCCV {
         }
 
         const {
-            parameters: {ccvReturnUrl, applePayDomainName, applePayValidationUrl, metadata},
+            parameters: {
+                ccvReturnUrl,
+                applePayDomainName,
+                applePayValidationUrl,
+                metadata,
+                paymentMethodId
+            },
             body
         } = args[0]
 
@@ -35,6 +41,7 @@ class OcapiCCV {
 
         if (applePayDomainName) path += `&applePayDomainName=${applePayDomainName}`
         if (applePayValidationUrl) path += `&applePayValidationUrl=${applePayValidationUrl}`
+        if (paymentMethodId) path += `&paymentMethodId=${paymentMethodId}`
 
         const ocapiVersion = `CommerceCloudOcapi:${getConfig()?.app?.commerceAPI?.ocapiVersion}`
         if (metadata) path += `&metadata=${encodeURIComponent(metadata + ';' + ocapiVersion)}`
@@ -45,7 +52,7 @@ class OcapiCCV {
             return await this.fetch(path, 'POST', args, 'createOrder', underscoreBody)
         } catch (e) {
             console.error(e.message)
-            return null;
+            return null
         }
     }
 
@@ -75,7 +82,7 @@ class OcapiCCV {
             return this.fetch(`baskets/${basketId}`, 'GET', args, 'getBasketData')
         } catch (e) {
             console.error(e.message)
-            return null;
+            return null
         }
     }
 }

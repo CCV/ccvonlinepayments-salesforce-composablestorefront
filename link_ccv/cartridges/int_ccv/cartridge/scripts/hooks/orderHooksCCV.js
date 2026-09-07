@@ -24,6 +24,7 @@ var languageMap = {
  */
 exports.afterPOST = function (order) { // eslint-disable-line consistent-return
     var { createCCVPayment, CCV_CONSTANTS } = require('*/cartridge/scripts/services/CCVPaymentHelpers');
+    var { getCCVOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
     var returnUrl = request.httpParameters.ccvReturnUrl && request.httpParameters.ccvReturnUrl.pop();
     var metadata = request.httpParameters.metadata && decodeURIComponent(request.httpParameters.metadata.pop());
 
@@ -88,18 +89,42 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
         }
     }
 
-    if (selectedMethodCCVId === 'card' || paymentInstrument.paymentMethod === 'CCV_KLARNA') {
-        var { getSCAFields } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
-    // adding data required for 3DS frictionless flow and for Klarna
-        var scaFields = getSCAFields(order);
-        Object.assign(requestBody, scaFields);
+    var isFastCheckout = paymentInstrument.paymentMethod === 'CCV_IDEAL'
+        && paymentInstrument.custom.ccv_fast_checkout === true;
+
+    // Address details are shared across all payment methods so they appear on
+    // transaction level in CCV. iDEAL fast checkout has no address data yet.
+    if (!isFastCheckout) {
+        var { getAddressFields } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+        Object.assign(requestBody, getAddressFields(order));
+    }
+
+    // scaReady is only relevant for the 3DS frictionless flow (card & landingpage),
+    // plus the iDEAL fast checkout special case.
+    if (selectedMethodCCVId === 'card' || selectedMethodCCVId === 'landingpage' || isFastCheckout) {
+        requestBody.scaReady = Site.current.getCustomPreferenceValue('ccvScaReadyEnabled') ? 'yes' : 'no';
     }
 
     // KLARNA
     if (paymentInstrument.paymentMethod === 'CCV_KLARNA') {
-        requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE
-        var { getKlarnaOrderLines } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
-        requestBody.orderLines = getKlarnaOrderLines(order);
+        requestBody.transactionType = CCV_CONSTANTS.TRANSACTION_TYPE.AUTHORISE;
+        requestBody.orderLines = getCCVOrderLines(order);
+    }
+
+    // IDEAL FAST CHECKOUT
+    if (paymentInstrument.paymentMethod === 'CCV_IDEAL' && paymentInstrument.custom.ccv_fast_checkout === true) {
+        // customer information to be returned via the webhook
+        requestBody.requestCheckoutDetails = [
+            'shipping',
+            'billing',
+            'phone',
+            'email',
+            'first_name',
+            'last_name'
+        ];
+        // orderLines
+            // return new IdealOrderLine(lineItem);
+        requestBody.orderLines = getCCVOrderLines(order);
     }
 
     // BANCONTACT
@@ -162,6 +187,16 @@ exports.afterPOST = function (order) { // eslint-disable-line consistent-return
 
     if (paymentInstrument.custom.ccvVaultAccessToken) {
         paymentInstrument.custom.ccvVaultAccessToken = '****';
+    }
+};
+
+exports.beforePOST = function (basket) {
+    var paymentMethodId = request.httpParameters.paymentMethodId && request.httpParameters.paymentMethodId[0];
+
+    if (paymentMethodId === 'idealFastCheckout') {
+        var { createIdealFastCheckoutPayment, addPlaceholderDataToBasket } = require('*/cartridge/scripts/helpers/CCVOrderHelpers');
+        createIdealFastCheckoutPayment(basket);
+        addPlaceholderDataToBasket(basket, 'iDEAL | Wero pending');
     }
 };
 

@@ -21,6 +21,7 @@ const URLUtils = require('./dw/web/URLUtils');
 const URLParameter = require('./dw/web/URLParameter');
 const URLAction = require('./dw/web/URLAction');
 const UUIDUtils = require('./dw/util/UUIDUtils');
+const ProductMgr = require('./dw/catalog/ProductMgr.js');
 const Status = require('./dw/system/Status');
 const Money = require('./dw/value/Money');
 const StringUtils = require('./dw/util/StringUtils');
@@ -165,8 +166,19 @@ const ISMLMock = {
 const CCVOrderHelpersMock = {
     getRefundAmountRemaining: sandbox.stub(),
     updateOrderRefunds: sandbox.stub(),
-    getSCAFields: sandbox.stub(),
-    getKlarnaOrderLines: sandbox.stub()
+    getAddressFields: sandbox.stub(),
+    addPlaceholderDataToBasket: sandbox.stub(),
+    createIdealFastCheckoutPayment: sandbox.stub(),
+    addAddressDetails: sandbox.stub(),
+    getCCVOrderLines: sandbox.stub()
+};
+
+const ccvWebhookTransactionsMock = {
+    CO_TYPE: 'CCVWebhookTransactions',
+    MAX_ATTEMPTS: 10,
+    enqueue: sandbox.stub(),
+    getPending: sandbox.stub(),
+    remove: sandbox.stub()
 };
 
 const collectionsMock = {
@@ -195,6 +207,7 @@ const dw = {
     ProductLineItem,
     ShippingLineItem,
     ProductShippingLineItem,
+    ProductMgr,
     PriceAdjustment,
     Money,
     MoneyMock,
@@ -248,6 +261,7 @@ const initMocks = function () {
     Object.keys(ISMLMock).map(i => ISMLMock[i].reset());
     Object.keys(ocapiServiceMock).map(i => ocapiServiceMock[i].reset());
     Object.keys(authorizeCCVMock).map(i => authorizeCCVMock[i].reset());
+    Object.keys(ccvWebhookTransactionsMock).map(i => ccvWebhookTransactionsMock[i].reset && ccvWebhookTransactionsMock[i].reset());
 
 
     // INITIALIZE
@@ -275,7 +289,11 @@ const CCVOrderHelpers = proxyquire('../../../../cartridges/int_ccv/cartridge/scr
     'dw/order/ProductShippingLineItem': dw.ProductShippingLineItem,
     'dw/system/Logger': dw.loggerMock,
     'dw/order/PriceAdjustment': dw.PriceAdjustment,
-    '*/cartridge/models/KlarnaModelsCCV.js': require('../../../../cartridges/int_ccv/cartridge/models/KlarnaModelsCCV')
+    '*/cartridge/models/OrderLineModelsCCV': proxyquire('../../../../cartridges/int_ccv/cartridge/models/OrderLineModelsCCV', {
+        '*/cartridge/scripts/helpers/CCVModelHelpers': proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/helpers/CCVModelHelpers', {
+            'dw/catalog/ProductMgr': dw.ProductMgr
+        })
+    })
 });
 
 const authorizationHandlers = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/authorizationHandlers', {
@@ -284,7 +302,13 @@ const authorizationHandlers = proxyquire('../../../../cartridges/int_ccv/cartrid
     'dw/order/OrderMgr': dw.OrderMgrMock,
     'dw/system/Site': dw.SiteMock,
     'dw/system/Logger': dw.loggerMock,
-    '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock
+    '*/cartridge/scripts/services/CCVPaymentHelpers': CCVPaymentHelpersMock,
+    '*/cartridge/scripts/helpers/CCVOrderHelpers': CCVOrderHelpers,
+    '*/cartridge/scripts/helpers/ccvWebhookTransactions': ccvWebhookTransactionsMock
+});
+
+const ccvWebhookTransactions = proxyquire('../../../../cartridges/int_ccv/cartridge/scripts/helpers/ccvWebhookTransactions', {
+    'dw/object/CustomObjectMgr': dw.CustomObjectMgrMock
 });
 
 module.exports = {
@@ -297,6 +321,8 @@ module.exports = {
     CCV_CONSTANTS,
     authorizeCCVMock,
     authorizationHandlers,
+    ccvWebhookTransactions,
+    ccvWebhookTransactionsMock,
     collectionsMock,
     reset: initMocks,
     init: () => {

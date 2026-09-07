@@ -9,7 +9,7 @@
 			 "description":"Checks and updates CCV transaction statuses for orders in status Created",
 			 "module":"int_ccv/cartridge/scripts/jobs/updateTransactionStatuses.js",
 			 "function":"execute",
-			 "transactional":"true",
+			 "transactional":"false",
 			 "timeout-in-seconds":"900",
 			 "parameters":{
 				"parameter": [
@@ -22,6 +22,30 @@
 					  }
 				]
 			 },
+			 "status-codes":{
+                "status": [
+                    {
+                        "@code": "ERROR",
+                        "description": "Used when an error occurred."
+                    },
+                    {
+                        "@code": "OK",
+                        "description": "Used when execution was successful."
+                    }
+                ]
+			 }
+		  },
+		  {
+			 "@type-id":"custom.CCV.ProcessWebhookTransactions",
+			 "@supports-parallel-execution":"false",
+			 "@supports-site-context":"true",
+			 "@supports-organization-context":"false",
+			 "description":"Adds the iDEAL fast checkout consumer details to orders that were placed before CCV had processed them",
+			 "module":"int_ccv/cartridge/scripts/jobs/processWebhookTransactions.js",
+			 "function":"execute",
+			 "transactional":"false",
+			 "timeout-in-seconds":"900",
+			 "parameters":{},
 			 "status-codes":{
                 "status": [
                     {

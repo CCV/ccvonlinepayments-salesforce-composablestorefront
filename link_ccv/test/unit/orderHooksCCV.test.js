@@ -10,7 +10,7 @@ const orderHooksCCV = proxyquire('../../cartridges/int_ccv/cartridge/scripts/hoo
     'dw/system/Site': stubs.dw.SiteMock,
     'dw/system/Logger': stubs.dw.loggerMock,
     '*/cartridge/scripts/services/CCVPaymentHelpers': stubs.CCVPaymentHelpersMock,
-    '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpersMock,
+    '*/cartridge/scripts/helpers/CCVOrderHelpers': stubs.CCVOrderHelpers,
     'dw/system/Status': stubs.dw.Status,
     'dw/order/PaymentMgr': stubs.dw.PaymentMgrMock,
     'dw/order/PaymentTransaction': stubs.dw.PaymentTransaction,
@@ -28,19 +28,23 @@ describe('orderHooksCCV', function () {
     after(() => stubs.restore());
 
     beforeEach(() => {
+        const mockPaymenInstrument = {
+            custom: { ccv_method_id: 'card' },
+            paymentMethod: 'CCV_CREDIT_CARD',
+            UUID: 'd3132131dsas',
+            getPaymentMethod: () => null,
+            paymentTransaction: new stubs.dw.PaymentTransactionMock()
+        }
+        ;
+
         order = {
             allProductLineItems: { toArray: () => [{
-                productName: 'Line Item 1', quantity: 1
+                productName: 'Line Item 1',
+                quantity: { value: 1 },
+                basePrice: { value: 5, currency: 'EUR' },
+                adjustedGrossPrice: { value: 5, currency: 'EUR' }
             }] },
-            paymentInstruments: [
-                {
-                    custom: { ccv_method_id: 'card' },
-                    paymentMethod: 'CCV_CREDIT_CARD',
-                    UUID: 'd3132131dsas',
-                    getPaymentMethod: () => null,
-                    paymentTransaction: new stubs.dw.PaymentTransactionMock()
-                }
-            ],
+            paymentInstruments: [Object.assign({}, mockPaymenInstrument)],
             totalGrossPrice: { value: 25.75 },
             currencyCode: 'EUR',
             orderNo: '00001',
@@ -55,7 +59,10 @@ describe('orderHooksCCV', function () {
                 countryCode: { value: 'BE' },
                 address2: '',
                 phone: '1234-1234-522',
-                custom: { phone_country: '024' }
+                custom: { phone_country: '024' },
+                setCountryCode: function (country) {
+                    this.countryCode = { value: country };
+                }
             },
             shipments: [{
                 shippingAddress: {
@@ -66,10 +73,27 @@ describe('orderHooksCCV', function () {
                     countryCode: { value: 'BE' },
                     address2: '',
                     phone: '1234-1234-522',
-                    custom: { phone_country: '024' }
+                    custom: { phone_country: '024' },
+                    setCountryCode: function (country) {
+                        this.countryCode = { value: country };
+                    }
                 }
             }],
-            paymentInstrument: this.paymentInstruments[0]
+            get allLineItems() {
+                return this.allProductLineItems;
+            },
+            get defaultShipment() {
+                return this.shipments[0];
+            },
+            createPaymentInstrument: function (instrumentID) {
+                const newPi = Object.assign(mockPaymenInstrument, { paymentMethod: instrumentID });
+
+                this.paymentInstruments.push(newPi);
+                return newPi;
+            },
+            get paymentInstrument() {
+                return this.paymentInstruments[0];
+            }
         };
 
         paymentInstrument = order.paymentInstruments[0];
@@ -201,13 +225,6 @@ describe('orderHooksCCV', function () {
         });
 
         context('iDEAL', function () {
-            it('request should include issuer id', () => {
-                order.paymentInstruments[0].custom = { ccv_method_id: 'ideal', ccv_issuer_id: 'issuer_id_test' };
-                orderHooksCCV.afterPOST(order);
-                const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
-                expect(paymentRequest.requestBody.issuer).to.eql('issuer_id_test');
-            });
-
             it('the request\'s transactionType should never be set to "authorise" for non-card payment methods', () => {
                 stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvCardsAuthoriseEnabled').returns(false);
                 order.paymentInstruments[0].custom = { ccv_method_id: 'ideal', ccv_issuer_id: 'issuer_id_test' };
@@ -215,6 +232,64 @@ describe('orderHooksCCV', function () {
                 orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.transactionType).to.be.undefined;
+            });
+            it('should not call ideal fastCheckout logic for non-fast-checkout calls', () => {
+                orderHooksCCV.beforePOST(order);
+                expect(stubs.CCVOrderHelpersMock.createIdealFastCheckoutPayment).not.to.have.been.called;
+                expect(stubs.CCVOrderHelpersMock.addPlaceholderDataToBasket).not.to.have.been.called;
+            });
+
+            describe('Ideal Fast Checkout', function () {
+                beforeEach(() => {
+                    global.request.httpParameters.paymentMethodId = ['idealFastCheckout'];
+                    var testOrderLines = [{
+                        type: 'PHYSICAL',
+                        name: 'Green and Gold Necklace',
+                        code: '013742003307M',
+                        quantity: 1,
+                        unit: 'pc',
+                        unitPrice: '25.92',
+                        totalPrice: 29.29,
+                        vatRate: 13,
+                        vat: 3.37
+                    }];
+                    const getCCVOrderLinesMock = stubs.sandbox.stub();
+                    const originalFunc = stubs.CCVOrderHelpers.getCCVOrderLines;
+                    stubs.CCVOrderHelpers.getCCVOrderLines = getCCVOrderLinesMock;
+                    getCCVOrderLinesMock.returns(testOrderLines);
+
+                    order.paymentInstruments = [];
+                    orderHooksCCV.beforePOST(order);
+                    orderHooksCCV.afterPOST(order);
+                    stubs.CCVOrderHelpers.getCCVOrderLines = originalFunc;
+                });
+
+                it('should create a new payment instrument with payment method = CCV_IDEAL', () => {
+                    expect(order.paymentInstruments).to.have.lengthOf(1);
+                    expect(order.paymentInstruments[0].paymentMethod).to.eql('CCV_IDEAL');
+                });
+
+                it('should add orderLines to the request body', () => {
+                    const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
+                    expect(paymentRequest.requestBody.orderLines[0]).to.exist;
+                });
+
+                it('should add requestCheckoutDetails to the request body', () => {
+                    const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
+                    expect(paymentRequest.requestBody.requestCheckoutDetails).to.exist;
+                    expect(paymentRequest.requestBody.requestCheckoutDetails).to.include('first_name');
+                    expect(paymentRequest.requestBody.requestCheckoutDetails).to.include('last_name');
+                    expect(paymentRequest.requestBody.requestCheckoutDetails).to.include('billing');
+                    expect(paymentRequest.requestBody.requestCheckoutDetails).to.include('shipping');
+                    expect(paymentRequest.requestBody.requestCheckoutDetails).to.include('email');
+                });
+
+                it('should send scaReady but no address fields (address data is not yet available)', () => {
+                    const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
+                    expect(paymentRequest.requestBody.scaReady).to.exist;
+                    expect(paymentRequest.requestBody.billingAddress).to.be.undefined;
+                    expect(paymentRequest.requestBody.shippingAddress).to.be.undefined;
+                });
             });
         });
 
@@ -252,11 +327,73 @@ describe('orderHooksCCV', function () {
                     vatRate: 13,
                     vat: 3.37
                 }];
-                stubs.CCVOrderHelpersMock.getKlarnaOrderLines.returns(testOrderLines);
+                const getCCVOrderLinesMock = stubs.sandbox.stub();
+                const originalFunc = stubs.CCVOrderHelpers.getCCVOrderLines;
+                stubs.CCVOrderHelpers.getCCVOrderLines = getCCVOrderLinesMock;
+                getCCVOrderLinesMock.returns(testOrderLines);
                 orderHooksCCV.afterPOST(order);
                 const paymentRequest = stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0];
                 expect(paymentRequest.requestBody.method).to.eql('klarna');
                 expect(paymentRequest.requestBody.orderLines).to.eql(testOrderLines);
+                stubs.CCVOrderHelpers.getCCVOrderLines = originalFunc;
+            });
+        });
+
+        context('Address details', function () {
+            function getRequestBody() {
+                return stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0].requestBody;
+            }
+
+            it('should include billing and shipping address fields for card', () => {
+                orderHooksCCV.afterPOST(order);
+                const requestBody = getRequestBody();
+                expect(requestBody.billingAddress).to.eql(order.billingAddress.address1);
+                expect(requestBody.shippingAddress).to.eql(order.shipments[0].shippingAddress.address1);
+            });
+
+            it('should include billing and shipping address fields for non-card methods (iDEAL)', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'ideal' };
+                order.paymentInstruments[0].paymentMethod = 'CCV_IDEAL';
+                orderHooksCCV.afterPOST(order);
+                const requestBody = getRequestBody();
+                expect(requestBody.billingAddress).to.eql(order.billingAddress.address1);
+                expect(requestBody.shippingAddress).to.eql(order.shipments[0].shippingAddress.address1);
+            });
+        });
+
+        context('scaReady', function () {
+            function getRequestBody() {
+                return stubs.CCVPaymentHelpersMock.createCCVPayment.getCall(0).args[0].requestBody;
+            }
+
+            it('should be included for card', () => {
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvScaReadyEnabled').returns(true);
+                orderHooksCCV.afterPOST(order);
+                expect(getRequestBody().scaReady).to.eql('yes');
+            });
+
+            it('should be included for landingpage', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'landingpage' };
+                stubs.dw.SiteMock.current.getCustomPreferenceValue.withArgs('ccvScaReadyEnabled').returns(false);
+                orderHooksCCV.afterPOST(order);
+                expect(getRequestBody().scaReady).to.eql('no');
+            });
+
+            it('should NOT be included for Klarna', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'klarna' };
+                order.paymentInstruments[0].paymentMethod = 'CCV_KLARNA';
+                const originalFunc = stubs.CCVOrderHelpers.getCCVOrderLines;
+                stubs.CCVOrderHelpers.getCCVOrderLines = stubs.sandbox.stub().returns([]);
+                orderHooksCCV.afterPOST(order);
+                expect(getRequestBody().scaReady).to.be.undefined;
+                stubs.CCVOrderHelpers.getCCVOrderLines = originalFunc;
+            });
+
+            it('should NOT be included for iDEAL', () => {
+                order.paymentInstruments[0].custom = { ccv_method_id: 'ideal' };
+                order.paymentInstruments[0].paymentMethod = 'CCV_IDEAL';
+                orderHooksCCV.afterPOST(order);
+                expect(getRequestBody().scaReady).to.be.undefined;
             });
         });
     });

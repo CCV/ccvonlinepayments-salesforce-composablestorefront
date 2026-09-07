@@ -7,6 +7,7 @@ import {useCurrentBasket} from '@salesforce/retail-react-app/app/hooks/use-curre
 import {usePaymentMethodsForBasket} from '@salesforce/commerce-sdk-react'
 import {useForm} from 'react-hook-form'
 const CCVPaymentContext = React.createContext()
+import {useShopperBasketsMutation} from '@salesforce/commerce-sdk-react'
 
 /** Can only be used inside checkout context */
 export const CCVPaymentProvider = ({children}) => {
@@ -32,6 +33,22 @@ export const CCVPaymentProvider = ({children}) => {
     const [creditCardData, setCreditCardData] = useState({})
 
     const [applePayLoaded, setApplePayLoaded] = useState(false)
+
+    const idealFastCheckoutEnabled = paymentMethods?.some(
+        (method) => method.id === 'CCV_IDEAL' && method.c_ccvFastCheckoutEnabled
+    )
+
+    const {mutateAsync: removePaymentInstrumentFromBasket} = useShopperBasketsMutation(
+        'removePaymentInstrumentFromBasket'
+    )
+    const removePaymentMethod = async (basket) => {
+        await removePaymentInstrumentFromBasket({
+            parameters: {
+                basketId: basket.basketId,
+                paymentInstrumentId: basket.paymentInstruments[0].paymentInstrumentId
+            }
+        })
+    }
 
     const onPaymentIdChange = (value) => {
         if (value && isEditingPayment) {
@@ -73,6 +90,9 @@ export const CCVPaymentProvider = ({children}) => {
         setPaymentError('')
     }
 
+    const [isCCVError, setIsCCVError] = useState()
+    const [isCCVSubmitting, setIsCCVSubmitting] = useState()
+
     const ctx = {
         form: paymentMethodForm,
         hasSavedCards,
@@ -89,7 +109,13 @@ export const CCVPaymentProvider = ({children}) => {
         applePayLoaded,
         setApplePayLoaded,
         getPaymentMethods,
-        paymentMethods
+        paymentMethods,
+        isCCVError,
+        setIsCCVError,
+        removePaymentMethod,
+        isCCVSubmitting,
+        setIsCCVSubmitting,
+        idealFastCheckoutEnabled
     }
 
     return <CCVPaymentContext.Provider value={ctx}>{children}</CCVPaymentContext.Provider>

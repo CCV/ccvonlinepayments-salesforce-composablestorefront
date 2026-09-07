@@ -70,6 +70,13 @@ target.compileFonts = function () {
 };
 
 target.functional = function (args) {
+    var i;
+    for (i = 0; i < args.length; i++) {
+        if (!/^[a-zA-Z0-9_\-\./\\]+$/.test(args[i])) {
+            throw new Error('Invalid input');
+        }
+    }
+
     var defaults = {
         baseUrl: 'https://' + getSandboxUrl() + '/s/RefArch',
         client: 'chrome'

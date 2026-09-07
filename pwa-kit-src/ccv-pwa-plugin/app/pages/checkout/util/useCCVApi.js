@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {useIntl} from 'react-intl'
 import {getAppOrigin} from '@salesforce/pwa-kit-react-sdk/utils/url'
 import {getConfig} from '@salesforce/pwa-kit-runtime/utils/ssr-config'
@@ -23,7 +24,7 @@ const useCCVApi = () => {
 
     return {
         // based on useBasket#createOrder
-        async createOrder({applePayValidationUrl} = {}) {
+        async createOrder({applePayValidationUrl, params = {}} = {}) {
             let ccvReturnUrl = `${getAppOrigin()}/checkout/handleShopperRedirect`
             const metadata = ccvConfig.ccvVersion
             if (redirectWithLocale) {
@@ -37,6 +38,7 @@ const useCCVApi = () => {
             }
 
             const parameters = {
+                ...params,
                 ccvReturnUrl,
                 metadata
             }

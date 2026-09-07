@@ -10,7 +10,7 @@ import {
     MastercardIcon,
     VisaIcon,
     PaypalIcon,
-    IdealIcon,
+    IdealWeroIconWide,
     BanContactIcon,
     GiropayIcon,
     SofortIcon,
@@ -18,8 +18,10 @@ import {
     PayconiqIcon,
     MaestroIcon,
     KlarnaIcon,
+    GooglePayIcon,
     ApplePayIcon
 } from '../../../components/icons'
+import {useCCVPayment} from '../util/ccv-context'
 
 /**
  * Returns a map of applicable payment methods keyed by payment method ID
@@ -105,7 +107,7 @@ DefaultPaymentSummary.propTypes = {
 function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
     const iconMap = {
         CCV_PAYPAL: <PaypalIcon width="auto" height={iconHeight} />,
-        CCV_IDEAL: <IdealIcon width="auto" height={iconHeight} />,
+        CCV_IDEAL: <IdealWeroIconWide width="auto" height={iconHeight} />,
         CCV_BANCONTACT: <BanContactIcon width="auto" height={iconHeight} />,
         CCV_GIROPAY: <GiropayIcon width="auto" height={iconHeight} />,
         CCV_CREDIT_CARD_INLINE: (
@@ -128,6 +130,7 @@ function getPaymentIcons(paymentMethodId, iconHeight = '25px') {
         CCV_EPS: <EPSIcon width="auto" height={iconHeight} />,
         CCV_PAYCONIQ: <PayconiqIcon width="auto" height={iconHeight} />,
         CCV_KLARNA: <KlarnaIcon width="auto" height={iconHeight} />,
+        CCV_GOOGLE_PAY: <GooglePayIcon width="auto" height={iconHeight} />,
         CCV_APPLE_PAY: <ApplePayIcon width="auto" height={iconHeight} />
     }
     return iconMap[paymentMethodId] || null
@@ -143,15 +146,19 @@ PaymentMethodIcons.propTypes = {
     iconHeight: PropTypes.string
 }
 
-export const PlaceOrderButton = (props) => {
-    return props.isApplePay ? (
-        <ApplePayPlaceOrderButton {...props} />
-    ) : (
-        <DefaultPlaceOrderButton {...props} />
-    )
+export const PlaceOrderButton = ({basket, ...props}) => {
+    const {applePayLoaded} = useCCVPayment()
+    const paymentMethodId = basket?.paymentInstruments?.[0]?.paymentMethodId
+
+    const isApplePay = paymentMethodId === 'CCV_APPLE_PAY' && applePayLoaded
+
+    if (isApplePay && applePayLoaded) {
+        return <ApplePayPlaceOrderButton {...props} />
+    }
+    return <DefaultPlaceOrderButton {...props} />
 }
 PlaceOrderButton.propTypes = {
-    isApplePay: PropTypes.bool
+    basket: PropTypes.object
 }
 
 const DefaultPlaceOrderButton = (props) => {
